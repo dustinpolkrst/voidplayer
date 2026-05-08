@@ -1,6 +1,6 @@
-# Simple Player Example
+# VoidPlayer Example
 
-Windows desktop video player example for `ffmpeg-pywrapper`.
+Windows desktop video player example for `VoidPlayer`.
 
 Install player dependencies:
 

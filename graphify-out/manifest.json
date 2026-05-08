@@ -4,8 +4,8 @@
     "hash": "fea44d63ba9952af60e80e5d262be95d"
   },
   "C:\\data\\ffmpeg_pywrapper\\examples\\simple_player\\main.py": {
-    "mtime": 1778268968.7262018,
-    "hash": "abc2188189a9f0d4176abfab2a78b572"
+    "mtime": 1778269905.1489735,
+    "hash": "786562b7f990ea32e27d32e091f77801"
   },
   "C:\\data\\ffmpeg_pywrapper\\src\\ffmpeg_pywrapper\\commands.py": {
     "mtime": 1778265364.433769,
@@ -48,8 +48,8 @@
     "hash": "1ea5e6aad27abd8dfc4b97c4edf2453d"
   },
   "C:\\data\\ffmpeg_pywrapper\\src\\ffmpeg_pywrapper\\__main__.py": {
-    "mtime": 1778265364.4317706,
-    "hash": "e1cb1fb8ec8a656fdad99cf8ab06fca8"
+    "mtime": 1778269905.1489735,
+    "hash": "02cb577d97eb54979e70130c38e20768"
   },
   "C:\\data\\ffmpeg_pywrapper\\tests\\test_commands.py": {
     "mtime": 1778265364.4347687,
@@ -92,11 +92,19 @@
     "hash": "839d86949234f3b2aa782ce8b4b11adb"
   },
   "C:\\data\\ffmpeg_pywrapper\\README.md": {
-    "mtime": 1778265922.4279048,
-    "hash": "1f14eaf3a535f0c1a565ae4474432137"
+    "mtime": 1778269905.1499732,
+    "hash": "36cfb8194a5463f6ffa61b840c6f759e"
   },
   "C:\\data\\ffmpeg_pywrapper\\examples\\simple_player\\README.md": {
-    "mtime": 1778265922.4269042,
-    "hash": "087f90a61c57fd7948ee2929afd7a4df"
+    "mtime": 1778269905.1499732,
+    "hash": "b75c2a41b8df6cbbcb28fbfefdd3d50a"
+  },
+  "C:\\data\\ffmpeg_pywrapper\\examples\\simple_player\\assets\\app-icon.svg": {
+    "mtime": 1778269456.448617,
+    "hash": "f8340cb0af942d06184b8f1c5aa8df08"
+  },
+  "C:\\data\\ffmpeg_pywrapper\\examples\\simple_player\\assets\\open-media.svg": {
+    "mtime": 1778269569.3353066,
+    "hash": "01fbc82329b3cc8849bf5eb4f92c3e2b"
   }
 }

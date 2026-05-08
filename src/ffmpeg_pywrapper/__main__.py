@@ -8,7 +8,7 @@ from .probe import probe
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(prog="ffmpeg-pywrapper")
+    parser = argparse.ArgumentParser(prog="voidplayer")
     parser.add_argument("input", nargs="?", type=Path, help="Media file to probe")
     args = parser.parse_args()
 

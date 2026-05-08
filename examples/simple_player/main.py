@@ -9,7 +9,7 @@ from ffmpeg_pywrapper.playback import DecodeLoopPlayer, PlaybackState, VideoFram
 try:
     from PIL.ImageQt import ImageQt
     from PySide6.QtCore import QObject, QSize, Qt, QTimer, Signal
-    from PySide6.QtGui import QAction, QImage, QKeySequence, QPixmap
+    from PySide6.QtGui import QAction, QIcon, QImage, QKeySequence, QPixmap
     from PySide6.QtWidgets import (
         QApplication,
         QFileDialog,
@@ -28,6 +28,11 @@ except ImportError as exc:  # pragma: no cover - manual app dependency guard
     raise SystemExit("Install player dependencies first: uv sync --extra player --group player") from exc
 
 
+ASSET_DIR = Path(__file__).with_name("assets")
+APP_ICON = ASSET_DIR / "app-icon.svg"
+OPEN_MEDIA_ICON = ASSET_DIR / "open-media.svg"
+
+
 class PlayerSignals(QObject):
     frame_ready = Signal(object)
     state_changed = Signal(object)
@@ -38,7 +43,8 @@ class PlayerSignals(QObject):
 class PlayerWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
-        self.setWindowTitle("FFmpeg PyWrapper Player")
+        self.setWindowTitle("VoidPlayer")
+        self.setWindowIcon(QIcon(str(APP_ICON)))
         self.resize(1000, 620)
         self.signals = PlayerSignals()
         self.signals.frame_ready.connect(self.show_frame)
@@ -58,6 +64,7 @@ class PlayerWindow(QMainWindow):
         self._build_ui()
         self._apply_theme()
         self.open_action = QAction("Open", self)
+        self.open_action.setIcon(QIcon(str(OPEN_MEDIA_ICON)))
         self.open_action.setShortcut(QKeySequence.StandardKey.Open)
         self.open_action.triggered.connect(self.open_file)
         self.addAction(self.open_action)
@@ -78,7 +85,7 @@ class PlayerWindow(QMainWindow):
         self.video_label.setText("Open a video file")
         self.video_label.setMinimumSize(640, 360)
 
-        self.open_button = self._tool_button("Open", QStyle.StandardPixmap.SP_DialogOpenButton)
+        self.open_button = self._tool_button("Open", QIcon(str(OPEN_MEDIA_ICON)))
         self.play_button = self._tool_button("Play", QStyle.StandardPixmap.SP_MediaPlay)
         self.stop_button = self._tool_button("Stop", QStyle.StandardPixmap.SP_MediaStop)
 
@@ -130,9 +137,12 @@ class PlayerWindow(QMainWindow):
         self.setStatusBar(QStatusBar())
         self.statusBar().showMessage("Ready")
 
-    def _tool_button(self, tooltip: str, icon: QStyle.StandardPixmap) -> QToolButton:
+    def _tool_button(self, tooltip: str, icon: QStyle.StandardPixmap | QIcon) -> QToolButton:
         button = QToolButton()
-        button.setIcon(self.style().standardIcon(icon))
+        if isinstance(icon, QIcon):
+            button.setIcon(icon)
+        else:
+            button.setIcon(self.style().standardIcon(icon))
         button.setToolTip(tooltip)
         button.setFixedSize(36, 36)
         button.setIconSize(QSize(20, 20))
@@ -296,6 +306,7 @@ def main() -> int:
         sys.argv.remove("--debug")
         configure_debug_logging(True)
     app = QApplication(sys.argv)
+    app.setWindowIcon(QIcon(str(APP_ICON)))
     window = PlayerWindow()
     window.show()
     return app.exec()

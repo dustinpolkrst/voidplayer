@@ -1,6 +1,8 @@
-# ffmpeg-pywrapper
+# VoidPlayer
 
-A small, typed Python wrapper around system `ffmpeg` and `ffprobe`.
+VoidPlayer is an open-source, hacker-styled video player powered by FFmpeg,
+PyAV, and sounddevice. It also keeps a small, typed Python wrapper around
+system `ffmpeg` and `ffprobe` for scripting and inspection workflows.
 
 The package is intentionally pure Python. It does not bundle FFmpeg binaries;
 install FFmpeg separately and make sure `ffmpeg` and `ffprobe` are on `PATH`, or
@@ -21,7 +23,13 @@ uv sync --extra player --group player
 uv run --extra player --group player python examples/simple_player/main.py
 ```
 
-## Quick Start
+## CLI
+
+```powershell
+voidplayer input.mp4
+```
+
+## Python Quick Start
 
 ```python
 from ffmpeg_pywrapper import convert, probe, thumbnail, trim
