@@ -1,10 +1,16 @@
 from __future__ import annotations
 
 import sys
+import argparse
 from pathlib import Path
+
+PLAYER_DIR = Path(__file__).resolve().parent
+if str(PLAYER_DIR) not in sys.path:
+    sys.path.insert(0, str(PLAYER_DIR))
 
 from ffmpeg_pywrapper import format_timestamp
 from ffmpeg_pywrapper.playback import DecodeLoopPlayer, PlaybackState, VideoFrame, configure_debug_logging
+from theme import DEFAULT_THEME, ThemeError, load_theme, render_stylesheet
 
 try:
     from PIL.ImageQt import ImageQt
@@ -28,7 +34,7 @@ except ImportError as exc:  # pragma: no cover - manual app dependency guard
     raise SystemExit("Install player dependencies first: uv sync --extra player --group player") from exc
 
 
-ASSET_DIR = Path(__file__).with_name("assets")
+ASSET_DIR = PLAYER_DIR / "assets"
 APP_ICON = ASSET_DIR / "app-icon.svg"
 OPEN_MEDIA_ICON = ASSET_DIR / "open-media.svg"
 
@@ -41,7 +47,7 @@ class PlayerSignals(QObject):
 
 
 class PlayerWindow(QMainWindow):
-    def __init__(self) -> None:
+    def __init__(self, *, theme_name: str = DEFAULT_THEME, theme_path: Path | None = None) -> None:
         super().__init__()
         self.setWindowTitle("VoidPlayer")
         self.setWindowIcon(QIcon(str(APP_ICON)))
@@ -62,7 +68,7 @@ class PlayerWindow(QMainWindow):
         self._last_pixmap: QPixmap | None = None
 
         self._build_ui()
-        self._apply_theme()
+        self._apply_theme(theme_name, theme_path)
         self.open_action = QAction("Open", self)
         self.open_action.setIcon(QIcon(str(OPEN_MEDIA_ICON)))
         self.open_action.setShortcut(QKeySequence.StandardKey.Open)
@@ -149,79 +155,13 @@ class PlayerWindow(QMainWindow):
         button.setCursor(Qt.CursorShape.PointingHandCursor)
         return button
 
-    def _apply_theme(self) -> None:
-        self.setStyleSheet(
-            """
-            QMainWindow {
-                background: #0d1017;
-                color: #e7eaf0;
-            }
-            QWidget#appRoot {
-                background: #0d1017;
-            }
-            QLabel#videoSurface {
-                background: #05070b;
-                color: #8d96a6;
-                border: 1px solid #202635;
-                font-size: 16px;
-            }
-            QFrame#controlBar {
-                background: #151a23;
-                border: 1px solid #252c3a;
-                border-radius: 8px;
-                padding: 10px;
-            }
-            QToolButton {
-                background: #242b38;
-                color: #f1f4f8;
-                border: 1px solid #343d4f;
-                border-radius: 6px;
-            }
-            QToolButton:hover {
-                background: #30394a;
-                border-color: #4a556d;
-            }
-            QToolButton:pressed {
-                background: #1c2230;
-            }
-            QLabel#timeLabel {
-                color: #c7ceda;
-                font-family: Consolas, "Cascadia Mono", monospace;
-                font-size: 12px;
-                min-width: 78px;
-            }
-            QLabel#volumeLabel {
-                color: #aeb7c6;
-                font-size: 12px;
-            }
-            QSlider::groove:horizontal {
-                height: 5px;
-                background: #2a3140;
-                border-radius: 2px;
-            }
-            QSlider::sub-page:horizontal {
-                background: #4f8cff;
-                border-radius: 2px;
-            }
-            QSlider::handle:horizontal {
-                width: 14px;
-                height: 14px;
-                margin: -5px 0;
-                background: #f1f5fb;
-                border: 1px solid #8fb5ff;
-                border-radius: 7px;
-            }
-            QSlider::handle:horizontal:hover {
-                background: #ffffff;
-                border-color: #b8d0ff;
-            }
-            QStatusBar {
-                background: #0d1017;
-                color: #929cad;
-                border-top: 1px solid #1e2532;
-            }
-            """
-        )
+    def _apply_theme(self, theme_name: str = DEFAULT_THEME, theme_path: Path | None = None) -> None:
+        try:
+            theme = load_theme(theme_name, theme_path)
+        except ThemeError as exc:
+            theme = load_theme(DEFAULT_THEME)
+            self.statusBar().showMessage(f"{exc}; loaded default theme")
+        self.setStyleSheet(render_stylesheet(theme))
 
     def open_file(self) -> None:
         path, _ = QFileDialog.getOpenFileName(
@@ -302,12 +242,17 @@ class PlayerWindow(QMainWindow):
 
 
 def main() -> int:
-    if "--debug" in sys.argv:
-        sys.argv.remove("--debug")
+    parser = argparse.ArgumentParser(prog="voidplayer")
+    parser.add_argument("--debug", action="store_true", help="Enable playback debug logging")
+    parser.add_argument("--theme", default=DEFAULT_THEME, help="Theme name from examples/simple_player/themes")
+    parser.add_argument("--theme-path", type=Path, help="Path to a custom theme directory")
+    args, qt_args = parser.parse_known_args()
+
+    if args.debug:
         configure_debug_logging(True)
-    app = QApplication(sys.argv)
+    app = QApplication([sys.argv[0], *qt_args])
     app.setWindowIcon(QIcon(str(APP_ICON)))
-    window = PlayerWindow()
+    window = PlayerWindow(theme_name=args.theme, theme_path=args.theme_path)
     window.show()
     return app.exec()
 

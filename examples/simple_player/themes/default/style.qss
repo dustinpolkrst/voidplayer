@@ -1,0 +1,68 @@
+QMainWindow {
+    background: {{ color.window_background }};
+    color: {{ color.text_primary }};
+}
+QWidget#appRoot {
+    background: {{ color.window_background }};
+}
+QLabel#videoSurface {
+    background: {{ color.video_background }};
+    color: {{ color.text_muted }};
+    border: 1px solid {{ color.border_video }};
+    font-size: 16px;
+}
+QFrame#controlBar {
+    background: {{ color.control_background }};
+    border: 1px solid {{ color.border_control }};
+    border-radius: {{ size.control_radius }};
+    padding: 10px;
+}
+QToolButton {
+    background: {{ color.button_background }};
+    color: {{ color.text_button }};
+    border: 1px solid {{ color.border_button }};
+    border-radius: {{ size.button_radius }};
+}
+QToolButton:hover {
+    background: {{ color.button_hover_background }};
+    border-color: {{ color.border_button_hover }};
+}
+QToolButton:pressed {
+    background: {{ color.button_pressed_background }};
+}
+QLabel#timeLabel {
+    color: {{ color.text_time }};
+    font-family: {{ font.time_label }};
+    font-size: 12px;
+    min-width: 78px;
+}
+QLabel#volumeLabel {
+    color: {{ color.text_secondary }};
+    font-size: 12px;
+}
+QSlider::groove:horizontal {
+    height: 5px;
+    background: {{ color.slider_groove }};
+    border-radius: {{ size.slider_groove_radius }};
+}
+QSlider::sub-page:horizontal {
+    background: {{ color.accent }};
+    border-radius: {{ size.slider_groove_radius }};
+}
+QSlider::handle:horizontal {
+    width: 14px;
+    height: 14px;
+    margin: -5px 0;
+    background: {{ color.slider_handle }};
+    border: 1px solid {{ color.slider_handle_border }};
+    border-radius: {{ size.slider_handle_radius }};
+}
+QSlider::handle:horizontal:hover {
+    background: {{ color.slider_handle_hover }};
+    border-color: {{ color.slider_handle_border_hover }};
+}
+QStatusBar {
+    background: {{ color.window_background }};
+    color: {{ color.status_text }};
+    border-top: 1px solid {{ color.status_border }};
+}
