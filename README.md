@@ -1,7 +1,8 @@
 # VoidPlayer
 
-VoidPlayer is an anime-first desktop streaming player built with PySide6,
-FFmpeg, PyAV, and sounddevice. It opens to an anime home screen with search,
+VoidPlayer is a hackable anime streaming client built with PySide6, FFmpeg,
+PyAV, and sounddevice. It is designed to be easy to inspect, modify, and theme
+while still opening directly into a polished anime home screen with search,
 sub/dub mode selection, continue watching, resume timestamps, next-episode
 playback, and bundled dark themes.
 
@@ -61,7 +62,15 @@ ffmpeg -version
 ffprobe -version
 ```
 
-The project targets Python 3.13 and is developed with `uv`.
+You also need Python 3.13 and `uv` available from your shell:
+
+```powershell
+python --version
+uv --version
+```
+
+Install `uv` from the official Astral instructions if it is not already on your
+system: <https://docs.astral.sh/uv/getting-started/installation/>
 
 ## Install From Source
 
@@ -120,6 +129,77 @@ Use `uv tool upgrade voidplayer` after pulling or publishing a newer version.
 
 Use `View > Theme` to switch themes. The selected theme is saved in the user
 config directory and applied on the next launch.
+
+## Hackable By Design
+
+VoidPlayer is intentionally small and hackable. The app shell lives in Python,
+the look lives in QSS/TOML theme files, and the anime provider logic is isolated
+from the playback engine. You can change the player without learning a large
+frontend stack or adding build tooling.
+
+Useful places to start:
+
+- `src/ffmpeg_pywrapper/player/app.py` - PySide app shell and anime home UI.
+- `src/ffmpeg_pywrapper/anime.py` - anime search and stream resolution.
+- `src/ffmpeg_pywrapper/player/themes/` - bundled themes.
+- `src/ffmpeg_pywrapper/player/assets/` - SVG icons used by the player.
+- `tests/test_player_smoke.py` - GUI smoke tests for the app shell.
+
+## Custom Themes
+
+Themes are directories with two files:
+
+```text
+my-theme/
+  theme.toml
+  style.qss
+```
+
+`theme.toml` defines tokens:
+
+```toml
+[color]
+window_background = "#0d1017"
+video_background = "#05070b"
+control_background = "#151a23"
+accent = "#4f8cff"
+text_primary = "#e7eaf0"
+text_secondary = "#aeb7c6"
+border_control = "#252c3a"
+
+[font]
+time_label = 'Consolas, "Cascadia Mono", monospace'
+
+[size]
+control_radius = "8px"
+button_radius = "6px"
+```
+
+`style.qss` is a Qt stylesheet template. Reference tokens with
+`{{ section.name }}`:
+
+```css
+QMainWindow {
+    background: {{ color.window_background }};
+    color: {{ color.text_primary }};
+}
+
+QFrame#controlBar {
+    background: {{ color.control_background }};
+    border: 1px solid {{ color.border_control }};
+    border-radius: {{ size.control_radius }};
+}
+```
+
+Start by copying an existing bundled theme:
+
+```powershell
+Copy-Item -Recurse src\ffmpeg_pywrapper\player\themes\catppuccin-mocha .\my-theme
+uv run voidplayer --theme-path .\my-theme
+```
+
+If a token used by `style.qss` is missing from `theme.toml`, VoidPlayer raises
+a theme error and falls back to the default theme.
 
 ## Keyboard Shortcuts
 
