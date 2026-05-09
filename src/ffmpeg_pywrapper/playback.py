@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Callable
 
 from .errors import AudioOutputError, DecodeError, UnsupportedMediaError
-from .media import MediaInfo, describe_media, seconds_from_timestamp
+from .media import MediaInfo, MediaSource, describe_media, ensure_media_source, seconds_from_timestamp
 
 FrameCallback = Callable[["VideoFrame"], None]
 StateCallback = Callable[["PlaybackState"], None]
@@ -177,7 +177,7 @@ class DecodeLoopPlayer:
         self.audio_stream_index: int | None = None
         self.settings = PlaybackSettings()
         self._lifecycle_lock = threading.RLock()
-        self._path: Path | None = None
+        self._source: MediaSource | None = None
         self._stop_event = threading.Event()
         self._pause_event = threading.Event()
         self._generation = 0
@@ -194,14 +194,15 @@ class DecodeLoopPlayer:
         self._video_thread: threading.Thread | None = None
         self._audio_thread: threading.Thread | None = None
 
-    def load(self, path: str | Path) -> MediaInfo:
+    def load(self, path: str | Path | MediaSource) -> MediaInfo:
         self.close()
         self._ensure_decode_dependency()
-        media = describe_media(path)
+        source = ensure_media_source(path)
+        media = describe_media(source)
         if not media.has_video:
             raise UnsupportedMediaError("No video stream found in media file.")
         with self._lifecycle_lock:
-            self._path = Path(path)
+            self._source = source
             self.media = media
             self.audio_stream_index = media.primary_audio.index if media.primary_audio is not None else None
             self.clock.reset()
@@ -210,8 +211,8 @@ class DecodeLoopPlayer:
             self._reset_audio_buffers()
             self._next_generation()
         LOGGER.info(
-            "loaded media path=%s duration=%s video=%s audio=%s",
-            self._path,
+            "loaded media source=%s duration=%s video=%s audio=%s",
+            self._source.location,
             media.duration,
             media.primary_video,
             media.primary_audio,
@@ -221,7 +222,7 @@ class DecodeLoopPlayer:
 
     def play(self) -> None:
         with self._lifecycle_lock:
-            if self._path is None or self.media is None:
+            if self._source is None or self.media is None:
                 raise UnsupportedMediaError("Load a media file before playing.")
             if self.state == PlaybackState.PLAYING:
                 return
@@ -325,7 +326,11 @@ class DecodeLoopPlayer:
 
     @property
     def current_path(self) -> Path | None:
-        return self._path
+        return self._source.local_path if self._source is not None else None
+
+    @property
+    def current_source(self) -> MediaSource | None:
+        return self._source
 
     @property
     def selected_audio_stream_index(self) -> int | None:
@@ -356,7 +361,7 @@ class DecodeLoopPlayer:
             should_set_closed = self.state != PlaybackState.IDLE
         self._join_workers(timeout=0.5, include_audio_output=True)
         with self._lifecycle_lock:
-            self._path = None
+            self._source = None
             self.media = None
             self.audio_stream_index = None
         if should_set_closed:
@@ -515,9 +520,9 @@ class DecodeLoopPlayer:
             self._fail(DecodeError("Install the player extra to decode video: uv sync --extra player --group player"), exc)
             return
 
-        while not self._stop_event.is_set() and self._path is not None and generation == self._generation:
+        while not self._stop_event.is_set() and self._source is not None and generation == self._generation:
             try:
-                with av.open(str(self._path)) as container:
+                with av.open(self._source.location, options=self._source.ffmpeg_input_options()) as container:
                     video_stream = container.streams.video[0]
                     LOGGER.debug("video stream selected index=%s time_base=%s rate=%s", video_stream.index, video_stream.time_base, video_stream.average_rate)
                     self._seek_container_to(container, video_stream, start_at)
@@ -584,7 +589,9 @@ class DecodeLoopPlayer:
             return
 
         try:
-            with av.open(str(self._path)) as container:
+            if self._source is None:
+                return
+            with av.open(self._source.location, options=self._source.ffmpeg_input_options()) as container:
                 stream = self._select_av_audio_stream(container)
                 self._seek_container_to(container, stream, start_at)
                 sample_rate = self._audio_sample_rate

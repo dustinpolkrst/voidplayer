@@ -30,6 +30,7 @@ def probe(
     *,
     config: FFmpegConfig | None = None,
     timeout: float | None = None,
+    input_options: dict[str, str] | None = None,
 ) -> FFProbeResult:
     cfg = config or FFmpegConfig()
     args = [
@@ -40,7 +41,9 @@ def probe(
         "json",
         "-show_format",
         "-show_streams",
-        str(path),
     ]
+    for key, value in (input_options or {}).items():
+        args.extend([f"-{key}", value])
+    args.append(str(path))
     result = run_ffmpeg(args, timeout=timeout)
     return FFProbeResult(json.loads(result.stdout or "{}"))

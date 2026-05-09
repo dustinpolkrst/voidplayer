@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 
-from ffmpeg_pywrapper.media import MediaInfo, StreamInfo
+from ffmpeg_pywrapper.media import MediaInfo, MediaSource, StreamInfo
 from ffmpeg_pywrapper.playback import (
     AudioClock,
     AUDIO_READY_QUEUE_CHUNKS,
@@ -54,7 +54,7 @@ def test_state_callback_is_not_called_while_lifecycle_lock_is_held() -> None:
 def test_load_failure_after_close_leaves_player_empty(monkeypatch) -> None:
     player = DecodeLoopPlayer()
     player.media = MediaInfo(path=Path("old.mp4"), duration=1, streams=(StreamInfo(index=0, codec_type="video", codec_name="h264"),))
-    player._path = Path("old.mp4")
+    player._source = MediaSource.from_path("old.mp4")
     player._set_state(PlaybackState.LOADED)
     monkeypatch.setattr(player, "_ensure_decode_dependency", lambda: None)
     monkeypatch.setattr("ffmpeg_pywrapper.playback.describe_media", lambda _path: (_ for _ in ()).throw(RuntimeError("probe failed")))
@@ -65,8 +65,28 @@ def test_load_failure_after_close_leaves_player_empty(monkeypatch) -> None:
         pass
 
     assert player.media is None
-    assert player._path is None
+    assert player.current_source is None
     assert player.state == PlaybackState.CLOSED
+
+
+def test_decode_loop_player_loads_remote_media_source(monkeypatch) -> None:
+    source = MediaSource(
+        location="https://example.test/master.m3u8",
+        title="Example - Episode 1",
+        headers={"Referer": "https://embed.example.test/"},
+        subtitle_url="https://example.test/sub.vtt",
+    )
+    media = MediaInfo(path=source.location, duration=120.0, streams=(StreamInfo(index=0, codec_type="video", codec_name="h264"),))
+    monkeypatch.setattr(DecodeLoopPlayer, "_ensure_decode_dependency", lambda self: None)
+    monkeypatch.setattr("ffmpeg_pywrapper.playback.describe_media", lambda loaded_source: media)
+
+    player = DecodeLoopPlayer()
+    loaded = player.load(source)
+
+    assert loaded == media
+    assert player.current_path is None
+    assert player.current_source == source
+    assert "Referer: https://embed.example.test/\r\n" in source.ffmpeg_input_options()["headers"]
 
 
 def test_audio_warning_does_not_force_error_state() -> None:
@@ -215,7 +235,7 @@ def test_seek_while_playing_restarts_workers_at_seek_target(monkeypatch) -> None
             StreamInfo(index=1, codec_type="audio", codec_name="aac"),
         ),
     )
-    player._path = Path("movie.mp4")
+    player._source = MediaSource.from_path("movie.mp4")
     player._set_state(PlaybackState.PLAYING)
     player._audio_output_available = True
     player._audio_ready.set()

@@ -31,6 +31,10 @@ uv run voidplayer
 uv run voidplayer input.mp4
 ```
 
+Anime browsing support uses public third-party sources and is inspired by the
+GPL-3.0-or-later `ani-cli` project. VoidPlayer does not host or control that
+content, and the feature is gated by a first-use disclaimer in the app.
+
 ## CLI
 
 ```powershell

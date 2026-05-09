@@ -6,6 +6,8 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "av>=13.0",
+    "cryptography>=42.0",
+    "httpx>=0.27",
     "numpy>=2.0",
     "Pillow>=10.0",
     "PySide6>=6.8",
@@ -15,10 +17,16 @@ dependencies = [
 [project.optional-dependencies]
 player = [
     "av>=13.0",
+    "cryptography>=42.0",
+    "httpx>=0.27",
     "numpy>=2.0",
     "Pillow>=10.0",
     "PySide6>=6.8",
     "sounddevice>=0.5",
+]
+anime = [
+    "cryptography>=42.0",
+    "httpx>=0.27",
 ]
 
 [project.scripts]
@@ -35,6 +43,10 @@ player = [
     "Pillow>=10.0",
     "PySide6>=6.8",
     "sounddevice>=0.5",
+]
+anime = [
+    "cryptography>=42.0",
+    "httpx>=0.27",
 ]
 
 [build-system]

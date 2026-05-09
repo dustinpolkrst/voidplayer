@@ -5,6 +5,8 @@ from pathlib import Path
 
 import pytest
 
+from ffmpeg_pywrapper.media import MediaSource
+
 
 def test_player_window_starts_offscreen_with_default_theme(monkeypatch) -> None:
     monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
@@ -34,6 +36,7 @@ def test_player_window_starts_offscreen_with_default_theme(monkeypatch) -> None:
         assert window.playlist_panel.objectName() == "playlistPanel"
         assert window.playlist_header.objectName() == "playlistHeader"
         assert window.playlist_widget.minimumWidth() >= 300
+        assert "Anime" in [action.text() for action in window.menuBar().actions()]
         assert window.speed_combo.currentText() == "1x"
         window.toggle_playlist_drawer()
         assert window.playlist_panel.isHidden() is False
@@ -106,7 +109,7 @@ def test_playlist_drawer_tracks_current_item(monkeypatch) -> None:
     try:
         window.set_playlist([Path("a.mp4"), Path("b.mp4")], start_index=1)
 
-        assert loaded == [Path("b.mp4")]
+        assert loaded == [MediaSource.from_path("b.mp4")]
         assert window.playlist_widget.count() == 2
         assert window.playlist_widget.currentRow() == 1
         assert window.playlist_count_label.text() == "2 items"
@@ -131,9 +134,14 @@ def test_add_to_playlist_appends_without_changing_current(monkeypatch) -> None:
         window.set_playlist([Path("a.mp4"), Path("b.mp4")], start_index=1)
         window.add_to_playlist([Path("c.mp4"), Path("d.mp4")])
 
-        assert window.playlist == [Path("a.mp4"), Path("b.mp4"), Path("c.mp4"), Path("d.mp4")]
+        assert window.playlist == [
+            MediaSource.from_path("a.mp4"),
+            MediaSource.from_path("b.mp4"),
+            MediaSource.from_path("c.mp4"),
+            MediaSource.from_path("d.mp4"),
+        ]
         assert window.playlist_index == 1
-        assert loaded == [Path("b.mp4")]
+        assert loaded == [MediaSource.from_path("b.mp4")]
         assert window.playlist_count_label.text() == "4 items"
     finally:
         window.close()
@@ -162,3 +170,51 @@ def test_playlist_repeat_and_remove(monkeypatch) -> None:
         assert len(window.playlist) == 1
     finally:
         window.close()
+
+
+def test_remote_media_source_can_be_queued(monkeypatch) -> None:
+    monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
+    qt_widgets = pytest.importorskip("PySide6.QtWidgets")
+    app_module = importlib.import_module("ffmpeg_pywrapper.player.app")
+    monkeypatch.setattr(app_module, "load_recent_files", lambda path=None: [])
+    monkeypatch.setattr(app_module, "save_recent_files", lambda recent_files, path=None, *, limit=10: None)
+    QApplication = qt_widgets.QApplication
+
+    app = QApplication.instance() or QApplication(["voidplayer-test"])
+    window = app_module.PlayerWindow(theme_name="default")
+    loaded = []
+    monkeypatch.setattr(window, "load_and_play", lambda source: loaded.append(source))
+
+    try:
+        source = MediaSource(
+            location="https://example.test/master.m3u8",
+            title="Example - Episode 1",
+            headers={"Referer": "https://embed.example.test/"},
+            subtitle_url="https://example.test/sub.vtt",
+        )
+        window.set_playlist([source])
+
+        assert loaded == [source]
+        assert window.playlist_widget.item(0).text().startswith("Example - Episode 1")
+        assert window.playlist_widget.item(0).toolTip() == "https://example.test/master.m3u8"
+    finally:
+        window.close()
+
+
+def test_anime_browser_dialog_constructs_offscreen(monkeypatch) -> None:
+    monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
+    qt_widgets = pytest.importorskip("PySide6.QtWidgets")
+    app_module = importlib.import_module("ffmpeg_pywrapper.player.app")
+    QApplication = qt_widgets.QApplication
+
+    app = QApplication.instance() or QApplication(["voidplayer-test"])
+    dialog = app_module.AnimeBrowserDialog()
+
+    try:
+        assert dialog.windowTitle() == "Search Anime"
+        assert dialog.mode == "sub"
+        assert dialog.search_input.objectName() == "animeSearchInput"
+        assert dialog.results_list.objectName() == "animeResultsList"
+        assert dialog.play_button.isEnabled() is False
+    finally:
+        dialog.close()
