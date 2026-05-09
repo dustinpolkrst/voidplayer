@@ -40,6 +40,34 @@ def test_playback_state_values_are_stable() -> None:
     assert PlaybackState.ERROR.value == "error"
 
 
+def test_state_callback_is_not_called_while_lifecycle_lock_is_held() -> None:
+    lock_was_available = []
+    player = DecodeLoopPlayer(on_state=lambda _state: lock_was_available.append(player._lifecycle_lock.acquire(False)))
+
+    player._set_state(PlaybackState.PLAYING)
+
+    assert lock_was_available == [True]
+    player._lifecycle_lock.release()
+
+
+def test_load_failure_after_close_leaves_player_empty(monkeypatch) -> None:
+    player = DecodeLoopPlayer()
+    player.media = MediaInfo(path=Path("old.mp4"), duration=1, streams=(StreamInfo(index=0, codec_type="video", codec_name="h264"),))
+    player._path = Path("old.mp4")
+    player._set_state(PlaybackState.LOADED)
+    monkeypatch.setattr(player, "_ensure_decode_dependency", lambda: None)
+    monkeypatch.setattr("ffmpeg_pywrapper.playback.describe_media", lambda _path: (_ for _ in ()).throw(RuntimeError("probe failed")))
+
+    try:
+        player.load("new.mp4")
+    except RuntimeError:
+        pass
+
+    assert player.media is None
+    assert player._path is None
+    assert player.state == PlaybackState.CLOSED
+
+
 def test_audio_warning_does_not_force_error_state() -> None:
     warnings: list[Exception] = []
     player = DecodeLoopPlayer(on_warning=warnings.append)
@@ -246,6 +274,18 @@ def test_stale_generation_audio_advance_is_ignored() -> None:
     player._advance_audio_clock(1, 4800)
 
     assert player.audio_clock.position == 10
+
+
+def test_stop_invalidates_stale_generation() -> None:
+    player = DecodeLoopPlayer()
+    player._generation = 4
+    player.audio_clock.start(48000, position=10)
+
+    player.stop()
+    player._advance_audio_clock(4, 4800)
+
+    assert player._generation == 5
+    assert player.audio_clock.position == 0
 
 
 def test_stale_generation_cannot_mark_audio_ready() -> None:

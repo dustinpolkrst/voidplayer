@@ -159,6 +159,7 @@ class DecodeLoopPlayer:
         self.clock = PlaybackClock()
         self.audio_clock = AudioClock()
         self.volume = 1.0
+        self._lifecycle_lock = threading.RLock()
         self._path: Path | None = None
         self._stop_event = threading.Event()
         self._pause_event = threading.Event()
@@ -182,17 +183,14 @@ class DecodeLoopPlayer:
         media = describe_media(path)
         if not media.has_video:
             raise UnsupportedMediaError("No video stream found in media file.")
-        self._path = Path(path)
-        self.media = media
-        self.clock.reset()
-        self.audio_clock.reset()
-        self._audio_enabled = False
-        self._audio_expected = False
-        self._audio_output_available = False
-        self._audio_ready.clear()
-        self._playback_started.clear()
-        self._reset_audio_buffers()
-        self._generation += 1
+        with self._lifecycle_lock:
+            self._path = Path(path)
+            self.media = media
+            self.clock.reset()
+            self.audio_clock.reset()
+            self._reset_playback_flags(reset_audio_output=True)
+            self._reset_audio_buffers()
+            self._next_generation()
         LOGGER.info(
             "loaded media path=%s duration=%s video=%s audio=%s",
             self._path,
@@ -204,88 +202,102 @@ class DecodeLoopPlayer:
         return media
 
     def play(self) -> None:
-        if self._path is None or self.media is None:
-            raise UnsupportedMediaError("Load a media file before playing.")
-        if self.state == PlaybackState.PLAYING:
-            return
-        self._stop_event.clear()
-        self._pause_event.clear()
-        if self.state == PlaybackState.PAUSED:
-            self.clock.start()
+        with self._lifecycle_lock:
+            if self._path is None or self.media is None:
+                raise UnsupportedMediaError("Load a media file before playing.")
+            if self.state == PlaybackState.PLAYING:
+                return
+            self._stop_event.clear()
+            self._pause_event.clear()
+            if self.state == PlaybackState.PAUSED:
+                self.clock.start()
+                resume_only = True
+                audio_expected = False
+            else:
+                resume_only = False
+                self._audio_ready.clear()
+                self._playback_started.clear()
+                self._audio_expected = self.media.has_audio
+                audio_expected = self._audio_expected
+                generation = self._generation
+                start_at = self.clock.position
+        if resume_only:
             self._set_state(PlaybackState.PLAYING)
             return
-        self._audio_ready.clear()
-        self._playback_started.clear()
-        self._audio_expected = self.media.has_audio
-        if self._audio_expected:
-            self._audio_expected = self._start_audio_output()
+        if audio_expected:
+            audio_expected = self._start_audio_output()
+            with self._lifecycle_lock:
+                self._audio_expected = audio_expected
         self._set_state(PlaybackState.PLAYING)
-        self._start_workers(self._generation, self.clock.position)
+        self._start_workers(generation, start_at)
 
     def pause(self) -> None:
-        if self.state != PlaybackState.PLAYING:
-            return
-        self._pause_event.set()
-        self.clock.pause()
+        with self._lifecycle_lock:
+            if self.state != PlaybackState.PLAYING:
+                return
+            self._pause_event.set()
+            self.clock.pause()
         self._set_state(PlaybackState.PAUSED)
 
     def stop(self) -> None:
-        self._stop_event.set()
-        self._pause_event.clear()
-        self.clock.reset()
-        self.audio_clock.reset()
-        self._audio_enabled = False
-        self._audio_expected = False
-        self._audio_output_available = False
-        self._audio_ready.clear()
-        self._playback_started.clear()
-        self._reset_audio_buffers()
-        self._generation += 1
+        with self._lifecycle_lock:
+            self._stop_event.set()
+            self._pause_event.clear()
+            self.clock.reset()
+            self.audio_clock.reset()
+            self._reset_playback_flags(reset_audio_output=True)
+            self._reset_audio_buffers()
+            self._next_generation()
+            should_set_stopped = self.state not in (PlaybackState.IDLE, PlaybackState.CLOSED)
         self._join_workers(timeout=0.5, include_audio_output=True)
-        if self.state not in (PlaybackState.IDLE, PlaybackState.CLOSED):
+        if should_set_stopped:
             self._set_state(PlaybackState.STOPPED)
 
     def seek(self, timestamp: str | float | int) -> None:
         seconds = seconds_from_timestamp(timestamp)
-        was_playing = self.state == PlaybackState.PLAYING
-        self._generation += 1
-        self.clock.seek(seconds)
-        self.audio_clock.seek(seconds)
-        self.audio_clock.stop()
-        self._audio_enabled = False
-        self._audio_expected = bool(self.media is not None and self.media.has_audio and self._audio_output_available)
-        self._audio_ready.clear()
-        self._playback_started.clear()
-        self._reset_audio_buffers()
+        with self._lifecycle_lock:
+            was_playing = self.state == PlaybackState.PLAYING
+            was_paused = self.state == PlaybackState.PAUSED
+            generation = self._next_generation()
+            self.clock.seek(seconds)
+            self.audio_clock.seek(seconds)
+            self.audio_clock.stop()
+            self._audio_enabled = False
+            self._audio_expected = bool(self.media is not None and self.media.has_audio and self._audio_output_available)
+            self._audio_ready.clear()
+            self._playback_started.clear()
+            self._reset_audio_buffers()
         if was_playing:
             self._pause_event.clear()
-            self._start_workers(self._generation, seconds, replace=True)
-        elif self.state == PlaybackState.PAUSED:
+            self._start_workers(generation, seconds, replace=True)
+        elif was_paused:
             self._pause_event.set()
 
     def set_volume(self, volume: float) -> None:
-        self.volume = min(1.0, max(0.0, volume))
+        with self._lifecycle_lock:
+            self.volume = min(1.0, max(0.0, volume))
 
     def close(self) -> None:
-        self._stop_event.set()
-        self._pause_event.clear()
-        self.clock.reset()
-        self.audio_clock.reset()
-        self._audio_enabled = False
-        self._audio_expected = False
-        self._audio_output_available = False
-        self._audio_ready.clear()
-        self._playback_started.clear()
-        self._reset_audio_buffers()
-        self._generation += 1
+        with self._lifecycle_lock:
+            self._stop_event.set()
+            self._pause_event.clear()
+            self.clock.reset()
+            self.audio_clock.reset()
+            self._reset_playback_flags(reset_audio_output=True)
+            self._reset_audio_buffers()
+            self._next_generation()
+            should_set_closed = self.state != PlaybackState.IDLE
         self._join_workers(timeout=0.5, include_audio_output=True)
-        self._path = None
-        self.media = None
-        if self.state != PlaybackState.IDLE:
+        with self._lifecycle_lock:
+            self._path = None
+            self.media = None
+        if should_set_closed:
             self._set_state(PlaybackState.CLOSED)
 
     def master_position(self) -> float:
-        if self._audio_enabled and self._audio_ready.is_set() and self.audio_clock.active:
+        with self._lifecycle_lock:
+            use_audio = self._audio_enabled and self._audio_ready.is_set() and self.audio_clock.active
+        if use_audio:
             return self.audio_clock.position
         return self.clock.position
 
@@ -305,16 +317,23 @@ class DecodeLoopPlayer:
         self._playback_started.set()
 
     def _start_workers(self, generation: int, start_at: float, *, replace: bool = False) -> None:
-        if self.media is None:
-            return
         if replace:
             self._join_workers(timeout=0.25)
-        if replace or self._video_thread is None or not self._video_thread.is_alive():
-            self._video_thread = threading.Thread(target=self._run_video, args=(generation, start_at), daemon=True)
-            self._video_thread.start()
-        if self.media.has_audio and self._audio_output_available and (replace or self._audio_thread is None or not self._audio_thread.is_alive()):
-            self._audio_thread = threading.Thread(target=self._run_audio, args=(generation, start_at), daemon=True)
-            self._audio_thread.start()
+        with self._lifecycle_lock:
+            if self.media is None:
+                return
+            start_video = replace or self._video_thread is None or not self._video_thread.is_alive()
+            start_audio = (
+                self.media.has_audio
+                and self._audio_output_available
+                and (replace or self._audio_thread is None or not self._audio_thread.is_alive())
+            )
+            if start_video:
+                self._video_thread = threading.Thread(target=self._run_video, args=(generation, start_at), daemon=True)
+                self._video_thread.start()
+            if start_audio:
+                self._audio_thread = threading.Thread(target=self._run_audio, args=(generation, start_at), daemon=True)
+                self._audio_thread.start()
 
     def _join_workers(self, timeout: float, *, include_audio_output: bool = False) -> None:
         current = threading.current_thread()
@@ -326,7 +345,20 @@ class DecodeLoopPlayer:
                 worker.join(timeout=timeout)
 
     def _is_current_generation(self, generation: int) -> bool:
-        return generation == self._generation
+        with self._lifecycle_lock:
+            return generation == self._generation
+
+    def _next_generation(self) -> int:
+        self._generation += 1
+        return self._generation
+
+    def _reset_playback_flags(self, *, reset_audio_output: bool = False) -> None:
+        self._audio_enabled = False
+        self._audio_expected = False
+        if reset_audio_output:
+            self._audio_output_available = False
+        self._audio_ready.clear()
+        self._playback_started.clear()
 
     def _seek_container_to(self, container: object, stream: object, start_at: float) -> None:
         if start_at > 0:
@@ -352,19 +384,22 @@ class DecodeLoopPlayer:
         self._audio_current = None
 
     def _start_audio_output(self) -> bool:
-        if self._audio_output_thread is not None and self._audio_output_thread.is_alive():
-            return True
+        with self._lifecycle_lock:
+            if self._audio_output_thread is not None and self._audio_output_thread.is_alive():
+                return True
         try:
             import sounddevice
         except ImportError:
-            self._audio_output_available = False
+            with self._lifecycle_lock:
+                self._audio_output_available = False
             self._warn(AudioOutputError("Install the player extra to enable audio output."))
             return False
 
         self._audio_sample_rate = _default_output_sample_rate(sounddevice)
-        self._audio_output_available = True
-        self._audio_output_thread = threading.Thread(target=self._run_audio_output, args=(sounddevice,), daemon=True)
-        self._audio_output_thread.start()
+        with self._lifecycle_lock:
+            self._audio_output_available = True
+            self._audio_output_thread = threading.Thread(target=self._run_audio_output, args=(sounddevice,), daemon=True)
+            self._audio_output_thread.start()
         return True
 
     def _audio_callback(self, outdata, frames: int, time_info=None, status=None) -> None:  # noqa: ANN001
@@ -522,12 +557,15 @@ class DecodeLoopPlayer:
             time.sleep(0.03)
 
     def _set_state(self, state: PlaybackState) -> None:
-        self.state = state
-        if self.on_state:
-            self.on_state(state)
+        with self._lifecycle_lock:
+            self.state = state
+            callback = self.on_state
+        if callback:
+            callback(state)
 
     def _fail(self, error: Exception, cause: Exception | None = None) -> None:
-        self._stop_event.set()
+        with self._lifecycle_lock:
+            self._stop_event.set()
         self._set_state(PlaybackState.ERROR)
         if self.on_error:
             self.on_error(error)
