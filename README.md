@@ -109,4 +109,19 @@ print(info.audio_streams, info.subtitle_streams)
 
 VoidPlayer supports opening multiple local files as a playlist, previous/next
 transport controls, recent-file persistence under the user config directory,
-and audio stream selection for media with multiple audio tracks.
+audio stream selection for media with multiple audio tracks, fullscreen
+playback, keyboard seeking, mute, playback speed controls, text subtitles, frame
+capture, and clip export.
+
+Keyboard shortcuts:
+
+```text
+Space          Play/pause
+Left / Right   Seek 5 seconds
+Shift+Arrows   Seek 30 seconds
+Up / Down      Volume
+F              Fullscreen
+M              Mute
+N / P          Next / previous item
+Esc            Exit fullscreen
+```

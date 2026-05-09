@@ -11,6 +11,27 @@ QLabel#videoSurface {
     border: 1px solid {{ color.border_video }};
     font-size: 16px;
 }
+QFrame#videoFrame {
+    background: {{ color.video_background }};
+    border: 1px solid {{ color.border_video }};
+}
+QLabel#subtitleOverlay {
+    color: {{ color.text_primary }};
+    background: rgba(0, 0, 0, 150);
+    border-radius: 4px;
+    padding: 8px 14px;
+    margin: 0 48px 28px 48px;
+    font-size: 20px;
+}
+QListWidget#playlistDrawer {
+    background: {{ color.control_background }};
+    color: {{ color.text_secondary }};
+    border: 1px solid {{ color.border_control }};
+}
+QListWidget#playlistDrawer::item:selected {
+    background: {{ color.accent }};
+    color: {{ color.text_button }};
+}
 QFrame#controlBar {
     background: {{ color.control_background }};
     border: 1px solid {{ color.border_control }};
@@ -40,6 +61,13 @@ QLabel#volumeLabel {
     color: {{ color.text_secondary }};
     font-size: 12px;
 }
+QComboBox {
+    background: {{ color.button_background }};
+    color: {{ color.text_button }};
+    border: 1px solid {{ color.border_button }};
+    border-radius: {{ size.button_radius }};
+    padding: 4px 8px;
+}
 QSlider::groove:horizontal {
     height: 5px;
     background: {{ color.slider_groove }};
@@ -66,4 +94,3 @@ QStatusBar {
     color: {{ color.status_text }};
     border-top: 1px solid {{ color.status_border }};
 }
-

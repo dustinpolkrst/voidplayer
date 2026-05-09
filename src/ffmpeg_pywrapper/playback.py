@@ -46,16 +46,24 @@ class VideoFrame:
     timestamp: float
 
 
+@dataclass(frozen=True, slots=True)
+class PlaybackSettings:
+    playback_speed: float = 1.0
+    muted: bool = False
+    subtitle_source: str | int | None = None
+
+
 class PlaybackClock:
     def __init__(self) -> None:
         self._base_position = 0.0
         self._started_at: float | None = None
+        self._speed = 1.0
 
     @property
     def position(self) -> float:
         if self._started_at is None:
             return self._base_position
-        return self._base_position + (time.monotonic() - self._started_at)
+        return self._base_position + ((time.monotonic() - self._started_at) * self._speed)
 
     @property
     def active(self) -> bool:
@@ -73,6 +81,12 @@ class PlaybackClock:
     def seek(self, seconds: float) -> None:
         self._base_position = max(0.0, seconds)
         self._started_at = time.monotonic() if self._started_at is not None else None
+
+    def set_speed(self, speed: float) -> None:
+        active = self._started_at is not None
+        self._base_position = self.position
+        self._speed = speed
+        self._started_at = time.monotonic() if active else None
 
     def reset(self) -> None:
         self._base_position = 0.0
@@ -161,6 +175,7 @@ class DecodeLoopPlayer:
         self.audio_clock = AudioClock()
         self.volume = 1.0
         self.audio_stream_index: int | None = None
+        self.settings = PlaybackSettings()
         self._lifecycle_lock = threading.RLock()
         self._path: Path | None = None
         self._stop_event = threading.Event()
@@ -279,6 +294,38 @@ class DecodeLoopPlayer:
     def set_volume(self, volume: float) -> None:
         with self._lifecycle_lock:
             self.volume = min(1.0, max(0.0, volume))
+
+    def set_muted(self, muted: bool) -> None:
+        with self._lifecycle_lock:
+            self.settings = PlaybackSettings(
+                playback_speed=self.settings.playback_speed,
+                muted=muted,
+                subtitle_source=self.settings.subtitle_source,
+            )
+
+    def set_playback_speed(self, speed: float) -> None:
+        allowed = {0.5, 0.75, 1.0, 1.25, 1.5, 2.0}
+        if speed not in allowed:
+            raise ValueError(f"Unsupported playback speed: {speed}")
+        with self._lifecycle_lock:
+            self.settings = PlaybackSettings(
+                playback_speed=speed,
+                muted=self.settings.muted,
+                subtitle_source=self.settings.subtitle_source,
+            )
+            self.clock.set_speed(speed)
+
+    def set_subtitle_source(self, source: str | int | None) -> None:
+        with self._lifecycle_lock:
+            self.settings = PlaybackSettings(
+                playback_speed=self.settings.playback_speed,
+                muted=self.settings.muted,
+                subtitle_source=source,
+            )
+
+    @property
+    def current_path(self) -> Path | None:
+        return self._path
 
     @property
     def selected_audio_stream_index(self) -> int | None:
@@ -426,6 +473,9 @@ class DecodeLoopPlayer:
     def _audio_callback(self, outdata, frames: int, time_info=None, status=None) -> None:  # noqa: ANN001
         outdata.fill(0)
         if self._pause_event.is_set() or self._stop_event.is_set() or not self._audio_ready.is_set():
+            return
+        if self.settings.muted:
+            self.audio_clock.advance(frames)
             return
         written = 0
         while written < frames:

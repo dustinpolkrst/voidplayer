@@ -345,6 +345,28 @@ def test_set_audio_stream_validates_available_streams() -> None:
     assert player.selected_audio_stream_index == 2
 
 
+def test_playback_speed_updates_clock_speed() -> None:
+    player = DecodeLoopPlayer()
+
+    player.set_playback_speed(1.5)
+
+    assert player.settings.playback_speed == 1.5
+
+
+def test_muted_audio_callback_outputs_silence_and_advances_clock() -> None:
+    player = DecodeLoopPlayer()
+    player.audio_clock.start(4, position=5)
+    player._audio_ready.set()
+    player._audio_queue.put(np.ones((4, 2), dtype=np.float32))
+    player.set_muted(True)
+    out = np.full((4, 2), 9, dtype=np.float32)
+
+    player._audio_callback(out, 4)
+
+    assert out.tolist() == [[0, 0], [0, 0], [0, 0], [0, 0]]
+    assert player.audio_clock.position == 6
+
+
 def test_audio_callback_outputs_silence_before_ready_without_advancing_clock() -> None:
     player = DecodeLoopPlayer()
     player.audio_clock.start(48000, position=5)
