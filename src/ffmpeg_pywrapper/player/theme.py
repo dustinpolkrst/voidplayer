@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 import tomllib
 from dataclasses import dataclass
+from importlib.resources import files
 from pathlib import Path
 from typing import Any
 
 
-THEME_ROOT = Path(__file__).with_name("themes")
 DEFAULT_THEME = "default"
 TOKEN_PATTERN = re.compile(r"\{\{\s*([a-zA-Z0-9_.-]+)\s*\}\}")
 
@@ -19,31 +19,43 @@ class ThemeError(RuntimeError):
 @dataclass(frozen=True, slots=True)
 class Theme:
     name: str
-    path: Path
+    path: str
     tokens: dict[str, str]
     template: str
 
 
 def load_theme(name: str = DEFAULT_THEME, theme_path: Path | None = None) -> Theme:
-    path = theme_path if theme_path is not None else THEME_ROOT / name
-    path = path.resolve()
-    token_path = path / "theme.toml"
-    template_path = path / "style.qss"
-
-    if not token_path.exists():
-        raise ThemeError(f"Theme token file not found: {token_path}")
-    if not template_path.exists():
-        raise ThemeError(f"Theme stylesheet template not found: {template_path}")
+    if theme_path is not None:
+        path = theme_path.resolve()
+        token_path = path / "theme.toml"
+        template_path = path / "style.qss"
+        if not token_path.exists():
+            raise ThemeError(f"Theme token file not found: {token_path}")
+        if not template_path.exists():
+            raise ThemeError(f"Theme stylesheet template not found: {template_path}")
+        token_text = token_path.read_text(encoding="utf-8")
+        template = template_path.read_text(encoding="utf-8")
+        source = str(path)
+    else:
+        path = files(__package__).joinpath("themes", name)
+        token_path = path.joinpath("theme.toml")
+        template_path = path.joinpath("style.qss")
+        if not token_path.is_file():
+            raise ThemeError(f"Theme token file not found: {token_path}")
+        if not template_path.is_file():
+            raise ThemeError(f"Theme stylesheet template not found: {template_path}")
+        token_text = token_path.read_text(encoding="utf-8")
+        template = template_path.read_text(encoding="utf-8")
+        source = str(path)
 
     try:
-        raw_tokens = tomllib.loads(token_path.read_text(encoding="utf-8"))
+        raw_tokens = tomllib.loads(token_text)
     except tomllib.TOMLDecodeError as exc:
-        raise ThemeError(f"Theme token file is invalid TOML: {token_path}") from exc
+        raise ThemeError(f"Theme token file is invalid TOML: {source}") from exc
 
-    template = template_path.read_text(encoding="utf-8")
     tokens = _flatten_tokens(raw_tokens)
-    _validate_tokens(tokens, template, token_path)
-    return Theme(name=name, path=path, tokens=tokens, template=template)
+    _validate_tokens(tokens, template, source)
+    return Theme(name=name, path=source, tokens=tokens, template=template)
 
 
 def render_stylesheet(theme: Theme) -> str:
@@ -70,9 +82,10 @@ def _flatten_tokens(raw_tokens: dict[str, Any], prefix: str = "") -> dict[str, s
     return tokens
 
 
-def _validate_tokens(tokens: dict[str, str], template: str, token_path: Path) -> None:
+def _validate_tokens(tokens: dict[str, str], template: str, source: str) -> None:
     required = set(TOKEN_PATTERN.findall(template))
     missing = sorted(required - tokens.keys())
     if missing:
         joined = ", ".join(missing)
-        raise ThemeError(f"Theme token file {token_path} is missing required token(s): {joined}")
+        raise ThemeError(f"Theme token file {source} is missing required token(s): {joined}")
+

@@ -1,29 +1,14 @@
 from __future__ import annotations
 
-import importlib.util
-import sys
 from pathlib import Path
 
 import pytest
 
-
-PLAYER_DIR = Path(__file__).resolve().parents[1] / "examples" / "simple_player"
-
-
-@pytest.fixture
-def theme_module(monkeypatch):
-    monkeypatch.syspath_prepend(str(PLAYER_DIR))
-    module_path = PLAYER_DIR / "theme.py"
-    spec = importlib.util.spec_from_file_location("simple_player_theme", module_path)
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+from ffmpeg_pywrapper.player import app as player_app
+from ffmpeg_pywrapper.player import theme as theme_module
 
 
-def test_default_theme_renders_current_colors(theme_module) -> None:
+def test_default_theme_renders_current_colors() -> None:
     theme = theme_module.load_theme()
     stylesheet = theme_module.render_stylesheet(theme)
 
@@ -32,7 +17,15 @@ def test_default_theme_renders_current_colors(theme_module) -> None:
     assert "{{" not in stylesheet
 
 
-def test_missing_required_token_raises_theme_error(theme_module, tmp_path: Path) -> None:
+def test_packaged_resources_are_available() -> None:
+    assert player_app.resource_path("assets", "app-icon.svg").name == "app-icon.svg"
+    theme = theme_module.load_theme()
+
+    assert "themes" in theme.path
+    assert "default" in theme.path
+
+
+def test_missing_required_token_raises_theme_error(tmp_path: Path) -> None:
     theme_dir = tmp_path / "broken"
     theme_dir.mkdir()
     (theme_dir / "theme.toml").write_text("[color]\nwindow_background = '#000000'\n", encoding="utf-8")
@@ -42,7 +35,7 @@ def test_missing_required_token_raises_theme_error(theme_module, tmp_path: Path)
         theme_module.load_theme("broken", theme_dir)
 
 
-def test_custom_theme_path_loads_and_renders(theme_module, tmp_path: Path) -> None:
+def test_custom_theme_path_loads_and_renders(tmp_path: Path) -> None:
     theme_dir = tmp_path / "custom"
     theme_dir.mkdir()
     (theme_dir / "theme.toml").write_text(
@@ -65,16 +58,7 @@ text_primary = "#eeeeee"
     assert "#eeeeee" in stylesheet
 
 
-def test_player_theme_fallback_loads_default(monkeypatch) -> None:
-    monkeypatch.syspath_prepend(str(PLAYER_DIR))
-    module_path = PLAYER_DIR / "main.py"
-    spec = importlib.util.spec_from_file_location("simple_player_main_theme_test", module_path)
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-
+def test_player_theme_fallback_loads_default() -> None:
     class StatusBar:
         def __init__(self) -> None:
             self.message = ""
@@ -95,7 +79,7 @@ def test_player_theme_fallback_loads_default(monkeypatch) -> None:
 
     window = Window()
 
-    module.PlayerWindow._apply_theme(window, "missing-theme", None)
+    player_app.PlayerWindow._apply_theme(window, "missing-theme", None)
 
     assert "#0d1017" in window.stylesheet
     assert "loaded default theme" in window.status_bar.message

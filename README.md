@@ -16,17 +16,17 @@ uv run pytest
 uv build
 ```
 
-To run the Windows desktop player example:
+To run the Windows desktop player:
 
 ```powershell
-uv sync --extra player --group player
-uv run --extra player --group player python examples/simple_player/main.py
+uv run voidplayer
+uv run voidplayer input.mp4
 ```
 
 ## CLI
 
 ```powershell
-voidplayer input.mp4
+python -m ffmpeg_pywrapper input.mp4
 ```
 
 ## Python Quick Start

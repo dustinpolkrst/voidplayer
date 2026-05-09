@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import threading
 import time
-import importlib.util
 from pathlib import Path
 
 import numpy as np
@@ -104,13 +103,7 @@ def test_master_clock_falls_back_to_wall_clock() -> None:
 
 
 def test_gui_visible_position_uses_master_position() -> None:
-    module_path = Path(__file__).resolve().parents[1] / "examples" / "simple_player" / "main.py"
-    spec = importlib.util.spec_from_file_location("simple_player_main", module_path)
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    PlayerWindow = module.PlayerWindow
+    from ffmpeg_pywrapper.player.app import PlayerWindow
 
     class Slider:
         def __init__(self) -> None:

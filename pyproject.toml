@@ -4,7 +4,13 @@ version = "0.1.0"
 description = "An open-source hacker-styled video player and typed FFmpeg wrapper."
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "av>=13.0",
+    "numpy>=2.0",
+    "Pillow>=10.0",
+    "PySide6>=6.8",
+    "sounddevice>=0.5",
+]
 
 [project.optional-dependencies]
 player = [
@@ -16,7 +22,7 @@ player = [
 ]
 
 [project.scripts]
-voidplayer = "ffmpeg_pywrapper.__main__:main"
+voidplayer = "ffmpeg_pywrapper.player.app:main"
 
 [dependency-groups]
 dev = [
@@ -36,6 +42,11 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/ffmpeg_pywrapper"]
+artifacts = [
+    "src/ffmpeg_pywrapper/player/assets/*.svg",
+    "src/ffmpeg_pywrapper/player/themes/default/*.toml",
+    "src/ffmpeg_pywrapper/player/themes/default/*.qss",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -66,3 +66,4 @@ QStatusBar {
     color: {{ color.status_text }};
     border-top: 1px solid {{ color.status_border }};
 }
+
