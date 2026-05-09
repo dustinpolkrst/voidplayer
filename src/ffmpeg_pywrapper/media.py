@@ -15,6 +15,7 @@ class MediaSource:
     title: str | None = None
     headers: dict[str, str] | None = None
     subtitle_url: str | None = None
+    metadata: dict[str, str] | None = None
 
     @classmethod
     def from_path(cls, path: str | Path) -> "MediaSource":

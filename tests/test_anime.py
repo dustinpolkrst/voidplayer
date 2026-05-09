@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from ffmpeg_pywrapper.anime import (
     AnimeClient,
+    AnimeEpisode,
     AnimeStream,
     parse_provider_response,
     parse_source_urls,
@@ -58,6 +59,12 @@ def test_stream_to_media_source_preserves_headers_and_subtitle() -> None:
 
     assert source.display_name == "Example - Episode 12"
     assert source.subtitle_url == "https://example.test/sub.vtt"
+    assert source.metadata == {
+        "kind": "anime",
+        "title": "Example",
+        "episode": "12",
+        "mode": "sub",
+    }
     assert "Referer: https://embed.example.test/\r\n" in source.ffmpeg_input_options()["headers"]
 
 
@@ -71,3 +78,73 @@ def test_decode_source_url_handles_plain_url() -> None:
 
 def test_anime_client_imports_with_runtime_dependencies() -> None:
     assert AnimeClient is not None
+
+
+def test_anime_client_search_uses_session_cache(monkeypatch) -> None:
+    client = AnimeClient()
+    calls = []
+
+    def fake_post(payload):  # noqa: ANN001
+        calls.append(payload)
+        return {
+            "data": {
+                "shows": {
+                    "edges": [
+                        {
+                            "_id": "show-1",
+                            "name": "Example",
+                            "availableEpisodes": {"sub": 12},
+                        }
+                    ]
+                }
+            }
+        }
+
+    monkeypatch.setattr(client, "_post_graphql", fake_post)
+
+    assert client.search("Example")
+    assert client.search("Example")
+    assert len(calls) == 1
+
+
+def test_fast_streams_returns_direct_without_resolving_slow_providers(monkeypatch) -> None:
+    client = AnimeClient()
+    episode = AnimeEpisode(
+        show_id="show-1",
+        title="Example",
+        number="1",
+    )
+    monkeypatch.setattr(
+        client,
+        "_episode_provider_links",
+        lambda _episode: (
+            [
+                "https://tools.fast4speed.rsvp/media/show/sub/1",
+                "https://slow.example.test/embed",
+            ],
+            {},
+        ),
+    )
+    monkeypatch.setattr(client, "_resolve_provider", lambda *_args: (_ for _ in ()).throw(AssertionError("slow provider should not run")))
+
+    streams = client.fast_streams(episode)
+
+    assert len(streams) == 1
+    assert streams[0].quality == "direct"
+    assert streams[0].to_media_source().metadata["show_id"] == "show-1"
+
+
+def test_next_episode_returns_following_episode(monkeypatch) -> None:
+    client = AnimeClient()
+    monkeypatch.setattr(
+        client,
+        "episodes",
+        lambda _show, *, mode="sub": [
+            AnimeEpisode(show_id="show-1", title="Example", number="1", mode="sub"),
+            AnimeEpisode(show_id="show-1", title="Example", number="2", mode="sub"),
+        ],
+    )
+
+    episode = AnimeEpisode(show_id="show-1", title="Example", number="1", mode="sub")
+
+    assert client.next_episode(episode) == AnimeEpisode(show_id="show-1", title="Example", number="2", mode="sub")

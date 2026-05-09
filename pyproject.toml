@@ -1,7 +1,7 @@
 [project]
 name = "voidplayer"
 version = "0.1.0"
-description = "An open-source hacker-styled video player and typed FFmpeg wrapper."
+description = "VoidPlayer: an anime-ready desktop video player powered by FFmpeg."
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
@@ -31,6 +31,7 @@ anime = [
 
 [project.scripts]
 ffmpeg-pywrapper = "ffmpeg_pywrapper.__main__:main"
+animeplayer = "ffmpeg_pywrapper.player.app:main"
 voidplayer = "ffmpeg_pywrapper.player.app:main"
 
 [dependency-groups]
@@ -57,8 +58,8 @@ build-backend = "hatchling.build"
 packages = ["src/ffmpeg_pywrapper"]
 artifacts = [
     "src/ffmpeg_pywrapper/player/assets/*.svg",
-    "src/ffmpeg_pywrapper/player/themes/default/*.toml",
-    "src/ffmpeg_pywrapper/player/themes/default/*.qss",
+    "src/ffmpeg_pywrapper/player/themes/*/*.toml",
+    "src/ffmpeg_pywrapper/player/themes/*/*.qss",
 ]
 
 [tool.pytest.ini_options]

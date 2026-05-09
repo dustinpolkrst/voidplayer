@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import hashlib
 import json
 import re
@@ -63,6 +64,8 @@ class AnimeStream:
     quality: str
     title: str
     episode: str
+    show_id: str | None = None
+    mode: AnimeMode = "sub"
     referrer: str | None = None
     subtitle_url: str | None = None
 
@@ -70,11 +73,20 @@ class AnimeStream:
         headers = {"User-Agent": USER_AGENT}
         if self.referrer:
             headers["Referer"] = self.referrer
+        metadata = {
+            "kind": "anime",
+            "title": self.title,
+            "episode": self.episode,
+            "mode": self.mode,
+        }
+        if self.show_id:
+            metadata["show_id"] = self.show_id
         return MediaSource(
             location=self.url,
             title=f"{self.title} - Episode {self.episode}",
             headers=headers,
             subtitle_url=self.subtitle_url,
+            metadata=metadata,
         )
 
 
@@ -83,17 +95,34 @@ class AnimeClientError(RuntimeError):
 
 
 class AnimeClient:
-    def __init__(self, *, api_url: str = ALLANIME_API, referer: str = ALLANIME_REFERER, base_host: str = ALLANIME_BASE) -> None:
+    def __init__(
+        self,
+        *,
+        api_url: str = ALLANIME_API,
+        referer: str = ALLANIME_REFERER,
+        base_host: str = ALLANIME_BASE,
+        api_timeout: float = 8.0,
+        provider_timeout: float = 2.0,
+    ) -> None:
         try:
             import httpx
         except ImportError as exc:  # pragma: no cover - dependency message
             raise AnimeClientError("Install anime support with: uv sync --extra anime") from exc
         self._httpx = httpx
+        self._client = httpx.Client(timeout=api_timeout, follow_redirects=True)
         self.api_url = api_url.rstrip("/")
         self.referer = referer
         self.base_host = base_host
+        self.api_timeout = api_timeout
+        self.provider_timeout = provider_timeout
+        self._search_cache: dict[tuple[str, AnimeMode], list[AnimeSearchResult]] = {}
+        self._episodes_cache: dict[tuple[str, AnimeMode], list[AnimeEpisode]] = {}
+        self._streams_cache: dict[tuple[str, AnimeMode, str], list[AnimeStream]] = {}
 
     def search(self, query: str, *, mode: AnimeMode = "sub") -> list[AnimeSearchResult]:
+        cache_key = (query.strip().casefold(), mode)
+        if cache_key in self._search_cache:
+            return list(self._search_cache[cache_key])
         payload = {
             "variables": {
                 "search": {"allowAdult": False, "allowUnknown": False, "query": query},
@@ -116,21 +145,75 @@ class AnimeClient:
             title = edge.get("name")
             if isinstance(show_id, str) and isinstance(title, str) and count:
                 results.append(AnimeSearchResult(show_id=show_id, title=title, episode_count=count))
+        self._search_cache[cache_key] = list(results)
         return results
 
     def episodes(self, show: AnimeSearchResult, *, mode: AnimeMode = "sub") -> list[AnimeEpisode]:
+        cache_key = (show.show_id, mode)
+        if cache_key in self._episodes_cache:
+            return list(self._episodes_cache[cache_key])
         data = self._post_graphql({"variables": {"showId": show.show_id}, "query": EPISODES_QUERY})
         detail = data.get("data", {}).get("show", {}).get("availableEpisodesDetail", {})
         numbers = detail.get(mode) if isinstance(detail, dict) else None
         if not isinstance(numbers, list):
             return []
-        return [AnimeEpisode(show_id=show.show_id, title=show.title, number=str(number), mode=mode) for number in sorted(numbers, key=_episode_sort_key)]
+        episodes = [AnimeEpisode(show_id=show.show_id, title=show.title, number=str(number), mode=mode) for number in sorted(numbers, key=_episode_sort_key)]
+        self._episodes_cache[cache_key] = list(episodes)
+        return episodes
 
     def streams(self, episode: AnimeEpisode) -> list[AnimeStream]:
-        data = self._get_episode_persisted(episode)
+        cache_key = (episode.show_id, episode.mode, episode.number)
+        if cache_key in self._streams_cache:
+            return list(self._streams_cache[cache_key])
+        streams = self._resolve_streams(episode, fast_only=False)
+        self._streams_cache[cache_key] = list(streams)
+        return streams
+
+    def fast_streams(self, episode: AnimeEpisode) -> list[AnimeStream]:
+        cache_key = (episode.show_id, episode.mode, episode.number)
+        if cache_key in self._streams_cache:
+            return list(self._streams_cache[cache_key])
+        streams = self._resolve_streams(episode, fast_only=True)
+        if streams:
+            self._streams_cache[cache_key] = list(streams)
+        return streams
+
+    def next_episode(self, episode: AnimeEpisode) -> AnimeEpisode | None:
+        episodes = self.episodes(AnimeSearchResult(show_id=episode.show_id, title=episode.title), mode=episode.mode)
+        numbers = [item.number for item in episodes]
+        try:
+            index = numbers.index(episode.number)
+        except ValueError:
+            return None
+        return episodes[index + 1] if index + 1 < len(episodes) else None
+
+    def fast_stream_for_episode(self, episode: AnimeEpisode) -> AnimeStream | None:
+        return select_quality(self.fast_streams(episode), "best")
+
+    def _resolve_streams(self, episode: AnimeEpisode, *, fast_only: bool) -> list[AnimeStream]:
+        provider_links, data = self._episode_provider_links(episode)
+        streams: list[AnimeStream] = []
+        slow_links: list[str] = []
+        for provider_link in provider_links:
+            stream = self._fast_provider_stream(provider_link, episode)
+            if stream is not None:
+                streams.append(stream)
+            else:
+                slow_links.append(provider_link)
+        if streams and fast_only:
+            return sorted(_dedupe_streams(streams), key=lambda item: _quality_sort_key(item.quality), reverse=True)
+        if slow_links and not fast_only:
+            streams.extend(self._resolve_slow_providers(slow_links, episode))
+        if not streams:
+            message = _graphql_error_message(data) if data is not None else None
+            raise AnimeClientError(message or "No playable streams resolved.")
+        return sorted(_dedupe_streams(streams), key=lambda item: _quality_sort_key(item.quality), reverse=True)
+
+    def _episode_provider_links(self, episode: AnimeEpisode) -> tuple[list[str], dict[str, Any] | None]:
+        data: dict[str, Any] | None = self._get_episode_persisted(episode)
         episode_data = _episode_data(data)
         provider_links: list[str] = []
-        encrypted = _find_value(data, "tobeparsed")
+        encrypted = _find_value(data, "tobeparsed") if data is not None else None
         if isinstance(encrypted, str):
             provider_links = decode_tobeparsed(encrypted)
         if episode_data is None:
@@ -152,58 +235,66 @@ class AnimeClient:
             encrypted = _find_value(episode_data, "tobeparsed") or _find_value(data, "tobeparsed")
             if isinstance(encrypted, str):
                 provider_links = decode_tobeparsed(encrypted)
+        return provider_links, data
+
+    def _fast_provider_stream(self, provider_link: str, episode: AnimeEpisode) -> AnimeStream | None:
+        url = self._provider_url(provider_link)
+        if "tools.fast4speed.rsvp" not in url:
+            return None
+        return AnimeStream(
+            url=url,
+            quality="direct",
+            title=episode.title,
+            episode=episode.number,
+            show_id=episode.show_id,
+            mode=episode.mode,
+            referrer=self.referer,
+        )
+
+    def _resolve_slow_providers(self, provider_links: list[str], episode: AnimeEpisode) -> list[AnimeStream]:
         streams: list[AnimeStream] = []
-        errors: list[str] = []
-        for provider_link in provider_links:
-            try:
-                streams.extend(self._resolve_provider(provider_link, episode))
-            except Exception as exc:
-                errors.append(f"{provider_link}: {exc}")
-        if not streams and errors:
-            raise AnimeClientError("No playable streams resolved. " + errors[0])
-        return sorted(_dedupe_streams(streams), key=lambda item: _quality_sort_key(item.quality), reverse=True)
+        with ThreadPoolExecutor(max_workers=min(4, len(provider_links))) as executor:
+            futures = [executor.submit(self._resolve_provider, provider_link, episode) for provider_link in provider_links]
+            for future in as_completed(futures):
+                try:
+                    streams.extend(future.result())
+                except Exception:
+                    continue
+        return streams
 
     def _resolve_provider(self, provider_link: str, episode: AnimeEpisode) -> list[AnimeStream]:
-        if provider_link.startswith("//"):
-            url = f"https:{provider_link}"
-        elif provider_link.startswith("/"):
-            url = f"https://{self.base_host}{provider_link}"
-        else:
-            url = provider_link
-        if "tools.fast4speed.rsvp" in url:
-            return [
-                AnimeStream(
-                    url=url,
-                    quality="direct",
-                    title=episode.title,
-                    episode=episode.number,
-                    referrer=self.referer,
-                )
-            ]
-        response = self._httpx.get(url, headers={"User-Agent": USER_AGENT, "Referer": self.referer}, timeout=20)
+        url = self._provider_url(provider_link)
+        response = self._client.get(url, headers={"User-Agent": USER_AGENT, "Referer": self.referer}, timeout=self.provider_timeout)
         response.raise_for_status()
         return parse_provider_response(response.text, title=episode.title, episode=episode.number, default_referrer=self.referer)
 
+    def _provider_url(self, provider_link: str) -> str:
+        if provider_link.startswith("//"):
+            return f"https:{provider_link}"
+        if provider_link.startswith("/"):
+            return f"https://{self.base_host}{provider_link}"
+        return provider_link
+
     def _post_graphql(self, payload: dict[str, Any]) -> dict[str, Any]:
-        response = self._httpx.post(
+        response = self._client.post(
             f"{self.api_url}/api",
             headers={"Content-Type": "application/json", "User-Agent": USER_AGENT, "Referer": self.referer},
             json=payload,
-            timeout=20,
+            timeout=self.api_timeout,
         )
         response.raise_for_status()
         return response.json()
 
     def _get_episode_persisted(self, episode: AnimeEpisode) -> dict[str, Any]:
         url = build_persisted_query_url(episode.show_id, episode.mode, episode.number, EPISODE_PERSISTED_HASH, api_url=self.api_url)
-        response = self._httpx.get(
+        response = self._client.get(
             url,
             headers={
                 "User-Agent": USER_AGENT,
                 "Referer": "https://youtu-chan.com",
                 "Origin": "https://youtu-chan.com",
             },
-            timeout=20,
+            timeout=self.api_timeout,
         )
         response.raise_for_status()
         return response.json()

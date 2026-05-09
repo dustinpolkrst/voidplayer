@@ -14,7 +14,25 @@ def test_default_theme_renders_current_colors() -> None:
 
     assert "#0d1017" in stylesheet
     assert "#4f8cff" in stylesheet
+    assert "chevron-down.svg" in stylesheet
+    assert "QLabel#animeHomeEyebrow" in stylesheet
+    assert "QFrame#animeHomeSearchPanel" in stylesheet
+    assert "QFrame#animeContinuePanel" in stylesheet
+    assert "border-left: 4px solid transparent" not in stylesheet
     assert "{{" not in stylesheet
+
+
+def test_packaged_dark_catppuccin_themes_render() -> None:
+    for theme_name in ("catppuccin-frappe", "catppuccin-macchiato", "catppuccin-mocha"):
+        theme = theme_module.load_theme(theme_name)
+        stylesheet = theme_module.render_stylesheet(theme)
+
+        assert theme_name in theme.path
+        assert "chevron-down.svg" in stylesheet
+        assert "QLabel#animeHomeEyebrow" in stylesheet
+        assert "QFrame#animeHomeSearchPanel" in stylesheet
+        assert "QFrame#animeContinuePanel" in stylesheet
+        assert "{{" not in stylesheet
 
 
 def test_packaged_resources_are_available() -> None:
