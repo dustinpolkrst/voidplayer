@@ -71,3 +71,28 @@ def test_playlist_drawer_tracks_current_item(monkeypatch) -> None:
         assert window.playlist_widget.currentRow() == 1
     finally:
         window.close()
+
+
+def test_playlist_repeat_and_remove(monkeypatch) -> None:
+    monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
+    qt_widgets = pytest.importorskip("PySide6.QtWidgets")
+    app_module = importlib.import_module("ffmpeg_pywrapper.player.app")
+    monkeypatch.setattr(app_module, "load_recent_files", lambda path=None: [])
+    monkeypatch.setattr(app_module, "save_recent_files", lambda recent_files, path=None, *, limit=10: None)
+    QApplication = qt_widgets.QApplication
+
+    app = QApplication.instance() or QApplication(["voidplayer-test"])
+    window = app_module.PlayerWindow(theme_name="default")
+    loaded = []
+    monkeypatch.setattr(window, "load_and_play", lambda path: loaded.append(path))
+    monkeypatch.setattr(window, "save_current_media_state", lambda: None)
+
+    try:
+        window.set_playlist([Path("a.mp4"), Path("b.mp4")], start_index=1)
+        window.repeat_mode = "all"
+        window.play_next()
+        assert window.playlist_index == 0
+        window.remove_selected_playlist_item()
+        assert len(window.playlist) == 1
+    finally:
+        window.close()

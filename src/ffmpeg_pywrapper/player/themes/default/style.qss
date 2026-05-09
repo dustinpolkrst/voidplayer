@@ -32,6 +32,19 @@ QListWidget#playlistDrawer::item:selected {
     background: {{ color.accent }};
     color: {{ color.text_button }};
 }
+QPlainTextEdit#inspectorPanel {
+    background: {{ color.control_background }};
+    color: {{ color.text_secondary }};
+    border: 1px solid {{ color.border_control }};
+    font-family: {{ font.time_label }};
+    font-size: 12px;
+}
+QLabel#timelinePreview {
+    background: {{ color.video_background }};
+    color: {{ color.text_primary }};
+    border: 1px solid {{ color.border_video }};
+    padding: 4px;
+}
 QFrame#controlBar {
     background: {{ color.control_background }};
     border: 1px solid {{ color.border_control }};

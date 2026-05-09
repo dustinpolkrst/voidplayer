@@ -9,7 +9,7 @@
       "source_file": "main.py",
       "source_location": "L1",
       "id": "main_py",
-      "community": 1,
+      "community": 2,
       "norm_label": "main.py"
     },
     {
@@ -18,7 +18,7 @@
       "source_file": "examples/simple_player/main.py",
       "source_location": "L1",
       "id": "examples_simple_player_main_py",
-      "community": 6,
+      "community": 7,
       "norm_label": "main.py"
     },
     {
@@ -27,7 +27,7 @@
       "source_file": "src/ffmpeg_pywrapper/commands.py",
       "source_location": "L1",
       "id": "src_ffmpeg_pywrapper_commands_py",
-      "community": 1,
+      "community": 2,
       "norm_label": "commands.py"
     },
     {
@@ -36,7 +36,7 @@
       "source_file": "src/ffmpeg_pywrapper/commands.py",
       "source_location": "L11",
       "id": "ffmpeg_pywrapper_commands_build_command",
-      "community": 1,
+      "community": 2,
       "norm_label": "build_command()"
     },
     {
@@ -45,7 +45,7 @@
       "source_file": "src/ffmpeg_pywrapper/commands.py",
       "source_location": "L41",
       "id": "ffmpeg_pywrapper_commands_convert",
-      "community": 1,
+      "community": 2,
       "norm_label": "convert()"
     },
     {
@@ -54,7 +54,7 @@
       "source_file": "src/ffmpeg_pywrapper/commands.py",
       "source_location": "L61",
       "id": "ffmpeg_pywrapper_commands_trim",
-      "community": 1,
+      "community": 2,
       "norm_label": "trim()"
     },
     {
@@ -63,7 +63,7 @@
       "source_file": "src/ffmpeg_pywrapper/commands.py",
       "source_location": "L92",
       "id": "ffmpeg_pywrapper_commands_thumbnail",
-      "community": 1,
+      "community": 2,
       "norm_label": "thumbnail()"
     },
     {
@@ -72,7 +72,7 @@
       "source_file": "src/ffmpeg_pywrapper/commands.py",
       "source_location": "L22",
       "id": "ffmpeg_pywrapper_commands_rationale_22",
-      "community": 1,
+      "community": 2,
       "norm_label": "build a plain argv list for a single-output ffmpeg command."
     },
     {
@@ -81,7 +81,7 @@
       "source_file": "src/ffmpeg_pywrapper/config.py",
       "source_location": "L1",
       "id": "src_ffmpeg_pywrapper_config_py",
-      "community": 1,
+      "community": 2,
       "norm_label": "config.py"
     },
     {
@@ -90,7 +90,7 @@
       "source_file": "src/ffmpeg_pywrapper/config.py",
       "source_location": "L11",
       "id": "ffmpeg_pywrapper_config_ffmpegconfig",
-      "community": 1,
+      "community": 2,
       "norm_label": "ffmpegconfig"
     },
     {
@@ -99,7 +99,7 @@
       "source_file": "src/ffmpeg_pywrapper/config.py",
       "source_location": "L17",
       "id": "ffmpeg_pywrapper_config_ffmpegconfig_resolve_ffmpeg",
-      "community": 1,
+      "community": 2,
       "norm_label": ".resolve_ffmpeg()"
     },
     {
@@ -108,7 +108,7 @@
       "source_file": "src/ffmpeg_pywrapper/config.py",
       "source_location": "L20",
       "id": "ffmpeg_pywrapper_config_ffmpegconfig_resolve_ffprobe",
-      "community": 1,
+      "community": 2,
       "norm_label": ".resolve_ffprobe()"
     },
     {
@@ -117,7 +117,7 @@
       "source_file": "src/ffmpeg_pywrapper/config.py",
       "source_location": "L24",
       "id": "ffmpeg_pywrapper_config_resolve_executable",
-      "community": 1,
+      "community": 2,
       "norm_label": "_resolve_executable()"
     },
     {
@@ -126,7 +126,7 @@
       "source_file": "src/ffmpeg_pywrapper/config.py",
       "source_location": "L12",
       "id": "ffmpeg_pywrapper_config_rationale_12",
-      "community": 1,
+      "community": 2,
       "norm_label": "executable locations for system ffmpeg tools."
     },
     {
@@ -135,7 +135,7 @@
       "source_file": "src/ffmpeg_pywrapper/errors.py",
       "source_location": "L1",
       "id": "src_ffmpeg_pywrapper_errors_py",
-      "community": 4,
+      "community": 3,
       "norm_label": "errors.py"
     },
     {
@@ -144,7 +144,7 @@
       "source_file": "src/ffmpeg_pywrapper/errors.py",
       "source_location": "L7",
       "id": "ffmpeg_pywrapper_errors_ffmpegerror",
-      "community": 4,
+      "community": 3,
       "norm_label": "ffmpegerror"
     },
     {
@@ -153,7 +153,7 @@
       "source_file": "",
       "source_location": "",
       "id": "exception",
-      "community": 4,
+      "community": 3,
       "norm_label": "exception"
     },
     {
@@ -162,7 +162,7 @@
       "source_file": "src/ffmpeg_pywrapper/errors.py",
       "source_location": "L11",
       "id": "ffmpeg_pywrapper_errors_ffmpegexecutablenotfound",
-      "community": 1,
+      "community": 3,
       "norm_label": "ffmpegexecutablenotfound"
     },
     {
@@ -171,7 +171,7 @@
       "source_file": "src/ffmpeg_pywrapper/errors.py",
       "source_location": "L15",
       "id": "ffmpeg_pywrapper_errors_ffmpegtimeouterror",
-      "community": 4,
+      "community": 3,
       "norm_label": "ffmpegtimeouterror"
     },
     {
@@ -180,7 +180,7 @@
       "source_file": "src/ffmpeg_pywrapper/errors.py",
       "source_location": "L19",
       "id": "ffmpeg_pywrapper_errors_ffmpegcancellederror",
-      "community": 4,
+      "community": 3,
       "norm_label": "ffmpegcancellederror"
     },
     {
@@ -189,7 +189,7 @@
       "source_file": "src/ffmpeg_pywrapper/errors.py",
       "source_location": "L23",
       "id": "ffmpeg_pywrapper_errors_ffmpeginvalidcommand",
-      "community": 4,
+      "community": 3,
       "norm_label": "ffmpeginvalidcommand"
     },
     {
@@ -198,7 +198,7 @@
       "source_file": "src/ffmpeg_pywrapper/errors.py",
       "source_location": "L27",
       "id": "ffmpeg_pywrapper_errors_ffmpegunsupportedcodec",
-      "community": 4,
+      "community": 3,
       "norm_label": "ffmpegunsupportedcodec"
     },
     {
@@ -207,7 +207,7 @@
       "source_file": "src/ffmpeg_pywrapper/errors.py",
       "source_location": "L31",
       "id": "ffmpeg_pywrapper_errors_playbackerror",
-      "community": 3,
+      "community": 4,
       "norm_label": "playbackerror"
     },
     {
@@ -216,7 +216,7 @@
       "source_file": "src/ffmpeg_pywrapper/errors.py",
       "source_location": "L35",
       "id": "ffmpeg_pywrapper_errors_unsupportedmediaerror",
-      "community": 3,
+      "community": 4,
       "norm_label": "unsupportedmediaerror"
     },
     {
@@ -225,7 +225,7 @@
       "source_file": "src/ffmpeg_pywrapper/errors.py",
       "source_location": "L39",
       "id": "ffmpeg_pywrapper_errors_decodeerror",
-      "community": 3,
+      "community": 4,
       "norm_label": "decodeerror"
     },
     {
@@ -234,7 +234,7 @@
       "source_file": "src/ffmpeg_pywrapper/errors.py",
       "source_location": "L43",
       "id": "ffmpeg_pywrapper_errors_audiooutputerror",
-      "community": 3,
+      "community": 4,
       "norm_label": "audiooutputerror"
     },
     {
@@ -243,7 +243,7 @@
       "source_file": "src/ffmpeg_pywrapper/errors.py",
       "source_location": "L48",
       "id": "ffmpeg_pywrapper_errors_ffmpegprocesserror",
-      "community": 4,
+      "community": 3,
       "norm_label": "ffmpegprocesserror"
     },
     {
@@ -252,7 +252,7 @@
       "source_file": "src/ffmpeg_pywrapper/errors.py",
       "source_location": "L57",
       "id": "ffmpeg_pywrapper_errors_ffmpegprocesserror_str",
-      "community": 4,
+      "community": 3,
       "norm_label": ".__str__()"
     },
     {
@@ -261,7 +261,7 @@
       "source_file": "src/ffmpeg_pywrapper/errors.py",
       "source_location": "L61",
       "id": "ffmpeg_pywrapper_errors_classify_process_error",
-      "community": 4,
+      "community": 3,
       "norm_label": "classify_process_error()"
     },
     {
@@ -270,7 +270,7 @@
       "source_file": "src/ffmpeg_pywrapper/errors.py",
       "source_location": "L80",
       "id": "ffmpeg_pywrapper_errors_matches",
-      "community": 4,
+      "community": 3,
       "norm_label": "_matches()"
     },
     {
@@ -279,7 +279,7 @@
       "source_file": "src/ffmpeg_pywrapper/errors.py",
       "source_location": "L84",
       "id": "ffmpeg_pywrapper_errors_last_relevant_line",
-      "community": 4,
+      "community": 3,
       "norm_label": "_last_relevant_line()"
     },
     {
@@ -288,7 +288,7 @@
       "source_file": "src/ffmpeg_pywrapper/errors.py",
       "source_location": "L8",
       "id": "ffmpeg_pywrapper_errors_rationale_8",
-      "community": 4,
+      "community": 3,
       "norm_label": "base exception for wrapper errors."
     },
     {
@@ -297,7 +297,7 @@
       "source_file": "src/ffmpeg_pywrapper/errors.py",
       "source_location": "L12",
       "id": "ffmpeg_pywrapper_errors_rationale_12",
-      "community": 1,
+      "community": 3,
       "norm_label": "raised when ffmpeg or ffprobe cannot be found."
     },
     {
@@ -306,7 +306,7 @@
       "source_file": "src/ffmpeg_pywrapper/errors.py",
       "source_location": "L16",
       "id": "ffmpeg_pywrapper_errors_rationale_16",
-      "community": 4,
+      "community": 3,
       "norm_label": "raised when a process exceeds its timeout."
     },
     {
@@ -315,7 +315,7 @@
       "source_file": "src/ffmpeg_pywrapper/errors.py",
       "source_location": "L20",
       "id": "ffmpeg_pywrapper_errors_rationale_20",
-      "community": 4,
+      "community": 3,
       "norm_label": "raised when a process is cancelled cooperatively."
     },
     {
@@ -324,7 +324,7 @@
       "source_file": "src/ffmpeg_pywrapper/errors.py",
       "source_location": "L24",
       "id": "ffmpeg_pywrapper_errors_rationale_24",
-      "community": 4,
+      "community": 3,
       "norm_label": "raised when ffmpeg rejects the supplied command."
     },
     {
@@ -342,7 +342,7 @@
       "source_file": "src/ffmpeg_pywrapper/errors.py",
       "source_location": "L32",
       "id": "ffmpeg_pywrapper_errors_rationale_32",
-      "community": 3,
+      "community": 4,
       "norm_label": "base exception for playback-specific failures."
     },
     {
@@ -351,7 +351,7 @@
       "source_file": "src/ffmpeg_pywrapper/errors.py",
       "source_location": "L36",
       "id": "ffmpeg_pywrapper_errors_rationale_36",
-      "community": 3,
+      "community": 4,
       "norm_label": "raised when no playable media stream is available."
     },
     {
@@ -360,7 +360,7 @@
       "source_file": "src/ffmpeg_pywrapper/errors.py",
       "source_location": "L40",
       "id": "ffmpeg_pywrapper_errors_rationale_40",
-      "community": 3,
+      "community": 4,
       "norm_label": "raised when media decoding fails."
     },
     {
@@ -369,7 +369,7 @@
       "source_file": "src/ffmpeg_pywrapper/errors.py",
       "source_location": "L44",
       "id": "ffmpeg_pywrapper_errors_rationale_44",
-      "community": 3,
+      "community": 4,
       "norm_label": "raised when audio output cannot be initialized."
     },
     {
@@ -378,7 +378,7 @@
       "source_file": "src/ffmpeg_pywrapper/errors.py",
       "source_location": "L49",
       "id": "ffmpeg_pywrapper_errors_rationale_49",
-      "community": 4,
+      "community": 3,
       "norm_label": "raised when ffmpeg exits unsuccessfully."
     },
     {
@@ -396,7 +396,7 @@
       "source_file": "src/ffmpeg_pywrapper/media.py",
       "source_location": "L13",
       "id": "ffmpeg_pywrapper_media_streaminfo",
-      "community": 0,
+      "community": 5,
       "norm_label": "streaminfo"
     },
     {
@@ -405,7 +405,7 @@
       "source_file": "src/ffmpeg_pywrapper/media.py",
       "source_location": "L27",
       "id": "ffmpeg_pywrapper_media_mediainfo",
-      "community": 0,
+      "community": 5,
       "norm_label": "mediainfo"
     },
     {
@@ -495,7 +495,7 @@
       "source_file": "src/ffmpeg_pywrapper/media.py",
       "source_location": "L69",
       "id": "ffmpeg_pywrapper_media_describe_media",
-      "community": 1,
+      "community": 2,
       "norm_label": "describe_media()"
     },
     {
@@ -522,7 +522,7 @@
       "source_file": "src/ffmpeg_pywrapper/media.py",
       "source_location": "L108",
       "id": "ffmpeg_pywrapper_media_format_timestamp",
-      "community": 5,
+      "community": 0,
       "norm_label": "format_timestamp()"
     },
     {
@@ -567,7 +567,7 @@
       "source_file": "src/ffmpeg_pywrapper/options.py",
       "source_location": "L1",
       "id": "src_ffmpeg_pywrapper_options_py",
-      "community": 1,
+      "community": 2,
       "norm_label": "options.py"
     },
     {
@@ -576,7 +576,7 @@
       "source_file": "src/ffmpeg_pywrapper/options.py",
       "source_location": "L11",
       "id": "ffmpeg_pywrapper_options_normalize_options",
-      "community": 1,
+      "community": 2,
       "norm_label": "normalize_options()"
     },
     {
@@ -585,7 +585,7 @@
       "source_file": "src/ffmpeg_pywrapper/options.py",
       "source_location": "L37",
       "id": "ffmpeg_pywrapper_options_stringify",
-      "community": 1,
+      "community": 2,
       "norm_label": "_stringify()"
     },
     {
@@ -594,7 +594,7 @@
       "source_file": "src/ffmpeg_pywrapper/options.py",
       "source_location": "L12",
       "id": "ffmpeg_pywrapper_options_rationale_12",
-      "community": 1,
+      "community": 2,
       "norm_label": "convert a mapping of ffmpeg options to argv tokens.      keys may be written wit"
     },
     {
@@ -603,7 +603,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L1",
       "id": "src_ffmpeg_pywrapper_playback_py",
-      "community": 3,
+      "community": 4,
       "norm_label": "playback.py"
     },
     {
@@ -612,7 +612,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L32",
       "id": "ffmpeg_pywrapper_playback_playbackstate",
-      "community": 3,
+      "community": 4,
       "norm_label": "playbackstate"
     },
     {
@@ -621,7 +621,7 @@
       "source_file": "",
       "source_location": "",
       "id": "str",
-      "community": 2,
+      "community": 0,
       "norm_label": "str"
     },
     {
@@ -630,7 +630,7 @@
       "source_file": "",
       "source_location": "",
       "id": "enum",
-      "community": 3,
+      "community": 4,
       "norm_label": "enum"
     },
     {
@@ -639,7 +639,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L44",
       "id": "ffmpeg_pywrapper_playback_videoframe",
-      "community": 3,
+      "community": 4,
       "norm_label": "videoframe"
     },
     {
@@ -648,7 +648,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L50",
       "id": "ffmpeg_pywrapper_playback_playbacksettings",
-      "community": 3,
+      "community": 4,
       "norm_label": "playbacksettings"
     },
     {
@@ -657,7 +657,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L56",
       "id": "ffmpeg_pywrapper_playback_playbackclock",
-      "community": 3,
+      "community": 4,
       "norm_label": "playbackclock"
     },
     {
@@ -666,7 +666,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L57",
       "id": "ffmpeg_pywrapper_playback_playbackclock_init",
-      "community": 3,
+      "community": 4,
       "norm_label": ".__init__()"
     },
     {
@@ -675,7 +675,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L63",
       "id": "ffmpeg_pywrapper_playback_position",
-      "community": 3,
+      "community": 4,
       "norm_label": "position()"
     },
     {
@@ -684,7 +684,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L69",
       "id": "ffmpeg_pywrapper_playback_active",
-      "community": 3,
+      "community": 4,
       "norm_label": "active()"
     },
     {
@@ -693,7 +693,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L72",
       "id": "ffmpeg_pywrapper_playback_playbackclock_start",
-      "community": 3,
+      "community": 4,
       "norm_label": ".start()"
     },
     {
@@ -702,7 +702,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L76",
       "id": "ffmpeg_pywrapper_playback_playbackclock_pause",
-      "community": 3,
+      "community": 4,
       "norm_label": ".pause()"
     },
     {
@@ -711,7 +711,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L81",
       "id": "ffmpeg_pywrapper_playback_playbackclock_seek",
-      "community": 3,
+      "community": 4,
       "norm_label": ".seek()"
     },
     {
@@ -720,7 +720,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L85",
       "id": "ffmpeg_pywrapper_playback_playbackclock_set_speed",
-      "community": 3,
+      "community": 4,
       "norm_label": ".set_speed()"
     },
     {
@@ -729,7 +729,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L91",
       "id": "ffmpeg_pywrapper_playback_playbackclock_reset",
-      "community": 0,
+      "community": 1,
       "norm_label": ".reset()"
     },
     {
@@ -738,7 +738,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L96",
       "id": "ffmpeg_pywrapper_playback_audioclock",
-      "community": 3,
+      "community": 4,
       "norm_label": "audioclock"
     },
     {
@@ -747,7 +747,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L97",
       "id": "ffmpeg_pywrapper_playback_audioclock_init",
-      "community": 3,
+      "community": 4,
       "norm_label": ".__init__()"
     },
     {
@@ -756,7 +756,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L114",
       "id": "ffmpeg_pywrapper_playback_audioclock_start",
-      "community": 0,
+      "community": 1,
       "norm_label": ".start()"
     },
     {
@@ -765,7 +765,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L121",
       "id": "ffmpeg_pywrapper_playback_audioclock_advance",
-      "community": 0,
+      "community": 1,
       "norm_label": ".advance()"
     },
     {
@@ -774,7 +774,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L126",
       "id": "ffmpeg_pywrapper_playback_audioclock_seek",
-      "community": 3,
+      "community": 4,
       "norm_label": ".seek()"
     },
     {
@@ -783,7 +783,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L131",
       "id": "ffmpeg_pywrapper_playback_audioclock_stop",
-      "community": 3,
+      "community": 4,
       "norm_label": ".stop()"
     },
     {
@@ -792,7 +792,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L135",
       "id": "ffmpeg_pywrapper_playback_audioclock_reset",
-      "community": 0,
+      "community": 1,
       "norm_label": ".reset()"
     },
     {
@@ -801,7 +801,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L143",
       "id": "ffmpeg_pywrapper_playback_frametiming",
-      "community": 3,
+      "community": 4,
       "norm_label": "frametiming"
     },
     {
@@ -810,7 +810,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L148",
       "id": "ffmpeg_pywrapper_playback_frame_timing",
-      "community": 3,
+      "community": 4,
       "norm_label": "frame_timing()"
     },
     {
@@ -819,7 +819,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L153",
       "id": "ffmpeg_pywrapper_playback_decodeloopplayer",
-      "community": 0,
+      "community": 1,
       "norm_label": "decodeloopplayer"
     },
     {
@@ -828,7 +828,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L160",
       "id": "ffmpeg_pywrapper_playback_decodeloopplayer_init",
-      "community": 3,
+      "community": 4,
       "norm_label": ".__init__()"
     },
     {
@@ -837,7 +837,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L197",
       "id": "ffmpeg_pywrapper_playback_decodeloopplayer_load",
-      "community": 0,
+      "community": 1,
       "norm_label": ".load()"
     },
     {
@@ -846,7 +846,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L222",
       "id": "ffmpeg_pywrapper_playback_decodeloopplayer_play",
-      "community": 0,
+      "community": 1,
       "norm_label": ".play()"
     },
     {
@@ -855,7 +855,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L252",
       "id": "ffmpeg_pywrapper_playback_decodeloopplayer_pause",
-      "community": 0,
+      "community": 1,
       "norm_label": ".pause()"
     },
     {
@@ -864,7 +864,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L260",
       "id": "ffmpeg_pywrapper_playback_decodeloopplayer_stop",
-      "community": 0,
+      "community": 1,
       "norm_label": ".stop()"
     },
     {
@@ -873,7 +873,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L274",
       "id": "ffmpeg_pywrapper_playback_decodeloopplayer_seek",
-      "community": 0,
+      "community": 1,
       "norm_label": ".seek()"
     },
     {
@@ -882,7 +882,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L294",
       "id": "ffmpeg_pywrapper_playback_decodeloopplayer_set_volume",
-      "community": 0,
+      "community": 1,
       "norm_label": ".set_volume()"
     },
     {
@@ -891,7 +891,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L298",
       "id": "ffmpeg_pywrapper_playback_decodeloopplayer_set_muted",
-      "community": 3,
+      "community": 4,
       "norm_label": ".set_muted()"
     },
     {
@@ -900,7 +900,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L306",
       "id": "ffmpeg_pywrapper_playback_decodeloopplayer_set_playback_speed",
-      "community": 3,
+      "community": 4,
       "norm_label": ".set_playback_speed()"
     },
     {
@@ -909,7 +909,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L318",
       "id": "ffmpeg_pywrapper_playback_decodeloopplayer_set_subtitle_source",
-      "community": 3,
+      "community": 4,
       "norm_label": ".set_subtitle_source()"
     },
     {
@@ -918,7 +918,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L327",
       "id": "ffmpeg_pywrapper_playback_current_path",
-      "community": 3,
+      "community": 4,
       "norm_label": "current_path()"
     },
     {
@@ -927,7 +927,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L331",
       "id": "ffmpeg_pywrapper_playback_selected_audio_stream_index",
-      "community": 3,
+      "community": 4,
       "norm_label": "selected_audio_stream_index()"
     },
     {
@@ -936,7 +936,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L339",
       "id": "ffmpeg_pywrapper_playback_decodeloopplayer_set_audio_stream",
-      "community": 3,
+      "community": 4,
       "norm_label": ".set_audio_stream()"
     },
     {
@@ -945,7 +945,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L347",
       "id": "ffmpeg_pywrapper_playback_decodeloopplayer_close",
-      "community": 0,
+      "community": 1,
       "norm_label": ".close()"
     },
     {
@@ -954,7 +954,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L365",
       "id": "ffmpeg_pywrapper_playback_decodeloopplayer_master_position",
-      "community": 0,
+      "community": 1,
       "norm_label": ".master_position()"
     },
     {
@@ -963,7 +963,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L372",
       "id": "ffmpeg_pywrapper_playback_decodeloopplayer_wait_for_audio_ready",
-      "community": 0,
+      "community": 1,
       "norm_label": "._wait_for_audio_ready()"
     },
     {
@@ -972,7 +972,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L380",
       "id": "ffmpeg_pywrapper_playback_decodeloopplayer_start_presentation_clock",
-      "community": 0,
+      "community": 1,
       "norm_label": "._start_presentation_clock()"
     },
     {
@@ -981,7 +981,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L387",
       "id": "ffmpeg_pywrapper_playback_decodeloopplayer_start_workers",
-      "community": 0,
+      "community": 1,
       "norm_label": "._start_workers()"
     },
     {
@@ -990,7 +990,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L406",
       "id": "ffmpeg_pywrapper_playback_decodeloopplayer_join_workers",
-      "community": 0,
+      "community": 1,
       "norm_label": "._join_workers()"
     },
     {
@@ -999,7 +999,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L415",
       "id": "ffmpeg_pywrapper_playback_decodeloopplayer_is_current_generation",
-      "community": 0,
+      "community": 1,
       "norm_label": "._is_current_generation()"
     },
     {
@@ -1008,7 +1008,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L419",
       "id": "ffmpeg_pywrapper_playback_decodeloopplayer_next_generation",
-      "community": 0,
+      "community": 1,
       "norm_label": "._next_generation()"
     },
     {
@@ -1017,7 +1017,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L423",
       "id": "ffmpeg_pywrapper_playback_decodeloopplayer_reset_playback_flags",
-      "community": 0,
+      "community": 1,
       "norm_label": "._reset_playback_flags()"
     },
     {
@@ -1026,7 +1026,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L431",
       "id": "ffmpeg_pywrapper_playback_decodeloopplayer_seek_container_to",
-      "community": 0,
+      "community": 1,
       "norm_label": "._seek_container_to()"
     },
     {
@@ -1035,7 +1035,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L435",
       "id": "ffmpeg_pywrapper_playback_decodeloopplayer_mark_audio_ready",
-      "community": 0,
+      "community": 1,
       "norm_label": "._mark_audio_ready()"
     },
     {
@@ -1044,7 +1044,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L442",
       "id": "ffmpeg_pywrapper_playback_decodeloopplayer_advance_audio_clock",
-      "community": 0,
+      "community": 1,
       "norm_label": "._advance_audio_clock()"
     },
     {
@@ -1053,7 +1053,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L446",
       "id": "ffmpeg_pywrapper_playback_decodeloopplayer_reset_audio_buffers",
-      "community": 0,
+      "community": 1,
       "norm_label": "._reset_audio_buffers()"
     },
     {
@@ -1062,7 +1062,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L454",
       "id": "ffmpeg_pywrapper_playback_decodeloopplayer_start_audio_output",
-      "community": 0,
+      "community": 1,
       "norm_label": "._start_audio_output()"
     },
     {
@@ -1071,7 +1071,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L473",
       "id": "ffmpeg_pywrapper_playback_decodeloopplayer_audio_callback",
-      "community": 0,
+      "community": 1,
       "norm_label": "._audio_callback()"
     },
     {
@@ -1080,7 +1080,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L496",
       "id": "ffmpeg_pywrapper_playback_decodeloopplayer_run_audio_output",
-      "community": 0,
+      "community": 1,
       "norm_label": "._run_audio_output()"
     },
     {
@@ -1089,7 +1089,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L511",
       "id": "ffmpeg_pywrapper_playback_decodeloopplayer_run_video",
-      "community": 0,
+      "community": 1,
       "norm_label": "._run_video()"
     },
     {
@@ -1098,7 +1098,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L578",
       "id": "ffmpeg_pywrapper_playback_decodeloopplayer_run_audio",
-      "community": 0,
+      "community": 1,
       "norm_label": "._run_audio()"
     },
     {
@@ -1107,7 +1107,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L626",
       "id": "ffmpeg_pywrapper_playback_decodeloopplayer_wait_if_paused",
-      "community": 0,
+      "community": 1,
       "norm_label": "._wait_if_paused()"
     },
     {
@@ -1116,7 +1116,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L630",
       "id": "ffmpeg_pywrapper_playback_decodeloopplayer_select_av_audio_stream",
-      "community": 3,
+      "community": 1,
       "norm_label": "._select_av_audio_stream()"
     },
     {
@@ -1125,7 +1125,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L640",
       "id": "ffmpeg_pywrapper_playback_decodeloopplayer_finish_playback",
-      "community": 0,
+      "community": 1,
       "norm_label": "._finish_playback()"
     },
     {
@@ -1134,7 +1134,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L652",
       "id": "ffmpeg_pywrapper_playback_decodeloopplayer_set_state",
-      "community": 0,
+      "community": 1,
       "norm_label": "._set_state()"
     },
     {
@@ -1143,7 +1143,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L659",
       "id": "ffmpeg_pywrapper_playback_decodeloopplayer_fail",
-      "community": 0,
+      "community": 1,
       "norm_label": "._fail()"
     },
     {
@@ -1152,7 +1152,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L670",
       "id": "ffmpeg_pywrapper_playback_decodeloopplayer_warn",
-      "community": 0,
+      "community": 1,
       "norm_label": "._warn()"
     },
     {
@@ -1161,7 +1161,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L678",
       "id": "ffmpeg_pywrapper_playback_ensure_decode_dependency",
-      "community": 3,
+      "community": 4,
       "norm_label": "_ensure_decode_dependency()"
     },
     {
@@ -1170,7 +1170,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L683",
       "id": "ffmpeg_pywrapper_playback_configure_debug_logging",
-      "community": 6,
+      "community": 7,
       "norm_label": "configure_debug_logging()"
     },
     {
@@ -1179,7 +1179,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L689",
       "id": "ffmpeg_pywrapper_playback_default_output_sample_rate",
-      "community": 0,
+      "community": 1,
       "norm_label": "_default_output_sample_rate()"
     },
     {
@@ -1188,7 +1188,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L701",
       "id": "ffmpeg_pywrapper_playback_audio_frame_to_stereo_float32",
-      "community": 0,
+      "community": 1,
       "norm_label": "_audio_frame_to_stereo_float32()"
     },
     {
@@ -1197,7 +1197,7 @@
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L154",
       "id": "ffmpeg_pywrapper_playback_rationale_154",
-      "community": 0,
+      "community": 1,
       "norm_label": "small ffmpeg-backed playback engine for local files.      the engine decodes on"
     },
     {
@@ -1206,7 +1206,7 @@
       "source_file": "src/ffmpeg_pywrapper/probe.py",
       "source_location": "L1",
       "id": "src_ffmpeg_pywrapper_probe_py",
-      "community": 1,
+      "community": 2,
       "norm_label": "probe.py"
     },
     {
@@ -1224,7 +1224,7 @@
       "source_file": "src/ffmpeg_pywrapper/probe.py",
       "source_location": "L17",
       "id": "ffmpeg_pywrapper_probe_format",
-      "community": 1,
+      "community": 2,
       "norm_label": "format()"
     },
     {
@@ -1233,7 +1233,7 @@
       "source_file": "src/ffmpeg_pywrapper/probe.py",
       "source_location": "L21",
       "id": "ffmpeg_pywrapper_probe_streams",
-      "community": 1,
+      "community": 2,
       "norm_label": "streams()"
     },
     {
@@ -1251,7 +1251,7 @@
       "source_file": "src/ffmpeg_pywrapper/probe.py",
       "source_location": "L28",
       "id": "ffmpeg_pywrapper_probe_probe",
-      "community": 1,
+      "community": 2,
       "norm_label": "probe()"
     },
     {
@@ -1260,7 +1260,7 @@
       "source_file": "src/ffmpeg_pywrapper/progress.py",
       "source_location": "L1",
       "id": "src_ffmpeg_pywrapper_progress_py",
-      "community": 4,
+      "community": 3,
       "norm_label": "progress.py"
     },
     {
@@ -1269,7 +1269,7 @@
       "source_file": "src/ffmpeg_pywrapper/progress.py",
       "source_location": "L8",
       "id": "ffmpeg_pywrapper_progress_progress",
-      "community": 4,
+      "community": 3,
       "norm_label": "progress"
     },
     {
@@ -1278,7 +1278,7 @@
       "source_file": "src/ffmpeg_pywrapper/progress.py",
       "source_location": "L18",
       "id": "ffmpeg_pywrapper_progress_parse_progress_blocks",
-      "community": 4,
+      "community": 3,
       "norm_label": "parse_progress_blocks()"
     },
     {
@@ -1287,7 +1287,7 @@
       "source_file": "src/ffmpeg_pywrapper/progress.py",
       "source_location": "L36",
       "id": "ffmpeg_pywrapper_progress_progress_from_mapping",
-      "community": 4,
+      "community": 3,
       "norm_label": "progress_from_mapping()"
     },
     {
@@ -1296,7 +1296,7 @@
       "source_file": "src/ffmpeg_pywrapper/progress.py",
       "source_location": "L48",
       "id": "ffmpeg_pywrapper_progress_parse_int",
-      "community": 4,
+      "community": 3,
       "norm_label": "_parse_int()"
     },
     {
@@ -1305,7 +1305,7 @@
       "source_file": "src/ffmpeg_pywrapper/progress.py",
       "source_location": "L57",
       "id": "ffmpeg_pywrapper_progress_parse_float",
-      "community": 4,
+      "community": 3,
       "norm_label": "_parse_float()"
     },
     {
@@ -1314,7 +1314,7 @@
       "source_file": "src/ffmpeg_pywrapper/progress.py",
       "source_location": "L66",
       "id": "ffmpeg_pywrapper_progress_parse_time",
-      "community": 4,
+      "community": 3,
       "norm_label": "_parse_time()"
     },
     {
@@ -1323,7 +1323,7 @@
       "source_file": "src/ffmpeg_pywrapper/runner.py",
       "source_location": "L1",
       "id": "src_ffmpeg_pywrapper_runner_py",
-      "community": 4,
+      "community": 3,
       "norm_label": "runner.py"
     },
     {
@@ -1332,7 +1332,7 @@
       "source_file": "src/ffmpeg_pywrapper/runner.py",
       "source_location": "L18",
       "id": "ffmpeg_pywrapper_runner_ffmpegresult",
-      "community": 4,
+      "community": 3,
       "norm_label": "ffmpegresult"
     },
     {
@@ -1341,7 +1341,7 @@
       "source_file": "src/ffmpeg_pywrapper/runner.py",
       "source_location": "L26",
       "id": "ffmpeg_pywrapper_runner_run_ffmpeg",
-      "community": 1,
+      "community": 2,
       "norm_label": "run_ffmpeg()"
     },
     {
@@ -1350,7 +1350,7 @@
       "source_file": "src/ffmpeg_pywrapper/runner.py",
       "source_location": "L84",
       "id": "ffmpeg_pywrapper_runner_boundedbuffer",
-      "community": 4,
+      "community": 3,
       "norm_label": "_boundedbuffer"
     },
     {
@@ -1359,7 +1359,7 @@
       "source_file": "src/ffmpeg_pywrapper/runner.py",
       "source_location": "L85",
       "id": "ffmpeg_pywrapper_runner_boundedbuffer_init",
-      "community": 4,
+      "community": 3,
       "norm_label": ".__init__()"
     },
     {
@@ -1368,7 +1368,7 @@
       "source_file": "src/ffmpeg_pywrapper/runner.py",
       "source_location": "L89",
       "id": "ffmpeg_pywrapper_runner_boundedbuffer_append",
-      "community": 4,
+      "community": 3,
       "norm_label": ".append()"
     },
     {
@@ -1377,7 +1377,7 @@
       "source_file": "src/ffmpeg_pywrapper/runner.py",
       "source_location": "L102",
       "id": "ffmpeg_pywrapper_runner_boundedbuffer_decode",
-      "community": 4,
+      "community": 3,
       "norm_label": ".decode()"
     },
     {
@@ -1386,7 +1386,7 @@
       "source_file": "src/ffmpeg_pywrapper/runner.py",
       "source_location": "L106",
       "id": "ffmpeg_pywrapper_runner_run_ffmpeg_popen",
-      "community": 4,
+      "community": 3,
       "norm_label": "_run_ffmpeg_popen()"
     },
     {
@@ -1395,7 +1395,7 @@
       "source_file": "src/ffmpeg_pywrapper/runner.py",
       "source_location": "L208",
       "id": "ffmpeg_pywrapper_runner_decode",
-      "community": 4,
+      "community": 3,
       "norm_label": "_decode()"
     },
     {
@@ -1404,7 +1404,7 @@
       "source_file": "src/ffmpeg_pywrapper/runner.py",
       "source_location": "L38",
       "id": "ffmpeg_pywrapper_runner_rationale_38",
-      "community": 1,
+      "community": 2,
       "norm_label": "run an ffmpeg-family command safely with shell=false."
     },
     {
@@ -1413,7 +1413,7 @@
       "source_file": "src/ffmpeg_pywrapper/subtitles.py",
       "source_location": "L1",
       "id": "src_ffmpeg_pywrapper_subtitles_py",
-      "community": 7,
+      "community": 8,
       "norm_label": "subtitles.py"
     },
     {
@@ -1422,7 +1422,7 @@
       "source_file": "src/ffmpeg_pywrapper/subtitles.py",
       "source_location": "L13",
       "id": "ffmpeg_pywrapper_subtitles_subtitleerror",
-      "community": 7,
+      "community": 8,
       "norm_label": "subtitleerror"
     },
     {
@@ -1431,7 +1431,7 @@
       "source_file": "",
       "source_location": "",
       "id": "valueerror",
-      "community": 3,
+      "community": 4,
       "norm_label": "valueerror"
     },
     {
@@ -1440,7 +1440,7 @@
       "source_file": "src/ffmpeg_pywrapper/subtitles.py",
       "source_location": "L18",
       "id": "ffmpeg_pywrapper_subtitles_subtitlecue",
-      "community": 7,
+      "community": 8,
       "norm_label": "subtitlecue"
     },
     {
@@ -1449,7 +1449,7 @@
       "source_file": "src/ffmpeg_pywrapper/subtitles.py",
       "source_location": "L25",
       "id": "ffmpeg_pywrapper_subtitles_subtitletrack",
-      "community": 7,
+      "community": 8,
       "norm_label": "subtitletrack"
     },
     {
@@ -1458,7 +1458,7 @@
       "source_file": "src/ffmpeg_pywrapper/subtitles.py",
       "source_location": "L29",
       "id": "ffmpeg_pywrapper_subtitles_subtitletrack_text_at",
-      "community": 7,
+      "community": 8,
       "norm_label": ".text_at()"
     },
     {
@@ -1467,7 +1467,7 @@
       "source_file": "src/ffmpeg_pywrapper/subtitles.py",
       "source_location": "L36",
       "id": "ffmpeg_pywrapper_subtitles_load_subtitles",
-      "community": 7,
+      "community": 8,
       "norm_label": "load_subtitles()"
     },
     {
@@ -1476,7 +1476,7 @@
       "source_file": "src/ffmpeg_pywrapper/subtitles.py",
       "source_location": "L53",
       "id": "ffmpeg_pywrapper_subtitles_parse_srt",
-      "community": 7,
+      "community": 8,
       "norm_label": "parse_srt()"
     },
     {
@@ -1485,7 +1485,7 @@
       "source_file": "src/ffmpeg_pywrapper/subtitles.py",
       "source_location": "L57",
       "id": "ffmpeg_pywrapper_subtitles_parse_vtt",
-      "community": 7,
+      "community": 8,
       "norm_label": "parse_vtt()"
     },
     {
@@ -1494,7 +1494,7 @@
       "source_file": "src/ffmpeg_pywrapper/subtitles.py",
       "source_location": "L62",
       "id": "ffmpeg_pywrapper_subtitles_parse_ass",
-      "community": 7,
+      "community": 8,
       "norm_label": "parse_ass()"
     },
     {
@@ -1503,7 +1503,7 @@
       "source_file": "src/ffmpeg_pywrapper/subtitles.py",
       "source_location": "L77",
       "id": "ffmpeg_pywrapper_subtitles_parse_timed_blocks",
-      "community": 7,
+      "community": 8,
       "norm_label": "_parse_timed_blocks()"
     },
     {
@@ -1512,7 +1512,7 @@
       "source_file": "src/ffmpeg_pywrapper/subtitles.py",
       "source_location": "L99",
       "id": "ffmpeg_pywrapper_subtitles_parse_timestamp",
-      "community": 7,
+      "community": 8,
       "norm_label": "_parse_timestamp()"
     },
     {
@@ -1521,7 +1521,7 @@
       "source_file": "src/ffmpeg_pywrapper/subtitles.py",
       "source_location": "L104",
       "id": "ffmpeg_pywrapper_subtitles_parse_ass_time",
-      "community": 7,
+      "community": 8,
       "norm_label": "_parse_ass_time()"
     },
     {
@@ -1530,8 +1530,80 @@
       "source_file": "src/ffmpeg_pywrapper/subtitles.py",
       "source_location": "L109",
       "id": "ffmpeg_pywrapper_subtitles_clean_text",
-      "community": 7,
+      "community": 8,
       "norm_label": "_clean_text()"
+    },
+    {
+      "label": "timeline.py",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/timeline.py",
+      "source_location": "L1",
+      "id": "src_ffmpeg_pywrapper_timeline_py",
+      "community": 10,
+      "norm_label": "timeline.py"
+    },
+    {
+      "label": "Chapter",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/timeline.py",
+      "source_location": "L13",
+      "id": "ffmpeg_pywrapper_timeline_chapter",
+      "community": 10,
+      "norm_label": "chapter"
+    },
+    {
+      "label": "parse_chapters()",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/timeline.py",
+      "source_location": "L20",
+      "id": "ffmpeg_pywrapper_timeline_parse_chapters",
+      "community": 10,
+      "norm_label": "parse_chapters()"
+    },
+    {
+      "label": "preview_timestamps()",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/timeline.py",
+      "source_location": "L37",
+      "id": "ffmpeg_pywrapper_timeline_preview_timestamps",
+      "community": 10,
+      "norm_label": "preview_timestamps()"
+    },
+    {
+      "label": "thumbnail_cache_dir()",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/timeline.py",
+      "source_location": "L51",
+      "id": "ffmpeg_pywrapper_timeline_thumbnail_cache_dir",
+      "community": 10,
+      "norm_label": "thumbnail_cache_dir()"
+    },
+    {
+      "label": "generate_timeline_thumbnails()",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/timeline.py",
+      "source_location": "L61",
+      "id": "ffmpeg_pywrapper_timeline_generate_timeline_thumbnails",
+      "community": 10,
+      "norm_label": "generate_timeline_thumbnails()"
+    },
+    {
+      "label": "nearest_preview()",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/timeline.py",
+      "source_location": "L72",
+      "id": "ffmpeg_pywrapper_timeline_nearest_preview",
+      "community": 0,
+      "norm_label": "nearest_preview()"
+    },
+    {
+      "label": "_chapter_time()",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/timeline.py",
+      "source_location": "L79",
+      "id": "ffmpeg_pywrapper_timeline_chapter_time",
+      "community": 10,
+      "norm_label": "_chapter_time()"
     },
     {
       "label": "__init__.py",
@@ -1539,7 +1611,7 @@
       "source_file": "src/ffmpeg_pywrapper/__init__.py",
       "source_location": "L1",
       "id": "src_ffmpeg_pywrapper_init_py",
-      "community": 1,
+      "community": 2,
       "norm_label": "__init__.py"
     },
     {
@@ -1548,7 +1620,7 @@
       "source_file": "src/ffmpeg_pywrapper/__init__.py",
       "source_location": "L1",
       "id": "ffmpeg_pywrapper_init_rationale_1",
-      "community": 1,
+      "community": 2,
       "norm_label": "typed helpers for running system ffmpeg and ffprobe."
     },
     {
@@ -1557,7 +1629,7 @@
       "source_file": "src/ffmpeg_pywrapper/__main__.py",
       "source_location": "L1",
       "id": "src_ffmpeg_pywrapper_main_py",
-      "community": 1,
+      "community": 2,
       "norm_label": "__main__.py"
     },
     {
@@ -1566,7 +1638,7 @@
       "source_file": "src/ffmpeg_pywrapper/__main__.py",
       "source_location": "L13",
       "id": "ffmpeg_pywrapper_main_main",
-      "community": 1,
+      "community": 2,
       "norm_label": "main()"
     },
     {
@@ -1575,7 +1647,7 @@
       "source_file": "src/ffmpeg_pywrapper/__main__.py",
       "source_location": "L27",
       "id": "ffmpeg_pywrapper_main_build_parser",
-      "community": 1,
+      "community": 2,
       "norm_label": "_build_parser()"
     },
     {
@@ -1584,7 +1656,7 @@
       "source_file": "src/ffmpeg_pywrapper/__main__.py",
       "source_location": "L65",
       "id": "ffmpeg_pywrapper_main_probe_command",
-      "community": 1,
+      "community": 2,
       "norm_label": "_probe_command()"
     },
     {
@@ -1593,7 +1665,7 @@
       "source_file": "src/ffmpeg_pywrapper/__main__.py",
       "source_location": "L71",
       "id": "ffmpeg_pywrapper_main_describe_command",
-      "community": 1,
+      "community": 2,
       "norm_label": "_describe_command()"
     },
     {
@@ -1602,7 +1674,7 @@
       "source_file": "src/ffmpeg_pywrapper/__main__.py",
       "source_location": "L76",
       "id": "ffmpeg_pywrapper_main_convert_command",
-      "community": 1,
+      "community": 2,
       "norm_label": "_convert_command()"
     },
     {
@@ -1611,7 +1683,7 @@
       "source_file": "src/ffmpeg_pywrapper/__main__.py",
       "source_location": "L81",
       "id": "ffmpeg_pywrapper_main_trim_command",
-      "community": 1,
+      "community": 2,
       "norm_label": "_trim_command()"
     },
     {
@@ -1620,7 +1692,7 @@
       "source_file": "src/ffmpeg_pywrapper/__main__.py",
       "source_location": "L86",
       "id": "ffmpeg_pywrapper_main_thumbnail_command",
-      "community": 1,
+      "community": 2,
       "norm_label": "_thumbnail_command()"
     },
     {
@@ -1629,7 +1701,7 @@
       "source_file": "src/ffmpeg_pywrapper/__main__.py",
       "source_location": "L91",
       "id": "ffmpeg_pywrapper_main_format_media_info",
-      "community": 1,
+      "community": 2,
       "norm_label": "_format_media_info()"
     },
     {
@@ -1638,7 +1710,7 @@
       "source_file": "src/ffmpeg_pywrapper/__main__.py",
       "source_location": "L98",
       "id": "ffmpeg_pywrapper_main_format_stream",
-      "community": 1,
+      "community": 2,
       "norm_label": "_format_stream()"
     },
     {
@@ -1647,52 +1719,88 @@
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
       "source_location": "L1",
       "id": "src_ffmpeg_pywrapper_player_app_py",
-      "community": 2,
+      "community": 0,
       "norm_label": "app.py"
     },
     {
       "label": "resource_path()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L51",
+      "source_location": "L69",
       "id": "player_app_resource_path",
-      "community": 2,
+      "community": 0,
       "norm_label": "resource_path()"
     },
     {
       "label": "user_config_path()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L56",
+      "source_location": "L74",
       "id": "player_app_user_config_path",
-      "community": 2,
+      "community": 6,
       "norm_label": "user_config_path()"
+    },
+    {
+      "label": "user_cache_path()",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L81",
+      "id": "player_app_user_cache_path",
+      "community": 0,
+      "norm_label": "user_cache_path()"
     },
     {
       "label": "load_recent_files()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L63",
+      "source_location": "L88",
       "id": "player_app_load_recent_files",
-      "community": 2,
+      "community": 6,
       "norm_label": "load_recent_files()"
     },
     {
       "label": "save_recent_files()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L75",
+      "source_location": "L92",
       "id": "player_app_save_recent_files",
-      "community": 2,
+      "community": 6,
       "norm_label": "save_recent_files()"
+    },
+    {
+      "label": "TimelineSlider",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L97",
+      "id": "player_app_timelineslider",
+      "community": 0,
+      "norm_label": "timelineslider"
+    },
+    {
+      "label": "QSlider",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "id": "qslider",
+      "community": 0,
+      "norm_label": "qslider"
+    },
+    {
+      "label": ".mouseMoveEvent()",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L100",
+      "id": "player_app_timelineslider_mousemoveevent",
+      "community": 0,
+      "norm_label": ".mousemoveevent()"
     },
     {
       "label": "PlayerSignals",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L86",
+      "source_location": "L108",
       "id": "player_app_playersignals",
-      "community": 3,
+      "community": 4,
       "norm_label": "playersignals"
     },
     {
@@ -1701,16 +1809,16 @@
       "source_file": "",
       "source_location": "",
       "id": "qobject",
-      "community": 3,
+      "community": 4,
       "norm_label": "qobject"
     },
     {
       "label": "PlayerWindow",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L93",
+      "source_location": "L115",
       "id": "player_app_playerwindow",
-      "community": 2,
+      "community": 0,
       "norm_label": "playerwindow"
     },
     {
@@ -1719,457 +1827,628 @@
       "source_file": "",
       "source_location": "",
       "id": "qmainwindow",
-      "community": 6,
+      "community": 7,
       "norm_label": "qmainwindow"
     },
     {
       "label": ".__init__()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L94",
+      "source_location": "L116",
       "id": "player_app_playerwindow_init",
-      "community": 2,
+      "community": 0,
       "norm_label": ".__init__()"
     },
     {
       "label": "._resource_file()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L158",
+      "source_location": "L194",
       "id": "player_app_playerwindow_resource_file",
-      "community": 2,
+      "community": 0,
       "norm_label": "._resource_file()"
     },
     {
       "label": "._build_ui()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L162",
+      "source_location": "L198",
       "id": "player_app_playerwindow_build_ui",
-      "community": 2,
+      "community": 0,
       "norm_label": "._build_ui()"
     },
     {
       "label": "._build_actions()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L267",
+      "source_location": "L317",
       "id": "player_app_playerwindow_build_actions",
-      "community": 2,
+      "community": 0,
       "norm_label": "._build_actions()"
     },
     {
       "label": "._add_shortcut()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L324",
+      "source_location": "L417",
       "id": "player_app_playerwindow_add_shortcut",
-      "community": 2,
+      "community": 0,
       "norm_label": "._add_shortcut()"
     },
     {
       "label": "._tool_button()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L330",
+      "source_location": "L423",
       "id": "player_app_playerwindow_tool_button",
-      "community": 2,
+      "community": 0,
       "norm_label": "._tool_button()"
     },
     {
       "label": "._apply_theme()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L342",
+      "source_location": "L435",
       "id": "player_app_playerwindow_apply_theme",
-      "community": 9,
+      "community": 11,
       "norm_label": "._apply_theme()"
     },
     {
       "label": ".open_file()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L350",
+      "source_location": "L443",
       "id": "player_app_playerwindow_open_file",
-      "community": 2,
+      "community": 0,
       "norm_label": ".open_file()"
     },
     {
       "label": ".set_playlist()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L360",
+      "source_location": "L453",
       "id": "player_app_playerwindow_set_playlist",
-      "community": 2,
+      "community": 0,
       "norm_label": ".set_playlist()"
     },
     {
       "label": ".play_next()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L368",
+      "source_location": "L463",
       "id": "player_app_playerwindow_play_next",
-      "community": 2,
+      "community": 0,
       "norm_label": ".play_next()"
     },
     {
       "label": ".play_previous()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L374",
+      "source_location": "L483",
       "id": "player_app_playerwindow_play_previous",
-      "community": 2,
+      "community": 0,
       "norm_label": ".play_previous()"
     },
     {
       "label": "._load_current_playlist_item()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L380",
+      "source_location": "L490",
       "id": "player_app_playerwindow_load_current_playlist_item",
-      "community": 2,
+      "community": 0,
       "norm_label": "._load_current_playlist_item()"
     },
     {
       "label": ".load_and_play()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L384",
+      "source_location": "L494",
       "id": "player_app_playerwindow_load_and_play",
-      "community": 2,
+      "community": 0,
       "norm_label": ".load_and_play()"
     },
     {
       "label": ".toggle_playback()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L396",
+      "source_location": "L518",
       "id": "player_app_playerwindow_toggle_playback",
-      "community": 2,
+      "community": 0,
       "norm_label": ".toggle_playback()"
     },
     {
       "label": ".show_frame()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L402",
+      "source_location": "L524",
       "id": "player_app_playerwindow_show_frame",
-      "community": 2,
+      "community": 0,
       "norm_label": ".show_frame()"
     },
     {
       "label": ".on_state()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L408",
+      "source_location": "L530",
       "id": "player_app_playerwindow_on_state",
-      "community": 2,
+      "community": 0,
       "norm_label": ".on_state()"
     },
     {
       "label": ".on_error()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L420",
+      "source_location": "L542",
       "id": "player_app_playerwindow_on_error",
-      "community": 2,
+      "community": 0,
       "norm_label": ".on_error()"
     },
     {
       "label": ".on_warning()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L423",
+      "source_location": "L545",
       "id": "player_app_playerwindow_on_warning",
-      "community": 2,
+      "community": 0,
       "norm_label": ".on_warning()"
     },
     {
       "label": ".refresh_position()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L426",
+      "source_location": "L548",
       "id": "player_app_playerwindow_refresh_position",
-      "community": 2,
+      "community": 0,
       "norm_label": ".refresh_position()"
     },
     {
       "label": "._begin_seek()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L436",
+      "source_location": "L558",
       "id": "player_app_playerwindow_begin_seek",
-      "community": 2,
+      "community": 0,
       "norm_label": "._begin_seek()"
     },
     {
       "label": "._finish_seek()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L439",
+      "source_location": "L561",
       "id": "player_app_playerwindow_finish_seek",
-      "community": 2,
+      "community": 0,
       "norm_label": "._finish_seek()"
     },
     {
       "label": "._populate_audio_streams()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L444",
+      "source_location": "L566",
       "id": "player_app_playerwindow_populate_audio_streams",
-      "community": 2,
+      "community": 0,
       "norm_label": "._populate_audio_streams()"
     },
     {
       "label": "._select_audio_stream()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L468",
+      "source_location": "L590",
       "id": "player_app_playerwindow_select_audio_stream",
-      "community": 2,
+      "community": 0,
       "norm_label": "._select_audio_stream()"
     },
     {
       "label": "._populate_subtitle_sources()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L473",
+      "source_location": "L595",
       "id": "player_app_playerwindow_populate_subtitle_sources",
-      "community": 2,
+      "community": 0,
       "norm_label": "._populate_subtitle_sources()"
     },
     {
       "label": "._select_subtitle_source()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L490",
+      "source_location": "L612",
       "id": "player_app_playerwindow_select_subtitle_source",
-      "community": 2,
+      "community": 0,
       "norm_label": "._select_subtitle_source()"
     },
     {
       "label": ".load_external_subtitles()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L504",
+      "source_location": "L626",
       "id": "player_app_playerwindow_load_external_subtitles",
-      "community": 2,
+      "community": 0,
       "norm_label": ".load_external_subtitles()"
     },
     {
       "label": "._render_subtitle()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L518",
+      "source_location": "L640",
       "id": "player_app_playerwindow_render_subtitle",
-      "community": 2,
+      "community": 0,
       "norm_label": "._render_subtitle()"
     },
     {
       "label": "._select_playback_speed()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L525",
+      "source_location": "L647",
       "id": "player_app_playerwindow_select_playback_speed",
-      "community": 2,
+      "community": 0,
       "norm_label": "._select_playback_speed()"
     },
     {
       "label": "._remember_recent_file()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L530",
+      "source_location": "L652",
       "id": "player_app_playerwindow_remember_recent_file",
-      "community": 2,
+      "community": 6,
       "norm_label": "._remember_recent_file()"
     },
     {
       "label": "._refresh_recent_menu()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L535",
+      "source_location": "L658",
       "id": "player_app_playerwindow_refresh_recent_menu",
-      "community": 2,
+      "community": 0,
       "norm_label": "._refresh_recent_menu()"
     },
     {
       "label": "._refresh_playlist_drawer()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L550",
+      "source_location": "L673",
       "id": "player_app_playerwindow_refresh_playlist_drawer",
-      "community": 2,
+      "community": 0,
       "norm_label": "._refresh_playlist_drawer()"
     },
     {
       "label": "._play_playlist_item()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L560",
+      "source_location": "L686",
       "id": "player_app_playerwindow_play_playlist_item",
-      "community": 2,
+      "community": 0,
       "norm_label": "._play_playlist_item()"
     },
     {
       "label": ".toggle_playlist_drawer()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L566",
+      "source_location": "L692",
       "id": "player_app_playerwindow_toggle_playlist_drawer",
-      "community": 2,
+      "community": 0,
       "norm_label": ".toggle_playlist_drawer()"
+    },
+    {
+      "label": ".remove_selected_playlist_item()",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L695",
+      "id": "player_app_playerwindow_remove_selected_playlist_item",
+      "community": 0,
+      "norm_label": ".remove_selected_playlist_item()"
+    },
+    {
+      "label": ".clear_playlist()",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L705",
+      "id": "player_app_playerwindow_clear_playlist",
+      "community": 0,
+      "norm_label": ".clear_playlist()"
+    },
+    {
+      "label": ".toggle_shuffle()",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L712",
+      "id": "player_app_playerwindow_toggle_shuffle",
+      "community": 0,
+      "norm_label": ".toggle_shuffle()"
+    },
+    {
+      "label": ".cycle_repeat_mode()",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L717",
+      "id": "player_app_playerwindow_cycle_repeat_mode",
+      "community": 0,
+      "norm_label": ".cycle_repeat_mode()"
     },
     {
       "label": ".toggle_fullscreen()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L569",
+      "source_location": "L723",
       "id": "player_app_playerwindow_toggle_fullscreen",
-      "community": 2,
+      "community": 0,
       "norm_label": ".toggle_fullscreen()"
     },
     {
       "label": ".exit_fullscreen()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L577",
+      "source_location": "L731",
       "id": "player_app_playerwindow_exit_fullscreen",
-      "community": 2,
+      "community": 0,
       "norm_label": ".exit_fullscreen()"
     },
     {
       "label": "._video_double_click()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L582",
+      "source_location": "L736",
       "id": "player_app_playerwindow_video_double_click",
-      "community": 2,
+      "community": 0,
       "norm_label": "._video_double_click()"
     },
     {
       "label": ".mouseMoveEvent()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L585",
+      "source_location": "L739",
       "id": "player_app_playerwindow_mousemoveevent",
-      "community": 2,
+      "community": 0,
       "norm_label": ".mousemoveevent()"
     },
     {
       "label": "._hide_controls_if_fullscreen()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L591",
+      "source_location": "L745",
       "id": "player_app_playerwindow_hide_controls_if_fullscreen",
-      "community": 2,
+      "community": 0,
       "norm_label": "._hide_controls_if_fullscreen()"
     },
     {
       "label": "._show_controls()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L596",
+      "source_location": "L750",
       "id": "player_app_playerwindow_show_controls",
-      "community": 2,
+      "community": 0,
       "norm_label": "._show_controls()"
     },
     {
       "label": ".toggle_mute()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L600",
+      "source_location": "L754",
       "id": "player_app_playerwindow_toggle_mute",
-      "community": 2,
+      "community": 0,
       "norm_label": ".toggle_mute()"
+    },
+    {
+      "label": ".adjust_subtitle_delay()",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L758",
+      "id": "player_app_playerwindow_adjust_subtitle_delay",
+      "community": 0,
+      "norm_label": ".adjust_subtitle_delay()"
     },
     {
       "label": ".seek_relative()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L604",
+      "source_location": "L763",
       "id": "player_app_playerwindow_seek_relative",
-      "community": 2,
+      "community": 0,
       "norm_label": ".seek_relative()"
     },
     {
       "label": ".adjust_volume()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L611",
+      "source_location": "L770",
       "id": "player_app_playerwindow_adjust_volume",
-      "community": 2,
+      "community": 0,
       "norm_label": ".adjust_volume()"
+    },
+    {
+      "label": ".previous_chapter()",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L773",
+      "id": "player_app_playerwindow_previous_chapter",
+      "community": 0,
+      "norm_label": ".previous_chapter()"
+    },
+    {
+      "label": ".next_chapter()",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L781",
+      "id": "player_app_playerwindow_next_chapter",
+      "community": 0,
+      "norm_label": ".next_chapter()"
     },
     {
       "label": ".save_current_frame()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L614",
+      "source_location": "L790",
       "id": "player_app_playerwindow_save_current_frame",
-      "community": 2,
+      "community": 0,
       "norm_label": ".save_current_frame()"
     },
     {
       "label": ".export_clip()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L622",
+      "source_location": "L798",
       "id": "player_app_playerwindow_export_clip",
-      "community": 7,
+      "community": 8,
       "norm_label": ".export_clip()"
     },
     {
       "label": ".dragEnterEvent()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L643",
+      "source_location": "L819",
       "id": "player_app_playerwindow_dragenterevent",
-      "community": 2,
+      "community": 0,
       "norm_label": ".dragenterevent()"
     },
     {
       "label": ".dropEvent()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L647",
+      "source_location": "L823",
       "id": "player_app_playerwindow_dropevent",
-      "community": 2,
+      "community": 0,
       "norm_label": ".dropevent()"
+    },
+    {
+      "label": ".toggle_inspector()",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L839",
+      "id": "player_app_playerwindow_toggle_inspector",
+      "community": 0,
+      "norm_label": ".toggle_inspector()"
+    },
+    {
+      "label": ".copy_probe_json()",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L842",
+      "id": "player_app_playerwindow_copy_probe_json",
+      "community": 0,
+      "norm_label": ".copy_probe_json()"
+    },
+    {
+      "label": ".open_containing_folder()",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L848",
+      "id": "player_app_playerwindow_open_containing_folder",
+      "community": 0,
+      "norm_label": ".open_containing_folder()"
+    },
+    {
+      "label": ".save_current_media_state()",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L858",
+      "id": "player_app_playerwindow_save_current_media_state",
+      "community": 6,
+      "norm_label": ".save_current_media_state()"
+    },
+    {
+      "label": "._restore_media_state()",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L876",
+      "id": "player_app_playerwindow_restore_media_state",
+      "community": 0,
+      "norm_label": "._restore_media_state()"
+    },
+    {
+      "label": "._refresh_inspector()",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L905",
+      "id": "player_app_playerwindow_refresh_inspector",
+      "community": 0,
+      "norm_label": "._refresh_inspector()"
+    },
+    {
+      "label": "._start_preview_generation()",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L927",
+      "id": "player_app_playerwindow_start_preview_generation",
+      "community": 0,
+      "norm_label": "._start_preview_generation()"
+    },
+    {
+      "label": "._show_timeline_preview()",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L939",
+      "id": "player_app_playerwindow_show_timeline_preview",
+      "community": 0,
+      "norm_label": "._show_timeline_preview()"
+    },
+    {
+      "label": "._next_shuffle_index()",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L949",
+      "id": "player_app_playerwindow_next_shuffle_index",
+      "community": 0,
+      "norm_label": "._next_shuffle_index()"
+    },
+    {
+      "label": "._rebuild_shuffle_queue()",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L954",
+      "id": "player_app_playerwindow_rebuild_shuffle_queue",
+      "community": 0,
+      "norm_label": "._rebuild_shuffle_queue()"
+    },
+    {
+      "label": "._advance_after_failed_load()",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L958",
+      "id": "player_app_playerwindow_advance_after_failed_load",
+      "community": 0,
+      "norm_label": "._advance_after_failed_load()"
+    },
+    {
+      "label": "._sync_playlist_from_widget()",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L963",
+      "id": "player_app_playerwindow_sync_playlist_from_widget",
+      "community": 0,
+      "norm_label": "._sync_playlist_from_widget()"
     },
     {
       "label": ".closeEvent()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L663",
+      "source_location": "L976",
       "id": "player_app_playerwindow_closeevent",
-      "community": 2,
+      "community": 6,
       "norm_label": ".closeevent()"
     },
     {
       "label": ".resizeEvent()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L669",
+      "source_location": "L984",
       "id": "player_app_playerwindow_resizeevent",
-      "community": 2,
+      "community": 0,
       "norm_label": ".resizeevent()"
     },
     {
       "label": "._render_pixmap()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L673",
+      "source_location": "L988",
       "id": "player_app_playerwindow_render_pixmap",
-      "community": 2,
+      "community": 0,
       "norm_label": "._render_pixmap()"
     },
     {
       "label": "ClipExportDialog",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L685",
+      "source_location": "L1000",
       "id": "player_app_clipexportdialog",
-      "community": 7,
+      "community": 8,
       "norm_label": "clipexportdialog"
     },
     {
@@ -2178,44 +2457,170 @@
       "source_file": "",
       "source_location": "",
       "id": "qdialog",
-      "community": 7,
+      "community": 8,
       "norm_label": "qdialog"
     },
     {
       "label": ".__init__()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L686",
+      "source_location": "L1001",
       "id": "player_app_clipexportdialog_init",
-      "community": 5,
+      "community": 0,
       "norm_label": ".__init__()"
     },
     {
       "label": "._browse_output()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L715",
+      "source_location": "L1030",
       "id": "player_app_clipexportdialog_browse_output",
-      "community": 7,
+      "community": 8,
       "norm_label": "._browse_output()"
     },
     {
       "label": ".values()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L720",
+      "source_location": "L1035",
       "id": "player_app_clipexportdialog_values",
-      "community": 7,
+      "community": 8,
       "norm_label": ".values()"
+    },
+    {
+      "label": "_file_size()",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L1044",
+      "id": "player_app_file_size",
+      "community": 0,
+      "norm_label": "_file_size()"
     },
     {
       "label": "main()",
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L729",
+      "source_location": "L1056",
       "id": "player_app_main",
-      "community": 2,
+      "community": 0,
       "norm_label": "main()"
+    },
+    {
+      "label": "config_store.py",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/player/config_store.py",
+      "source_location": "L1",
+      "id": "src_ffmpeg_pywrapper_player_config_store_py",
+      "community": 6,
+      "norm_label": "config_store.py"
+    },
+    {
+      "label": "MediaState",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/player/config_store.py",
+      "source_location": "L11",
+      "id": "player_config_store_mediastate",
+      "community": 6,
+      "norm_label": "mediastate"
+    },
+    {
+      "label": "normalize_media_key()",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/player/config_store.py",
+      "source_location": "L21",
+      "id": "player_config_store_normalize_media_key",
+      "community": 6,
+      "norm_label": "normalize_media_key()"
+    },
+    {
+      "label": "load_config()",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/player/config_store.py",
+      "source_location": "L29",
+      "id": "player_config_store_load_config",
+      "community": 6,
+      "norm_label": "load_config()"
+    },
+    {
+      "label": "save_config()",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/player/config_store.py",
+      "source_location": "L37",
+      "id": "player_config_store_save_config",
+      "community": 6,
+      "norm_label": "save_config()"
+    },
+    {
+      "label": "recent_files_from_config()",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/player/config_store.py",
+      "source_location": "L42",
+      "id": "player_config_store_recent_files_from_config",
+      "community": 6,
+      "norm_label": "recent_files_from_config()"
+    },
+    {
+      "label": "set_recent_files()",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/player/config_store.py",
+      "source_location": "L49",
+      "id": "player_config_store_set_recent_files",
+      "community": 6,
+      "norm_label": "set_recent_files()"
+    },
+    {
+      "label": "media_state_from_config()",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/player/config_store.py",
+      "source_location": "L60",
+      "id": "player_config_store_media_state_from_config",
+      "community": 6,
+      "norm_label": "media_state_from_config()"
+    },
+    {
+      "label": "set_media_state()",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/player/config_store.py",
+      "source_location": "L78",
+      "id": "player_config_store_set_media_state",
+      "community": 6,
+      "norm_label": "set_media_state()"
+    },
+    {
+      "label": "resumable_position()",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/player/config_store.py",
+      "source_location": "L90",
+      "id": "player_config_store_resumable_position",
+      "community": 6,
+      "norm_label": "resumable_position()"
+    },
+    {
+      "label": "_float()",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/player/config_store.py",
+      "source_location": "L99",
+      "id": "player_config_store_float",
+      "community": 6,
+      "norm_label": "_float()"
+    },
+    {
+      "label": "_optional_int()",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/player/config_store.py",
+      "source_location": "L106",
+      "id": "player_config_store_optional_int",
+      "community": 6,
+      "norm_label": "_optional_int()"
+    },
+    {
+      "label": "_subtitle_source()",
+      "file_type": "code",
+      "source_file": "src/ffmpeg_pywrapper/player/config_store.py",
+      "source_location": "L113",
+      "id": "player_config_store_subtitle_source",
+      "community": 6,
+      "norm_label": "_subtitle_source()"
     },
     {
       "label": "theme.py",
@@ -2223,7 +2628,7 @@
       "source_file": "src/ffmpeg_pywrapper/player/theme.py",
       "source_location": "L1",
       "id": "src_ffmpeg_pywrapper_player_theme_py",
-      "community": 9,
+      "community": 11,
       "norm_label": "theme.py"
     },
     {
@@ -2232,7 +2637,7 @@
       "source_file": "src/ffmpeg_pywrapper/player/theme.py",
       "source_location": "L15",
       "id": "player_theme_themeerror",
-      "community": 9,
+      "community": 11,
       "norm_label": "themeerror"
     },
     {
@@ -2241,7 +2646,7 @@
       "source_file": "",
       "source_location": "",
       "id": "runtimeerror",
-      "community": 0,
+      "community": 7,
       "norm_label": "runtimeerror"
     },
     {
@@ -2250,7 +2655,7 @@
       "source_file": "src/ffmpeg_pywrapper/player/theme.py",
       "source_location": "L20",
       "id": "player_theme_theme",
-      "community": 9,
+      "community": 11,
       "norm_label": "theme"
     },
     {
@@ -2259,7 +2664,7 @@
       "source_file": "src/ffmpeg_pywrapper/player/theme.py",
       "source_location": "L27",
       "id": "player_theme_load_theme",
-      "community": 9,
+      "community": 11,
       "norm_label": "load_theme()"
     },
     {
@@ -2268,7 +2673,7 @@
       "source_file": "src/ffmpeg_pywrapper/player/theme.py",
       "source_location": "L61",
       "id": "player_theme_render_stylesheet",
-      "community": 9,
+      "community": 11,
       "norm_label": "render_stylesheet()"
     },
     {
@@ -2277,7 +2682,7 @@
       "source_file": "src/ffmpeg_pywrapper/player/theme.py",
       "source_location": "L72",
       "id": "player_theme_flatten_tokens",
-      "community": 9,
+      "community": 11,
       "norm_label": "_flatten_tokens()"
     },
     {
@@ -2286,7 +2691,7 @@
       "source_file": "src/ffmpeg_pywrapper/player/theme.py",
       "source_location": "L85",
       "id": "player_theme_validate_tokens",
-      "community": 9,
+      "community": 11,
       "norm_label": "_validate_tokens()"
     },
     {
@@ -2295,7 +2700,7 @@
       "source_file": "src/ffmpeg_pywrapper/player/__init__.py",
       "source_location": "L1",
       "id": "src_ffmpeg_pywrapper_player_init_py",
-      "community": 13,
+      "community": 14,
       "norm_label": "__init__.py"
     },
     {
@@ -2304,7 +2709,7 @@
       "source_file": "src/ffmpeg_pywrapper/player/__init__.py",
       "source_location": "L1",
       "id": "player_init_rationale_1",
-      "community": 13,
+      "community": 14,
       "norm_label": "qt desktop player for voidplayer."
     },
     {
@@ -2331,7 +2736,7 @@
       "source_file": "tests/test_cli.py",
       "source_location": "L18",
       "id": "tests_test_cli_test_cli_describe_uses_media_summary",
-      "community": 0,
+      "community": 5,
       "norm_label": "test_cli_describe_uses_media_summary()"
     },
     {
@@ -2358,7 +2763,7 @@
       "source_file": "tests/test_commands.py",
       "source_location": "L1",
       "id": "tests_test_commands_py",
-      "community": 1,
+      "community": 2,
       "norm_label": "test_commands.py"
     },
     {
@@ -2367,7 +2772,7 @@
       "source_file": "tests/test_commands.py",
       "source_location": "L9",
       "id": "tests_test_commands_test_normalize_options_preserves_order_and_stream_specifiers",
-      "community": 1,
+      "community": 2,
       "norm_label": "test_normalize_options_preserves_order_and_stream_specifiers()"
     },
     {
@@ -2376,7 +2781,7 @@
       "source_file": "tests/test_commands.py",
       "source_location": "L15",
       "id": "tests_test_commands_test_build_command_orders_global_inputs_and_output_options",
-      "community": 1,
+      "community": 2,
       "norm_label": "test_build_command_orders_global_inputs_and_output_options()"
     },
     {
@@ -2385,7 +2790,7 @@
       "source_file": "tests/test_config.py",
       "source_location": "L1",
       "id": "tests_test_config_py",
-      "community": 1,
+      "community": 2,
       "norm_label": "test_config.py"
     },
     {
@@ -2394,7 +2799,7 @@
       "source_file": "tests/test_config.py",
       "source_location": "L8",
       "id": "tests_test_config_test_missing_absolute_executable_raises",
-      "community": 1,
+      "community": 2,
       "norm_label": "test_missing_absolute_executable_raises()"
     },
     {
@@ -2403,7 +2808,7 @@
       "source_file": "tests/test_errors.py",
       "source_location": "L1",
       "id": "tests_test_errors_py",
-      "community": 4,
+      "community": 3,
       "norm_label": "test_errors.py"
     },
     {
@@ -2412,7 +2817,7 @@
       "source_file": "tests/test_errors.py",
       "source_location": "L6",
       "id": "tests_test_errors_test_classifies_unsupported_codec",
-      "community": 4,
+      "community": 3,
       "norm_label": "test_classifies_unsupported_codec()"
     },
     {
@@ -2421,7 +2826,7 @@
       "source_file": "tests/test_errors.py",
       "source_location": "L12",
       "id": "tests_test_errors_test_classifies_invalid_command",
-      "community": 4,
+      "community": 3,
       "norm_label": "test_classifies_invalid_command()"
     },
     {
@@ -2430,7 +2835,7 @@
       "source_file": "tests/test_errors.py",
       "source_location": "L18",
       "id": "tests_test_errors_test_falls_back_to_process_error",
-      "community": 4,
+      "community": 3,
       "norm_label": "test_falls_back_to_process_error()"
     },
     {
@@ -2439,7 +2844,7 @@
       "source_file": "tests/test_integration.py",
       "source_location": "L1",
       "id": "tests_test_integration_py",
-      "community": 1,
+      "community": 2,
       "norm_label": "test_integration.py"
     },
     {
@@ -2448,7 +2853,7 @@
       "source_file": "tests/test_integration.py",
       "source_location": "L14",
       "id": "tests_test_integration_test_media_flow_with_system_ffmpeg",
-      "community": 1,
+      "community": 2,
       "norm_label": "test_media_flow_with_system_ffmpeg()"
     },
     {
@@ -2457,7 +2862,7 @@
       "source_file": "tests/test_integration.py",
       "source_location": "L50",
       "id": "tests_test_integration_test_generate_webm_fixture_when_supported",
-      "community": 1,
+      "community": 2,
       "norm_label": "test_generate_webm_fixture_when_supported()"
     },
     {
@@ -2502,7 +2907,7 @@
       "source_file": "tests/test_playback.py",
       "source_location": "L1",
       "id": "tests_test_playback_py",
-      "community": 0,
+      "community": 1,
       "norm_label": "test_playback.py"
     },
     {
@@ -2511,7 +2916,7 @@
       "source_file": "tests/test_playback.py",
       "source_location": "L21",
       "id": "tests_test_playback_test_playback_clock_seek_pause_reset",
-      "community": 3,
+      "community": 4,
       "norm_label": "test_playback_clock_seek_pause_reset()"
     },
     {
@@ -2520,7 +2925,7 @@
       "source_file": "tests/test_playback.py",
       "source_location": "L38",
       "id": "tests_test_playback_test_playback_state_values_are_stable",
-      "community": 0,
+      "community": 1,
       "norm_label": "test_playback_state_values_are_stable()"
     },
     {
@@ -2529,7 +2934,7 @@
       "source_file": "tests/test_playback.py",
       "source_location": "L44",
       "id": "tests_test_playback_test_state_callback_is_not_called_while_lifecycle_lock_is_held",
-      "community": 0,
+      "community": 1,
       "norm_label": "test_state_callback_is_not_called_while_lifecycle_lock_is_held()"
     },
     {
@@ -2538,7 +2943,7 @@
       "source_file": "tests/test_playback.py",
       "source_location": "L54",
       "id": "tests_test_playback_test_load_failure_after_close_leaves_player_empty",
-      "community": 0,
+      "community": 5,
       "norm_label": "test_load_failure_after_close_leaves_player_empty()"
     },
     {
@@ -2547,7 +2952,7 @@
       "source_file": "tests/test_playback.py",
       "source_location": "L72",
       "id": "tests_test_playback_test_audio_warning_does_not_force_error_state",
-      "community": 0,
+      "community": 7,
       "norm_label": "test_audio_warning_does_not_force_error_state()"
     },
     {
@@ -2556,7 +2961,7 @@
       "source_file": "tests/test_playback.py",
       "source_location": "L83",
       "id": "tests_test_playback_test_audio_clock_advances_by_samples",
-      "community": 3,
+      "community": 4,
       "norm_label": "test_audio_clock_advances_by_samples()"
     },
     {
@@ -2565,7 +2970,7 @@
       "source_file": "tests/test_playback.py",
       "source_location": "L93",
       "id": "tests_test_playback_test_audio_clock_can_advance_for_silence_on_underrun",
-      "community": 3,
+      "community": 4,
       "norm_label": "test_audio_clock_can_advance_for_silence_on_underrun()"
     },
     {
@@ -2574,7 +2979,7 @@
       "source_file": "tests/test_playback.py",
       "source_location": "L102",
       "id": "tests_test_playback_test_master_clock_prefers_active_audio",
-      "community": 0,
+      "community": 1,
       "norm_label": "test_master_clock_prefers_active_audio()"
     },
     {
@@ -2583,7 +2988,7 @@
       "source_file": "tests/test_playback.py",
       "source_location": "L113",
       "id": "tests_test_playback_test_master_clock_reads_audio_only_after_audio_ready",
-      "community": 0,
+      "community": 1,
       "norm_label": "test_master_clock_reads_audio_only_after_audio_ready()"
     },
     {
@@ -2592,7 +2997,7 @@
       "source_file": "tests/test_playback.py",
       "source_location": "L127",
       "id": "tests_test_playback_test_master_clock_falls_back_to_wall_clock",
-      "community": 0,
+      "community": 1,
       "norm_label": "test_master_clock_falls_back_to_wall_clock()"
     },
     {
@@ -2601,7 +3006,7 @@
       "source_file": "tests/test_playback.py",
       "source_location": "L134",
       "id": "tests_test_playback_test_gui_visible_position_uses_master_position",
-      "community": 0,
+      "community": 1,
       "norm_label": "test_gui_visible_position_uses_master_position()"
     },
     {
@@ -2610,7 +3015,7 @@
       "source_file": "tests/test_playback.py",
       "source_location": "L176",
       "id": "tests_test_playback_test_video_start_waits_for_audio_readiness_when_audio_is_expected",
-      "community": 0,
+      "community": 1,
       "norm_label": "test_video_start_waits_for_audio_readiness_when_audio_is_expected()"
     },
     {
@@ -2619,7 +3024,7 @@
       "source_file": "tests/test_playback.py",
       "source_location": "L196",
       "id": "tests_test_playback_test_video_start_falls_back_after_audio_ready_timeout",
-      "community": 0,
+      "community": 1,
       "norm_label": "test_video_start_falls_back_after_audio_ready_timeout()"
     },
     {
@@ -2628,7 +3033,7 @@
       "source_file": "tests/test_playback.py",
       "source_location": "L208",
       "id": "tests_test_playback_test_seek_while_playing_restarts_workers_at_seek_target",
-      "community": 0,
+      "community": 5,
       "norm_label": "test_seek_while_playing_restarts_workers_at_seek_target()"
     },
     {
@@ -2637,7 +3042,7 @@
       "source_file": "tests/test_playback.py",
       "source_location": "L237",
       "id": "tests_test_playback_test_paused_seek_repositions_without_restarting_workers",
-      "community": 0,
+      "community": 5,
       "norm_label": "test_paused_seek_repositions_without_restarting_workers()"
     },
     {
@@ -2646,7 +3051,7 @@
       "source_file": "tests/test_playback.py",
       "source_location": "L250",
       "id": "tests_test_playback_test_container_seek_uses_stream_time_base",
-      "community": 0,
+      "community": 1,
       "norm_label": "test_container_seek_uses_stream_time_base()"
     },
     {
@@ -2655,7 +3060,7 @@
       "source_file": "tests/test_playback.py",
       "source_location": "L270",
       "id": "tests_test_playback_test_stale_generation_audio_advance_is_ignored",
-      "community": 0,
+      "community": 1,
       "norm_label": "test_stale_generation_audio_advance_is_ignored()"
     },
     {
@@ -2664,7 +3069,7 @@
       "source_file": "tests/test_playback.py",
       "source_location": "L280",
       "id": "tests_test_playback_test_stop_invalidates_stale_generation",
-      "community": 0,
+      "community": 1,
       "norm_label": "test_stop_invalidates_stale_generation()"
     },
     {
@@ -2673,7 +3078,7 @@
       "source_file": "tests/test_playback.py",
       "source_location": "L292",
       "id": "tests_test_playback_test_stale_generation_cannot_mark_audio_ready",
-      "community": 0,
+      "community": 1,
       "norm_label": "test_stale_generation_cannot_mark_audio_ready()"
     },
     {
@@ -2682,7 +3087,7 @@
       "source_file": "tests/test_playback.py",
       "source_location": "L303",
       "id": "tests_test_playback_test_seek_clears_audio_buffers_without_reopening_output",
-      "community": 0,
+      "community": 5,
       "norm_label": "test_seek_clears_audio_buffers_without_reopening_output()"
     },
     {
@@ -2691,7 +3096,7 @@
       "source_file": "tests/test_playback.py",
       "source_location": "L332",
       "id": "tests_test_playback_test_set_audio_stream_validates_available_streams",
-      "community": 0,
+      "community": 5,
       "norm_label": "test_set_audio_stream_validates_available_streams()"
     },
     {
@@ -2700,7 +3105,7 @@
       "source_file": "tests/test_playback.py",
       "source_location": "L348",
       "id": "tests_test_playback_test_playback_speed_updates_clock_speed",
-      "community": 0,
+      "community": 1,
       "norm_label": "test_playback_speed_updates_clock_speed()"
     },
     {
@@ -2709,7 +3114,7 @@
       "source_file": "tests/test_playback.py",
       "source_location": "L356",
       "id": "tests_test_playback_test_muted_audio_callback_outputs_silence_and_advances_clock",
-      "community": 0,
+      "community": 1,
       "norm_label": "test_muted_audio_callback_outputs_silence_and_advances_clock()"
     },
     {
@@ -2718,7 +3123,7 @@
       "source_file": "tests/test_playback.py",
       "source_location": "L370",
       "id": "tests_test_playback_test_audio_callback_outputs_silence_before_ready_without_advancing_clock",
-      "community": 0,
+      "community": 1,
       "norm_label": "test_audio_callback_outputs_silence_before_ready_without_advancing_clock()"
     },
     {
@@ -2727,7 +3132,7 @@
       "source_file": "tests/test_playback.py",
       "source_location": "L383",
       "id": "tests_test_playback_test_audio_callback_writes_pcm_and_advances_clock_after_ready",
-      "community": 0,
+      "community": 1,
       "norm_label": "test_audio_callback_writes_pcm_and_advances_clock_after_ready()"
     },
     {
@@ -2736,7 +3141,7 @@
       "source_file": "tests/test_playback.py",
       "source_location": "L396",
       "id": "tests_test_playback_test_video_seek_drop_logic_skips_frames_before_target",
-      "community": 0,
+      "community": 1,
       "norm_label": "test_video_seek_drop_logic_skips_frames_before_target()"
     },
     {
@@ -2745,7 +3150,7 @@
       "source_file": "tests/test_playback.py",
       "source_location": "L401",
       "id": "tests_test_playback_test_frame_timing_decisions",
-      "community": 3,
+      "community": 4,
       "norm_label": "test_frame_timing_decisions()"
     },
     {
@@ -2754,8 +3159,53 @@
       "source_file": "tests/test_playback.py",
       "source_location": "L407",
       "id": "tests_test_playback_test_packed_stereo_audio_frame_is_reshaped_without_duplication",
-      "community": 0,
+      "community": 1,
       "norm_label": "test_packed_stereo_audio_frame_is_reshaped_without_duplication()"
+    },
+    {
+      "label": "test_player_config.py",
+      "file_type": "code",
+      "source_file": "tests/test_player_config.py",
+      "source_location": "L1",
+      "id": "tests_test_player_config_py",
+      "community": 6,
+      "norm_label": "test_player_config.py"
+    },
+    {
+      "label": "test_recent_files_config_preserves_unknown_keys()",
+      "file_type": "code",
+      "source_file": "tests/test_player_config.py",
+      "source_location": "L17",
+      "id": "tests_test_player_config_test_recent_files_config_preserves_unknown_keys",
+      "community": 6,
+      "norm_label": "test_recent_files_config_preserves_unknown_keys()"
+    },
+    {
+      "label": "test_media_state_round_trip()",
+      "file_type": "code",
+      "source_file": "tests/test_player_config.py",
+      "source_location": "L25",
+      "id": "tests_test_player_config_test_media_state_round_trip",
+      "community": 6,
+      "norm_label": "test_media_state_round_trip()"
+    },
+    {
+      "label": "test_resumable_position_skips_edges()",
+      "file_type": "code",
+      "source_file": "tests/test_player_config.py",
+      "source_location": "L42",
+      "id": "tests_test_player_config_test_resumable_position_skips_edges",
+      "community": 6,
+      "norm_label": "test_resumable_position_skips_edges()"
+    },
+    {
+      "label": "test_corrupt_config_returns_empty()",
+      "file_type": "code",
+      "source_file": "tests/test_player_config.py",
+      "source_location": "L49",
+      "id": "tests_test_player_config_test_corrupt_config_returns_empty",
+      "community": 6,
+      "norm_label": "test_corrupt_config_returns_empty()"
     },
     {
       "label": "test_player_smoke.py",
@@ -2763,7 +3213,7 @@
       "source_file": "tests/test_player_smoke.py",
       "source_location": "L1",
       "id": "tests_test_player_smoke_py",
-      "community": 2,
+      "community": 6,
       "norm_label": "test_player_smoke.py"
     },
     {
@@ -2772,7 +3222,7 @@
       "source_file": "tests/test_player_smoke.py",
       "source_location": "L9",
       "id": "tests_test_player_smoke_test_player_window_starts_offscreen_with_default_theme",
-      "community": 2,
+      "community": 6,
       "norm_label": "test_player_window_starts_offscreen_with_default_theme()"
     },
     {
@@ -2781,7 +3231,7 @@
       "source_file": "tests/test_player_smoke.py",
       "source_location": "L44",
       "id": "tests_test_player_smoke_test_recent_files_round_trip",
-      "community": 2,
+      "community": 6,
       "norm_label": "test_recent_files_round_trip()"
     },
     {
@@ -2790,8 +3240,17 @@
       "source_file": "tests/test_player_smoke.py",
       "source_location": "L53",
       "id": "tests_test_player_smoke_test_playlist_drawer_tracks_current_item",
-      "community": 2,
+      "community": 6,
       "norm_label": "test_playlist_drawer_tracks_current_item()"
+    },
+    {
+      "label": "test_playlist_repeat_and_remove()",
+      "file_type": "code",
+      "source_file": "tests/test_player_smoke.py",
+      "source_location": "L76",
+      "id": "tests_test_player_smoke_test_playlist_repeat_and_remove",
+      "community": 6,
+      "norm_label": "test_playlist_repeat_and_remove()"
     },
     {
       "label": "test_probe.py",
@@ -2799,7 +3258,7 @@
       "source_file": "tests/test_probe.py",
       "source_location": "L1",
       "id": "tests_test_probe_py",
-      "community": 1,
+      "community": 2,
       "norm_label": "test_probe.py"
     },
     {
@@ -2808,7 +3267,7 @@
       "source_file": "tests/test_probe.py",
       "source_location": "L9",
       "id": "tests_test_probe_test_probe_parses_json",
-      "community": 1,
+      "community": 2,
       "norm_label": "test_probe_parses_json()"
     },
     {
@@ -2817,7 +3276,7 @@
       "source_file": "tests/test_progress.py",
       "source_location": "L1",
       "id": "tests_test_progress_py",
-      "community": 4,
+      "community": 3,
       "norm_label": "test_progress.py"
     },
     {
@@ -2826,7 +3285,7 @@
       "source_file": "tests/test_progress.py",
       "source_location": "L8",
       "id": "tests_test_progress_test_parse_progress_blocks",
-      "community": 4,
+      "community": 3,
       "norm_label": "test_parse_progress_blocks()"
     },
     {
@@ -2835,7 +3294,7 @@
       "source_file": "tests/test_runner.py",
       "source_location": "L1",
       "id": "tests_test_runner_py",
-      "community": 1,
+      "community": 2,
       "norm_label": "test_runner.py"
     },
     {
@@ -2844,7 +3303,7 @@
       "source_file": "tests/test_runner.py",
       "source_location": "L13",
       "id": "tests_test_runner_test_run_ffmpeg_timeout",
-      "community": 1,
+      "community": 2,
       "norm_label": "test_run_ffmpeg_timeout()"
     },
     {
@@ -2853,7 +3312,7 @@
       "source_file": "tests/test_runner.py",
       "source_location": "L23",
       "id": "tests_test_runner_test_run_ffmpeg_default_uses_subprocess_run",
-      "community": 1,
+      "community": 2,
       "norm_label": "test_run_ffmpeg_default_uses_subprocess_run()"
     },
     {
@@ -2862,7 +3321,7 @@
       "source_file": "tests/test_runner.py",
       "source_location": "L38",
       "id": "tests_test_runner_test_run_ffmpeg_bounded_stdout_keeps_tail",
-      "community": 1,
+      "community": 2,
       "norm_label": "test_run_ffmpeg_bounded_stdout_keeps_tail()"
     },
     {
@@ -2871,7 +3330,7 @@
       "source_file": "tests/test_runner.py",
       "source_location": "L47",
       "id": "tests_test_runner_test_run_ffmpeg_bounded_stderr_is_used_for_errors",
-      "community": 1,
+      "community": 2,
       "norm_label": "test_run_ffmpeg_bounded_stderr_is_used_for_errors()"
     },
     {
@@ -2880,7 +3339,7 @@
       "source_file": "tests/test_runner.py",
       "source_location": "L58",
       "id": "tests_test_runner_test_run_ffmpeg_stream_output_parses_progress",
-      "community": 1,
+      "community": 2,
       "norm_label": "test_run_ffmpeg_stream_output_parses_progress()"
     },
     {
@@ -2889,7 +3348,7 @@
       "source_file": "tests/test_runner.py",
       "source_location": "L71",
       "id": "tests_test_runner_test_run_ffmpeg_on_progress_receives_blocks",
-      "community": 1,
+      "community": 2,
       "norm_label": "test_run_ffmpeg_on_progress_receives_blocks()"
     },
     {
@@ -2898,7 +3357,7 @@
       "source_file": "tests/test_runner.py",
       "source_location": "L87",
       "id": "tests_test_runner_test_run_ffmpeg_cancellation_kills_process",
-      "community": 1,
+      "community": 2,
       "norm_label": "test_run_ffmpeg_cancellation_kills_process()"
     },
     {
@@ -2907,7 +3366,7 @@
       "source_file": "tests/test_runner.py",
       "source_location": "L104",
       "id": "tests_test_runner_test_run_ffmpeg_popen_timeout_kills_process",
-      "community": 1,
+      "community": 2,
       "norm_label": "test_run_ffmpeg_popen_timeout_kills_process()"
     },
     {
@@ -2916,35 +3375,44 @@
       "source_file": "tests/test_subtitles.py",
       "source_location": "L1",
       "id": "tests_test_subtitles_py",
-      "community": 7,
+      "community": 8,
       "norm_label": "test_subtitles.py"
     },
     {
       "label": "test_parse_srt_and_lookup_text()",
       "file_type": "code",
       "source_file": "tests/test_subtitles.py",
-      "source_location": "L6",
+      "source_location": "L7",
       "id": "tests_test_subtitles_test_parse_srt_and_lookup_text",
-      "community": 7,
+      "community": 8,
       "norm_label": "test_parse_srt_and_lookup_text()"
     },
     {
       "label": "test_parse_vtt_skips_header()",
       "file_type": "code",
       "source_file": "tests/test_subtitles.py",
-      "source_location": "L24",
+      "source_location": "L25",
       "id": "tests_test_subtitles_test_parse_vtt_skips_header",
-      "community": 7,
+      "community": 8,
       "norm_label": "test_parse_vtt_skips_header()"
     },
     {
       "label": "test_parse_ass_dialogue_lines()",
       "file_type": "code",
       "source_file": "tests/test_subtitles.py",
-      "source_location": "L37",
+      "source_location": "L38",
       "id": "tests_test_subtitles_test_parse_ass_dialogue_lines",
-      "community": 7,
+      "community": 8,
       "norm_label": "test_parse_ass_dialogue_lines()"
+    },
+    {
+      "label": "test_subtitle_track_lookup_supports_delay_math()",
+      "file_type": "code",
+      "source_file": "tests/test_subtitles.py",
+      "source_location": "L50",
+      "id": "tests_test_subtitles_test_subtitle_track_lookup_supports_delay_math",
+      "community": 8,
+      "norm_label": "test_subtitle_track_lookup_supports_delay_math()"
     },
     {
       "label": "test_theme.py",
@@ -2952,7 +3420,7 @@
       "source_file": "tests/test_theme.py",
       "source_location": "L1",
       "id": "tests_test_theme_py",
-      "community": 10,
+      "community": 0,
       "norm_label": "test_theme.py"
     },
     {
@@ -2961,7 +3429,7 @@
       "source_file": "tests/test_theme.py",
       "source_location": "L11",
       "id": "tests_test_theme_test_default_theme_renders_current_colors",
-      "community": 10,
+      "community": 0,
       "norm_label": "test_default_theme_renders_current_colors()"
     },
     {
@@ -2970,7 +3438,7 @@
       "source_file": "tests/test_theme.py",
       "source_location": "L20",
       "id": "tests_test_theme_test_packaged_resources_are_available",
-      "community": 10,
+      "community": 0,
       "norm_label": "test_packaged_resources_are_available()"
     },
     {
@@ -2979,7 +3447,7 @@
       "source_file": "tests/test_theme.py",
       "source_location": "L28",
       "id": "tests_test_theme_test_missing_required_token_raises_theme_error",
-      "community": 10,
+      "community": 0,
       "norm_label": "test_missing_required_token_raises_theme_error()"
     },
     {
@@ -2988,7 +3456,7 @@
       "source_file": "tests/test_theme.py",
       "source_location": "L38",
       "id": "tests_test_theme_test_custom_theme_path_loads_and_renders",
-      "community": 10,
+      "community": 0,
       "norm_label": "test_custom_theme_path_loads_and_renders()"
     },
     {
@@ -2997,8 +3465,53 @@
       "source_file": "tests/test_theme.py",
       "source_location": "L61",
       "id": "tests_test_theme_test_player_theme_fallback_loads_default",
-      "community": 10,
+      "community": 0,
       "norm_label": "test_player_theme_fallback_loads_default()"
+    },
+    {
+      "label": "test_timeline.py",
+      "file_type": "code",
+      "source_file": "tests/test_timeline.py",
+      "source_location": "L1",
+      "id": "tests_test_timeline_py",
+      "community": 10,
+      "norm_label": "test_timeline.py"
+    },
+    {
+      "label": "test_parse_chapters_from_probe_payload()",
+      "file_type": "code",
+      "source_file": "tests/test_timeline.py",
+      "source_location": "L9",
+      "id": "tests_test_timeline_test_parse_chapters_from_probe_payload",
+      "community": 10,
+      "norm_label": "test_parse_chapters_from_probe_payload()"
+    },
+    {
+      "label": "test_preview_timestamps_are_bounded()",
+      "file_type": "code",
+      "source_file": "tests/test_timeline.py",
+      "source_location": "L25",
+      "id": "tests_test_timeline_test_preview_timestamps_are_bounded",
+      "community": 10,
+      "norm_label": "test_preview_timestamps_are_bounded()"
+    },
+    {
+      "label": "test_thumbnail_cache_dir_changes_with_mtime()",
+      "file_type": "code",
+      "source_file": "tests/test_timeline.py",
+      "source_location": "L32",
+      "id": "tests_test_timeline_test_thumbnail_cache_dir_changes_with_mtime",
+      "community": 10,
+      "norm_label": "test_thumbnail_cache_dir_changes_with_mtime()"
+    },
+    {
+      "label": "test_generate_timeline_thumbnails_uses_thumbnail_helper()",
+      "file_type": "code",
+      "source_file": "tests/test_timeline.py",
+      "source_location": "L44",
+      "id": "tests_test_timeline_test_generate_timeline_thumbnails_uses_thumbnail_helper",
+      "community": 10,
+      "norm_label": "test_generate_timeline_thumbnails_uses_thumbnail_helper()"
     },
     {
       "label": "AGENTS.md",
@@ -3006,7 +3519,7 @@
       "source_file": "AGENTS.md",
       "source_location": "L1",
       "id": "agents_md",
-      "community": 12,
+      "community": 13,
       "norm_label": "agents.md"
     },
     {
@@ -3015,7 +3528,7 @@
       "source_file": "AGENTS.md",
       "source_location": "L1",
       "id": "ffmpeg_pywrapper_agents_agent_instructions",
-      "community": 12,
+      "community": 13,
       "norm_label": "agent instructions"
     },
     {
@@ -3024,7 +3537,7 @@
       "source_file": "AGENTS.md",
       "source_location": "L3",
       "id": "ffmpeg_pywrapper_agents_graphify",
-      "community": 12,
+      "community": 13,
       "norm_label": "graphify"
     },
     {
@@ -3033,7 +3546,7 @@
       "source_file": "README.md",
       "source_location": "L1",
       "id": "readme_md",
-      "community": 8,
+      "community": 9,
       "norm_label": "readme.md"
     },
     {
@@ -3042,7 +3555,7 @@
       "source_file": "README.md",
       "source_location": "L1",
       "id": "ffmpeg_pywrapper_readme_voidplayer",
-      "community": 8,
+      "community": 9,
       "norm_label": "voidplayer"
     },
     {
@@ -3051,7 +3564,7 @@
       "source_file": "README.md",
       "source_location": "L14",
       "id": "ffmpeg_pywrapper_readme_codeblock_1",
-      "community": 8,
+      "community": 9,
       "norm_label": "code:powershell (ffmpeg -version)"
     },
     {
@@ -3060,7 +3573,7 @@
       "source_file": "README.md",
       "source_location": "L19",
       "id": "ffmpeg_pywrapper_readme_development",
-      "community": 8,
+      "community": 9,
       "norm_label": "development"
     },
     {
@@ -3069,7 +3582,7 @@
       "source_file": "README.md",
       "source_location": "L21",
       "id": "ffmpeg_pywrapper_readme_codeblock_2",
-      "community": 8,
+      "community": 9,
       "norm_label": "code:powershell (uv sync --dev)"
     },
     {
@@ -3078,7 +3591,7 @@
       "source_file": "README.md",
       "source_location": "L29",
       "id": "ffmpeg_pywrapper_readme_codeblock_3",
-      "community": 8,
+      "community": 9,
       "norm_label": "code:powershell (uv run voidplayer)"
     },
     {
@@ -3087,7 +3600,7 @@
       "source_file": "README.md",
       "source_location": "L34",
       "id": "ffmpeg_pywrapper_readme_cli",
-      "community": 8,
+      "community": 9,
       "norm_label": "cli"
     },
     {
@@ -3096,7 +3609,7 @@
       "source_file": "README.md",
       "source_location": "L36",
       "id": "ffmpeg_pywrapper_readme_codeblock_4",
-      "community": 8,
+      "community": 9,
       "norm_label": "code:powershell (python -m ffmpeg_pywrapper probe input.mp4 --json)"
     },
     {
@@ -3105,7 +3618,7 @@
       "source_file": "README.md",
       "source_location": "L45",
       "id": "ffmpeg_pywrapper_readme_python_quick_start",
-      "community": 8,
+      "community": 9,
       "norm_label": "python quick start"
     },
     {
@@ -3114,7 +3627,7 @@
       "source_file": "README.md",
       "source_location": "L47",
       "id": "ffmpeg_pywrapper_readme_codeblock_5",
-      "community": 8,
+      "community": 9,
       "norm_label": "code:python (from ffmpeg_pywrapper import convert, probe, thumbnail, trim)"
     },
     {
@@ -3123,7 +3636,7 @@
       "source_file": "README.md",
       "source_location": "L58",
       "id": "ffmpeg_pywrapper_readme_inspect_commands",
-      "community": 8,
+      "community": 9,
       "norm_label": "inspect commands"
     },
     {
@@ -3132,7 +3645,7 @@
       "source_file": "README.md",
       "source_location": "L62",
       "id": "ffmpeg_pywrapper_readme_codeblock_6",
-      "community": 8,
+      "community": 9,
       "norm_label": "code:python (from ffmpeg_pywrapper import build_command)"
     },
     {
@@ -3141,7 +3654,7 @@
       "source_file": "README.md",
       "source_location": "L76",
       "id": "ffmpeg_pywrapper_readme_progress_and_cancellation",
-      "community": 8,
+      "community": 9,
       "norm_label": "progress and cancellation"
     },
     {
@@ -3150,7 +3663,7 @@
       "source_file": "README.md",
       "source_location": "L78",
       "id": "ffmpeg_pywrapper_readme_codeblock_7",
-      "community": 8,
+      "community": 9,
       "norm_label": "code:python (import threading)"
     },
     {
@@ -3159,7 +3672,7 @@
       "source_file": "README.md",
       "source_location": "L98",
       "id": "ffmpeg_pywrapper_readme_media_description",
-      "community": 8,
+      "community": 9,
       "norm_label": "media description"
     },
     {
@@ -3168,7 +3681,7 @@
       "source_file": "README.md",
       "source_location": "L100",
       "id": "ffmpeg_pywrapper_readme_codeblock_8",
-      "community": 8,
+      "community": 9,
       "norm_label": "code:python (from ffmpeg_pywrapper import describe_media)"
     },
     {
@@ -3177,16 +3690,16 @@
       "source_file": "README.md",
       "source_location": "L108",
       "id": "ffmpeg_pywrapper_readme_player_features",
-      "community": 8,
+      "community": 9,
       "norm_label": "player features"
     },
     {
       "label": "code:text (Space          Play/pause)",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L118",
+      "source_location": "L120",
       "id": "ffmpeg_pywrapper_readme_codeblock_9",
-      "community": 8,
+      "community": 9,
       "norm_label": "code:text (space          play/pause)"
     },
     {
@@ -3195,7 +3708,7 @@
       "source_file": "examples/simple_player/README.md",
       "source_location": "L1",
       "id": "examples_simple_player_readme_md",
-      "community": 11,
+      "community": 12,
       "norm_label": "readme.md"
     },
     {
@@ -3204,7 +3717,7 @@
       "source_file": "examples/simple_player/README.md",
       "source_location": "L1",
       "id": "simple_player_readme_voidplayer_example",
-      "community": 11,
+      "community": 12,
       "norm_label": "voidplayer example"
     },
     {
@@ -3213,7 +3726,7 @@
       "source_file": "examples/simple_player/README.md",
       "source_location": "L7",
       "id": "simple_player_readme_codeblock_1",
-      "community": 11,
+      "community": 12,
       "norm_label": "code:powershell (uv sync)"
     },
     {
@@ -3222,7 +3735,7 @@
       "source_file": "examples/simple_player/README.md",
       "source_location": "L13",
       "id": "simple_player_readme_codeblock_2",
-      "community": 11,
+      "community": 12,
       "norm_label": "code:powershell (uv run voidplayer)"
     },
     {
@@ -3231,7 +3744,7 @@
       "source_file": "examples/simple_player/README.md",
       "source_location": "L20",
       "id": "simple_player_readme_codeblock_3",
-      "community": 11,
+      "community": 12,
       "norm_label": "code:powershell (uv run voidplayer --theme default)"
     },
     {
@@ -3239,7 +3752,7 @@
       "file_type": "rationale",
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L140",
-      "community": 0,
+      "community": 1,
       "norm_label": "small ffmpeg-backed playback engine for local files.      the engine decodes on",
       "id": "ffmpeg_pywrapper_playback_rationale_140"
     },
@@ -3248,7 +3761,7 @@
       "file_type": "rationale",
       "source_file": "src/ffmpeg_pywrapper/errors.py",
       "source_location": "L45",
-      "community": 4,
+      "community": 3,
       "norm_label": "raised when ffmpeg exits unsuccessfully.",
       "id": "ffmpeg_pywrapper_errors_rationale_45"
     },
@@ -3257,7 +3770,7 @@
       "file_type": "rationale",
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L139",
-      "community": 0,
+      "community": 1,
       "norm_label": "small ffmpeg-backed playback engine for local files.      the engine decodes on",
       "id": "ffmpeg_pywrapper_playback_rationale_139"
     },
@@ -3266,7 +3779,7 @@
       "file_type": "rationale",
       "source_file": "src/ffmpeg_pywrapper/runner.py",
       "source_location": "L32",
-      "community": 1,
+      "community": 2,
       "norm_label": "run an ffmpeg-family command safely with shell=false.",
       "id": "ffmpeg_pywrapper_runner_rationale_32"
     },
@@ -3275,7 +3788,7 @@
       "file_type": "rationale",
       "source_file": "src/ffmpeg_pywrapper/runner.py",
       "source_location": "L29",
-      "community": 1,
+      "community": 2,
       "norm_label": "run an ffmpeg-family command safely with shell=false.",
       "id": "ffmpeg_pywrapper_runner_rationale_29"
     },
@@ -3284,7 +3797,7 @@
       "file_type": "code",
       "source_file": "examples/simple_player/main.py",
       "source_location": "L42",
-      "community": 3,
+      "community": 4,
       "norm_label": "playersignals",
       "id": "simple_player_main_playersignals"
     },
@@ -3293,7 +3806,7 @@
       "file_type": "code",
       "source_file": "examples/simple_player/main.py",
       "source_location": "L49",
-      "community": 6,
+      "community": 7,
       "norm_label": "playerwindow",
       "id": "simple_player_main_playerwindow"
     },
@@ -3302,7 +3815,7 @@
       "file_type": "code",
       "source_file": "examples/simple_player/main.py",
       "source_location": "L50",
-      "community": 6,
+      "community": 7,
       "norm_label": ".__init__()",
       "id": "simple_player_main_playerwindow_init"
     },
@@ -3311,7 +3824,7 @@
       "file_type": "code",
       "source_file": "examples/simple_player/main.py",
       "source_location": "L88",
-      "community": 6,
+      "community": 7,
       "norm_label": "._build_ui()",
       "id": "simple_player_main_playerwindow_build_ui"
     },
@@ -3320,7 +3833,7 @@
       "file_type": "code",
       "source_file": "examples/simple_player/main.py",
       "source_location": "L146",
-      "community": 6,
+      "community": 7,
       "norm_label": "._tool_button()",
       "id": "simple_player_main_playerwindow_tool_button"
     },
@@ -3329,7 +3842,7 @@
       "file_type": "code",
       "source_file": "examples/simple_player/main.py",
       "source_location": "L158",
-      "community": 6,
+      "community": 7,
       "norm_label": "._apply_theme()",
       "id": "simple_player_main_playerwindow_apply_theme"
     },
@@ -3338,7 +3851,7 @@
       "file_type": "code",
       "source_file": "examples/simple_player/main.py",
       "source_location": "L166",
-      "community": 6,
+      "community": 7,
       "norm_label": ".open_file()",
       "id": "simple_player_main_playerwindow_open_file"
     },
@@ -3347,7 +3860,7 @@
       "file_type": "code",
       "source_file": "examples/simple_player/main.py",
       "source_location": "L183",
-      "community": 6,
+      "community": 7,
       "norm_label": ".toggle_playback()",
       "id": "simple_player_main_playerwindow_toggle_playback"
     },
@@ -3356,7 +3869,7 @@
       "file_type": "code",
       "source_file": "examples/simple_player/main.py",
       "source_location": "L189",
-      "community": 6,
+      "community": 7,
       "norm_label": ".show_frame()",
       "id": "simple_player_main_playerwindow_show_frame"
     },
@@ -3365,7 +3878,7 @@
       "file_type": "code",
       "source_file": "examples/simple_player/main.py",
       "source_location": "L195",
-      "community": 6,
+      "community": 7,
       "norm_label": ".on_state()",
       "id": "simple_player_main_playerwindow_on_state"
     },
@@ -3374,7 +3887,7 @@
       "file_type": "code",
       "source_file": "examples/simple_player/main.py",
       "source_location": "L203",
-      "community": 6,
+      "community": 7,
       "norm_label": ".on_error()",
       "id": "simple_player_main_playerwindow_on_error"
     },
@@ -3383,7 +3896,7 @@
       "file_type": "code",
       "source_file": "examples/simple_player/main.py",
       "source_location": "L206",
-      "community": 6,
+      "community": 7,
       "norm_label": ".on_warning()",
       "id": "simple_player_main_playerwindow_on_warning"
     },
@@ -3392,7 +3905,7 @@
       "file_type": "code",
       "source_file": "examples/simple_player/main.py",
       "source_location": "L209",
-      "community": 5,
+      "community": 0,
       "norm_label": ".refresh_position()",
       "id": "simple_player_main_playerwindow_refresh_position"
     },
@@ -3401,7 +3914,7 @@
       "file_type": "code",
       "source_file": "examples/simple_player/main.py",
       "source_location": "L216",
-      "community": 6,
+      "community": 7,
       "norm_label": "._begin_seek()",
       "id": "simple_player_main_playerwindow_begin_seek"
     },
@@ -3410,7 +3923,7 @@
       "file_type": "code",
       "source_file": "examples/simple_player/main.py",
       "source_location": "L219",
-      "community": 6,
+      "community": 7,
       "norm_label": "._finish_seek()",
       "id": "simple_player_main_playerwindow_finish_seek"
     },
@@ -3419,7 +3932,7 @@
       "file_type": "code",
       "source_file": "examples/simple_player/main.py",
       "source_location": "L224",
-      "community": 6,
+      "community": 7,
       "norm_label": ".closeevent()",
       "id": "simple_player_main_playerwindow_closeevent"
     },
@@ -3428,7 +3941,7 @@
       "file_type": "code",
       "source_file": "examples/simple_player/main.py",
       "source_location": "L228",
-      "community": 6,
+      "community": 7,
       "norm_label": ".resizeevent()",
       "id": "simple_player_main_playerwindow_resizeevent"
     },
@@ -3437,7 +3950,7 @@
       "file_type": "code",
       "source_file": "examples/simple_player/main.py",
       "source_location": "L232",
-      "community": 6,
+      "community": 7,
       "norm_label": "._render_pixmap()",
       "id": "simple_player_main_playerwindow_render_pixmap"
     },
@@ -3446,7 +3959,7 @@
       "file_type": "code",
       "source_file": "examples/simple_player/main.py",
       "source_location": "L244",
-      "community": 6,
+      "community": 7,
       "norm_label": "main()",
       "id": "simple_player_main_main"
     },
@@ -3455,7 +3968,7 @@
       "file_type": "code",
       "source_file": "examples/simple_player/theme.py",
       "source_location": "L1",
-      "community": 6,
+      "community": 7,
       "norm_label": "theme.py",
       "id": "examples_simple_player_theme_py"
     },
@@ -3464,7 +3977,7 @@
       "file_type": "code",
       "source_file": "examples/simple_player/theme.py",
       "source_location": "L15",
-      "community": 6,
+      "community": 7,
       "norm_label": "themeerror",
       "id": "simple_player_theme_themeerror"
     },
@@ -3473,7 +3986,7 @@
       "file_type": "code",
       "source_file": "examples/simple_player/theme.py",
       "source_location": "L20",
-      "community": 6,
+      "community": 7,
       "norm_label": "theme",
       "id": "simple_player_theme_theme"
     },
@@ -3482,7 +3995,7 @@
       "file_type": "code",
       "source_file": "examples/simple_player/theme.py",
       "source_location": "L27",
-      "community": 6,
+      "community": 7,
       "norm_label": "load_theme()",
       "id": "simple_player_theme_load_theme"
     },
@@ -3491,7 +4004,7 @@
       "file_type": "code",
       "source_file": "examples/simple_player/theme.py",
       "source_location": "L49",
-      "community": 6,
+      "community": 7,
       "norm_label": "render_stylesheet()",
       "id": "simple_player_theme_render_stylesheet"
     },
@@ -3500,7 +4013,7 @@
       "file_type": "code",
       "source_file": "examples/simple_player/theme.py",
       "source_location": "L60",
-      "community": 6,
+      "community": 7,
       "norm_label": "_flatten_tokens()",
       "id": "simple_player_theme_flatten_tokens"
     },
@@ -3509,7 +4022,7 @@
       "file_type": "code",
       "source_file": "examples/simple_player/theme.py",
       "source_location": "L73",
-      "community": 6,
+      "community": 7,
       "norm_label": "_validate_tokens()",
       "id": "simple_player_theme_validate_tokens"
     },
@@ -3518,7 +4031,7 @@
       "file_type": "code",
       "source_file": "tests/test_theme.py",
       "source_location": "L14",
-      "community": 10,
+      "community": 0,
       "norm_label": "theme_module()",
       "id": "tests_test_theme_theme_module"
     },
@@ -3527,7 +4040,7 @@
       "file_type": "document",
       "source_file": "README.md",
       "source_location": "L1",
-      "community": 8,
+      "community": 9,
       "norm_label": "ffmpeg-pywrapper",
       "id": "ffmpeg_pywrapper_readme_ffmpeg_pywrapper"
     },
@@ -3536,7 +4049,7 @@
       "file_type": "document",
       "source_file": "README.md",
       "source_location": "L24",
-      "community": 8,
+      "community": 9,
       "norm_label": "quick start",
       "id": "ffmpeg_pywrapper_readme_quick_start"
     },
@@ -3545,7 +4058,7 @@
       "file_type": "document",
       "source_file": "examples/simple_player/README.md",
       "source_location": "L1",
-      "community": 11,
+      "community": 12,
       "norm_label": "simple player example",
       "id": "simple_player_readme_simple_player_example"
     },
@@ -3554,7 +4067,7 @@
       "file_type": "rationale",
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L138",
-      "community": 0,
+      "community": 1,
       "norm_label": "small ffmpeg-backed playback engine for local files.      the engine decodes on",
       "id": "ffmpeg_pywrapper_playback_rationale_138"
     },
@@ -3563,7 +4076,7 @@
       "file_type": "code",
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L457",
-      "community": 0,
+      "community": 1,
       "norm_label": "._consume_seek_target()",
       "id": "ffmpeg_pywrapper_playback_decodeloopplayer_consume_seek_target"
     },
@@ -3572,7 +4085,7 @@
       "file_type": "rationale",
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L131",
-      "community": 0,
+      "community": 1,
       "norm_label": "small ffmpeg-backed playback engine for local files.      the engine decodes on",
       "id": "ffmpeg_pywrapper_playback_rationale_131"
     },
@@ -3581,7 +4094,7 @@
       "file_type": "rationale",
       "source_file": "src/ffmpeg_pywrapper/playback.py",
       "source_location": "L66",
-      "community": 0,
+      "community": 1,
       "norm_label": "small ffmpeg-backed playback engine for local files.      the engine decodes on",
       "id": "ffmpeg_pywrapper_playback_rationale_66"
     },
@@ -3590,7 +4103,7 @@
       "file_type": "rationale",
       "source_file": "src/ffmpeg_pywrapper/errors.py",
       "source_location": "L29",
-      "community": 4,
+      "community": 3,
       "norm_label": "raised when ffmpeg exits unsuccessfully.",
       "id": "ffmpeg_pywrapper_errors_rationale_29"
     }
@@ -3708,6 +4221,17 @@
       "confidence_score": 1.0,
       "source": "src_ffmpeg_pywrapper_commands_py",
       "target": "ffmpeg_pywrapper_commands_thumbnail"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/timeline.py",
+      "source_location": "L8",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_ffmpeg_pywrapper_timeline_py",
+      "target": "src_ffmpeg_pywrapper_commands_py"
     },
     {
       "relation": "imports_from",
@@ -3905,6 +4429,17 @@
       "weight": 1.0,
       "source": "ffmpeg_pywrapper_commands_thumbnail",
       "target": "ffmpeg_pywrapper_runner_run_ffmpeg"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/ffmpeg_pywrapper/timeline.py",
+      "source_location": "L67",
+      "weight": 1.0,
+      "source": "ffmpeg_pywrapper_timeline_generate_timeline_thumbnails",
+      "target": "ffmpeg_pywrapper_commands_thumbnail"
     },
     {
       "relation": "calls",
@@ -5352,6 +5887,17 @@
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/timeline.py",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_ffmpeg_pywrapper_timeline_py",
+      "target": "src_ffmpeg_pywrapper_media_py"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
       "source_file": "src/ffmpeg_pywrapper/__init__.py",
       "source_location": "L15",
       "weight": 1.0,
@@ -5549,6 +6095,46 @@
       "target": "ffmpeg_pywrapper_media_mediainfo"
     },
     {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L16",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "player_app_timelineslider",
+      "target": "ffmpeg_pywrapper_media_mediainfo"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L16",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "player_app_playersignals",
+      "target": "ffmpeg_pywrapper_media_mediainfo"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L16",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "player_app_playerwindow",
+      "target": "ffmpeg_pywrapper_media_mediainfo"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L16",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "player_app_clipexportdialog",
+      "target": "ffmpeg_pywrapper_media_mediainfo"
+    },
+    {
       "relation": "calls",
       "context": "call",
       "confidence": "INFERRED",
@@ -5738,12 +6324,56 @@
     {
       "relation": "calls",
       "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/ffmpeg_pywrapper/timeline.py",
+      "source_location": "L67",
+      "weight": 1.0,
+      "source": "ffmpeg_pywrapper_timeline_generate_timeline_thumbnails",
+      "target": "ffmpeg_pywrapper_media_format_timestamp"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
       "source_location": "L230",
       "weight": 1.0,
       "source": "player_app_playerwindow_refresh_position",
+      "target": "ffmpeg_pywrapper_media_format_timestamp"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L901",
+      "weight": 1.0,
+      "source": "player_app_playerwindow_restore_media_state",
+      "target": "ffmpeg_pywrapper_media_format_timestamp"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L909",
+      "weight": 1.0,
+      "source": "player_app_playerwindow_refresh_inspector",
+      "target": "ffmpeg_pywrapper_media_format_timestamp"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L947",
+      "weight": 1.0,
+      "source": "player_app_playerwindow_show_timeline_preview",
       "target": "ffmpeg_pywrapper_media_format_timestamp"
     },
     {
@@ -6081,6 +6711,16 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L17",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "player_app_timelineslider",
+      "target": "ffmpeg_pywrapper_playback_playbackstate"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
       "source_location": "L10",
       "weight": 0.8,
       "confidence_score": 0.5,
@@ -6176,10 +6816,21 @@
       "context": "call",
       "confidence": "INFERRED",
       "confidence_score": 0.8,
-      "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L38",
+      "source_file": "src/ffmpeg_pywrapper/timeline.py",
+      "source_location": "L31",
       "weight": 1.0,
-      "source": "player_app_resource_path",
+      "source": "ffmpeg_pywrapper_timeline_parse_chapters",
+      "target": "str"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/ffmpeg_pywrapper/timeline.py",
+      "source_location": "L54",
+      "weight": 1.0,
+      "source": "ffmpeg_pywrapper_timeline_thumbnail_cache_dir",
       "target": "str"
     },
     {
@@ -6188,9 +6839,9 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
-      "source_location": "L67",
+      "source_location": "L38",
       "weight": 1.0,
-      "source": "player_app_save_recent_files",
+      "source": "player_app_resource_path",
       "target": "str"
     },
     {
@@ -6342,9 +6993,53 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L854",
+      "weight": 1.0,
+      "source": "player_app_playerwindow_open_containing_folder",
+      "target": "str"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L945",
+      "weight": 1.0,
+      "source": "player_app_playerwindow_show_timeline_preview",
+      "target": "str"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
       "source_location": "L273",
       "weight": 1.0,
       "source": "player_app_main",
+      "target": "str"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/ffmpeg_pywrapper/player/config_store.py",
+      "source_location": "L24",
+      "weight": 1.0,
+      "source": "player_config_store_normalize_media_key",
+      "target": "str"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/ffmpeg_pywrapper/player/config_store.py",
+      "source_location": "L53",
+      "weight": 1.0,
+      "source": "player_config_store_set_recent_files",
       "target": "str"
     },
     {
@@ -6422,6 +7117,17 @@
       "source_location": "L53",
       "weight": 1.0,
       "source": "tests_test_runner_test_run_ffmpeg_bounded_stderr_is_used_for_errors",
+      "target": "str"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L67",
+      "weight": 1.0,
+      "source": "player_app_save_recent_files",
       "target": "str"
     },
     {
@@ -6532,6 +7238,16 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "ffmpeg_pywrapper_playback_decodeloopplayer_run_video",
+      "target": "ffmpeg_pywrapper_playback_videoframe"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L17",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "player_app_timelineslider",
       "target": "ffmpeg_pywrapper_playback_videoframe"
     },
     {
@@ -7370,6 +8086,16 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "ffmpeg_pywrapper_playback_rationale_154",
+      "target": "ffmpeg_pywrapper_playback_decodeloopplayer"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L17",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "player_app_timelineslider",
       "target": "ffmpeg_pywrapper_playback_decodeloopplayer"
     },
     {
@@ -8560,6 +9286,17 @@
       "context": "call",
       "confidence": "INFERRED",
       "confidence_score": 0.8,
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L498",
+      "weight": 1.0,
+      "source": "player_app_playerwindow_load_and_play",
+      "target": "ffmpeg_pywrapper_probe_probe"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
       "source_file": "tests/test_integration.py",
       "source_location": "L38",
       "weight": 1.0,
@@ -9254,6 +9991,16 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L28",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "player_app_timelineslider",
+      "target": "ffmpeg_pywrapper_subtitles_subtitleerror"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
       "source_location": "L13",
       "weight": 0.8,
       "confidence_score": 0.5,
@@ -9327,6 +10074,16 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L28",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "player_app_timelineslider",
+      "target": "ffmpeg_pywrapper_subtitles_subtitletrack"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
       "source_location": "L13",
       "weight": 0.8,
       "confidence_score": 0.5,
@@ -9351,6 +10108,17 @@
       "weight": 0.8,
       "confidence_score": 0.5,
       "source": "player_app_clipexportdialog",
+      "target": "ffmpeg_pywrapper_subtitles_subtitletrack"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "tests/test_subtitles.py",
+      "source_location": "L52",
+      "weight": 1.0,
+      "source": "tests_test_subtitles_test_subtitle_track_lookup_supports_delay_math",
       "target": "ffmpeg_pywrapper_subtitles_subtitletrack"
     },
     {
@@ -9422,6 +10190,17 @@
     {
       "relation": "calls",
       "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L892",
+      "weight": 1.0,
+      "source": "player_app_playerwindow_restore_media_state",
+      "target": "ffmpeg_pywrapper_subtitles_load_subtitles"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/ffmpeg_pywrapper/subtitles.py",
       "source_location": "L54",
@@ -9439,6 +10218,17 @@
       "source_location": "L7",
       "weight": 1.0,
       "source": "tests_test_subtitles_test_parse_srt_and_lookup_text",
+      "target": "ffmpeg_pywrapper_subtitles_parse_srt"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "tests/test_subtitles.py",
+      "source_location": "L51",
+      "weight": 1.0,
+      "source": "tests_test_subtitles_test_subtitle_track_lookup_supports_delay_math",
       "target": "ffmpeg_pywrapper_subtitles_parse_srt"
     },
     {
@@ -9517,6 +10307,226 @@
       "confidence_score": 1.0,
       "source": "ffmpeg_pywrapper_subtitles_parse_timed_blocks",
       "target": "ffmpeg_pywrapper_subtitles_clean_text"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/timeline.py",
+      "source_location": "L13",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_ffmpeg_pywrapper_timeline_py",
+      "target": "ffmpeg_pywrapper_timeline_chapter"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/timeline.py",
+      "source_location": "L20",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_ffmpeg_pywrapper_timeline_py",
+      "target": "ffmpeg_pywrapper_timeline_parse_chapters"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/timeline.py",
+      "source_location": "L37",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_ffmpeg_pywrapper_timeline_py",
+      "target": "ffmpeg_pywrapper_timeline_preview_timestamps"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/timeline.py",
+      "source_location": "L51",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_ffmpeg_pywrapper_timeline_py",
+      "target": "ffmpeg_pywrapper_timeline_thumbnail_cache_dir"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/timeline.py",
+      "source_location": "L61",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_ffmpeg_pywrapper_timeline_py",
+      "target": "ffmpeg_pywrapper_timeline_generate_timeline_thumbnails"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/timeline.py",
+      "source_location": "L72",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_ffmpeg_pywrapper_timeline_py",
+      "target": "ffmpeg_pywrapper_timeline_nearest_preview"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/timeline.py",
+      "source_location": "L79",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_ffmpeg_pywrapper_timeline_py",
+      "target": "ffmpeg_pywrapper_timeline_chapter_time"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/timeline.py",
+      "source_location": "L27",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "ffmpeg_pywrapper_timeline_parse_chapters",
+      "target": "ffmpeg_pywrapper_timeline_chapter"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L29",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "player_app_timelineslider",
+      "target": "ffmpeg_pywrapper_timeline_chapter"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L29",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "player_app_playersignals",
+      "target": "ffmpeg_pywrapper_timeline_chapter"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L29",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "player_app_playerwindow",
+      "target": "ffmpeg_pywrapper_timeline_chapter"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L29",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "player_app_clipexportdialog",
+      "target": "ffmpeg_pywrapper_timeline_chapter"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/timeline.py",
+      "source_location": "L29",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "ffmpeg_pywrapper_timeline_parse_chapters",
+      "target": "ffmpeg_pywrapper_timeline_chapter_time"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L499",
+      "weight": 1.0,
+      "source": "player_app_playerwindow_load_and_play",
+      "target": "ffmpeg_pywrapper_timeline_parse_chapters"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "tests/test_timeline.py",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "tests_test_timeline_test_parse_chapters_from_probe_payload",
+      "target": "ffmpeg_pywrapper_timeline_parse_chapters"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/timeline.py",
+      "source_location": "L64",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "ffmpeg_pywrapper_timeline_generate_timeline_thumbnails",
+      "target": "ffmpeg_pywrapper_timeline_preview_timestamps"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "tests/test_timeline.py",
+      "source_location": "L26",
+      "weight": 1.0,
+      "source": "tests_test_timeline_test_preview_timestamps_are_bounded",
+      "target": "ffmpeg_pywrapper_timeline_preview_timestamps"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L929",
+      "weight": 1.0,
+      "source": "player_app_playerwindow_start_preview_generation",
+      "target": "ffmpeg_pywrapper_timeline_thumbnail_cache_dir"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "tests/test_timeline.py",
+      "source_location": "L36",
+      "weight": 1.0,
+      "source": "tests_test_timeline_test_thumbnail_cache_dir_changes_with_mtime",
+      "target": "ffmpeg_pywrapper_timeline_thumbnail_cache_dir"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "tests/test_timeline.py",
+      "source_location": "L53",
+      "weight": 1.0,
+      "source": "tests_test_timeline_test_generate_timeline_thumbnails_uses_thumbnail_helper",
+      "target": "ffmpeg_pywrapper_timeline_generate_timeline_thumbnails"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L943",
+      "weight": 1.0,
+      "source": "player_app_playerwindow_show_timeline_preview",
+      "target": "ffmpeg_pywrapper_timeline_nearest_preview"
     },
     {
       "relation": "rationale_for",
@@ -9686,6 +10696,16 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L81",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_ffmpeg_pywrapper_player_app_py",
+      "target": "player_app_user_cache_path"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
       "source_location": "L51",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -9701,6 +10721,16 @@
       "confidence_score": 1.0,
       "source": "src_ffmpeg_pywrapper_player_app_py",
       "target": "player_app_save_recent_files"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L97",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_ffmpeg_pywrapper_player_app_py",
+      "target": "player_app_timelineslider"
     },
     {
       "relation": "contains",
@@ -9731,6 +10761,16 @@
       "confidence_score": 1.0,
       "source": "src_ffmpeg_pywrapper_player_app_py",
       "target": "player_app_clipexportdialog"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L1044",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_ffmpeg_pywrapper_player_app_py",
+      "target": "player_app_file_size"
     },
     {
       "relation": "contains",
@@ -9780,6 +10820,28 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L148",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow_init",
+      "target": "player_app_user_config_path"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L929",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow_start_preview_generation",
+      "target": "player_app_user_cache_path"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
       "source_location": "L112",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -9791,11 +10853,77 @@
       "context": "call",
       "confidence": "INFERRED",
       "confidence_score": 0.8,
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L89",
+      "weight": 1.0,
+      "source": "player_app_load_recent_files",
+      "target": "player_config_store_recent_files_from_config"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L89",
+      "weight": 1.0,
+      "source": "player_app_load_recent_files",
+      "target": "player_config_store_load_config"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
       "source_file": "tests/test_player_smoke.py",
       "source_location": "L42",
       "weight": 1.0,
       "source": "tests_test_player_smoke_test_recent_files_round_trip",
       "target": "player_app_load_recent_files"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L94",
+      "weight": 1.0,
+      "source": "player_app_save_recent_files",
+      "target": "player_config_store_save_config"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L94",
+      "weight": 1.0,
+      "source": "player_app_save_recent_files",
+      "target": "player_config_store_set_recent_files"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L94",
+      "weight": 1.0,
+      "source": "player_app_save_recent_files",
+      "target": "player_config_store_load_config"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "tests/test_player_smoke.py",
+      "source_location": "L40",
+      "weight": 1.0,
+      "source": "tests_test_player_smoke_test_recent_files_round_trip",
+      "target": "player_app_save_recent_files"
     },
     {
       "relation": "calls",
@@ -9820,15 +10948,77 @@
       "target": "player_app_save_recent_files"
     },
     {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L97",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_timelineslider",
+      "target": "qslider"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L100",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_timelineslider",
+      "target": "player_app_timelineslider_mousemoveevent"
+    },
+    {
       "relation": "calls",
       "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "tests/test_player_smoke.py",
-      "source_location": "L40",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L231",
       "weight": 1.0,
-      "source": "tests_test_player_smoke_test_recent_files_round_trip",
-      "target": "player_app_save_recent_files"
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow_build_ui",
+      "target": "player_app_timelineslider"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L18",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "player_app_timelineslider",
+      "target": "player_config_store_mediastate"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L31",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "player_app_timelineslider",
+      "target": "player_theme_themeerror"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L238",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow_build_ui",
+      "target": "qslider"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L101",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_timelineslider_mousemoveevent",
+      "target": "player_app_playerwindow_mousemoveevent"
     },
     {
       "relation": "inherits",
@@ -9850,6 +11040,16 @@
       "confidence_score": 1.0,
       "source": "player_app_playerwindow_init",
       "target": "player_app_playersignals"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L18",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "player_app_playersignals",
+      "target": "player_config_store_mediastate"
     },
     {
       "relation": "uses",
@@ -10215,6 +11415,46 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L695",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow",
+      "target": "player_app_playerwindow_remove_selected_playlist_item"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L705",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow",
+      "target": "player_app_playerwindow_clear_playlist"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L712",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow",
+      "target": "player_app_playerwindow_toggle_shuffle"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L717",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow",
+      "target": "player_app_playerwindow_cycle_repeat_mode"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
       "source_location": "L569",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -10285,6 +11525,16 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L758",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow",
+      "target": "player_app_playerwindow_adjust_subtitle_delay"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
       "source_location": "L604",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -10300,6 +11550,26 @@
       "confidence_score": 1.0,
       "source": "player_app_playerwindow",
       "target": "player_app_playerwindow_adjust_volume"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L773",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow",
+      "target": "player_app_playerwindow_previous_chapter"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L781",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow",
+      "target": "player_app_playerwindow_next_chapter"
     },
     {
       "relation": "method",
@@ -10345,6 +11615,126 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L839",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow",
+      "target": "player_app_playerwindow_toggle_inspector"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L842",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow",
+      "target": "player_app_playerwindow_copy_probe_json"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L848",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow",
+      "target": "player_app_playerwindow_open_containing_folder"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L858",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow",
+      "target": "player_app_playerwindow_save_current_media_state"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L876",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow",
+      "target": "player_app_playerwindow_restore_media_state"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L905",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow",
+      "target": "player_app_playerwindow_refresh_inspector"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L927",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow",
+      "target": "player_app_playerwindow_start_preview_generation"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L939",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow",
+      "target": "player_app_playerwindow_show_timeline_preview"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L949",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow",
+      "target": "player_app_playerwindow_next_shuffle_index"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L954",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow",
+      "target": "player_app_playerwindow_rebuild_shuffle_queue"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L958",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow",
+      "target": "player_app_playerwindow_advance_after_failed_load"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L963",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow",
+      "target": "player_app_playerwindow_sync_playlist_from_widget"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
       "source_location": "L241",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -10381,6 +11771,16 @@
       "confidence_score": 1.0,
       "source": "player_app_main",
       "target": "player_app_playerwindow"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L18",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "player_app_playerwindow",
+      "target": "player_config_store_mediastate"
     },
     {
       "relation": "uses",
@@ -10493,6 +11893,17 @@
     {
       "relation": "calls",
       "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L149",
+      "weight": 1.0,
+      "source": "player_app_playerwindow_init",
+      "target": "player_config_store_load_config"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
       "source_location": "L97",
@@ -10511,6 +11922,17 @@
       "confidence_score": 1.0,
       "source": "player_app_playerwindow_build_ui",
       "target": "player_app_playerwindow_tool_button"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L295",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow_build_ui",
+      "target": "player_app_playerwindow_sync_playlist_from_widget"
     },
     {
       "relation": "calls",
@@ -10555,6 +11977,17 @@
       "confidence_score": 1.0,
       "source": "player_app_playerwindow_build_actions",
       "target": "player_app_playerwindow_adjust_volume"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L414",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow_build_actions",
+      "target": "player_app_playerwindow_adjust_subtitle_delay"
     },
     {
       "relation": "calls",
@@ -10605,6 +12038,17 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L459",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow_set_playlist",
+      "target": "player_app_playerwindow_rebuild_shuffle_queue"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
       "source_location": "L365",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -10649,6 +12093,17 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L466",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow_play_next",
+      "target": "player_app_playerwindow_save_current_media_state"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
       "source_location": "L249",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -10660,11 +12115,33 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L471",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow_play_next",
+      "target": "player_app_playerwindow_next_shuffle_index"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
       "source_location": "L291",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "player_app_playerwindow_on_state",
       "target": "player_app_playerwindow_play_next"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L486",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow_play_previous",
+      "target": "player_app_playerwindow_save_current_media_state"
     },
     {
       "relation": "calls",
@@ -10704,6 +12181,17 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L961",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow_advance_after_failed_load",
+      "target": "player_app_playerwindow_load_current_playlist_item"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
       "source_location": "L265",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -10726,6 +12214,17 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L502",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow_load_and_play",
+      "target": "player_app_playerwindow_restore_media_state"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
       "source_location": "L266",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -10737,11 +12236,55 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L504",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow_load_and_play",
+      "target": "player_app_playerwindow_refresh_inspector"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L505",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow_load_and_play",
+      "target": "player_app_playerwindow_start_preview_generation"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L507",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow_load_and_play",
+      "target": "player_app_playerwindow_refresh_playlist_drawer"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
       "source_location": "L198",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "player_app_playerwindow_load_and_play",
       "target": "player_app_playerwindow_on_error"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L516",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow_load_and_play",
+      "target": "player_app_playerwindow_advance_after_failed_load"
     },
     {
       "relation": "calls",
@@ -10803,11 +12346,99 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L894",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow_restore_media_state",
+      "target": "player_app_playerwindow_populate_subtitle_sources"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
       "source_location": "L533",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "player_app_playerwindow_remember_recent_file",
       "target": "player_app_playerwindow_refresh_recent_menu"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L654",
+      "weight": 1.0,
+      "source": "player_app_playerwindow_remember_recent_file",
+      "target": "player_config_store_set_recent_files"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L655",
+      "weight": 1.0,
+      "source": "player_app_playerwindow_remember_recent_file",
+      "target": "player_config_store_save_config"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L703",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow_remove_selected_playlist_item",
+      "target": "player_app_playerwindow_refresh_playlist_drawer"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L710",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow_clear_playlist",
+      "target": "player_app_playerwindow_refresh_playlist_drawer"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L974",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow_sync_playlist_from_widget",
+      "target": "player_app_playerwindow_refresh_playlist_drawer"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L702",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow_remove_selected_playlist_item",
+      "target": "player_app_playerwindow_rebuild_shuffle_queue"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L714",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow_toggle_shuffle",
+      "target": "player_app_playerwindow_rebuild_shuffle_queue"
     },
     {
       "relation": "calls",
@@ -10858,6 +12489,17 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L761",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow_adjust_subtitle_delay",
+      "target": "player_app_playerwindow_save_current_media_state"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
       "source_location": "L626",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -10874,6 +12516,116 @@
       "confidence_score": 1.0,
       "source": "player_app_playerwindow_export_clip",
       "target": "player_app_clipexportdialog_values"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L977",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow_closeevent",
+      "target": "player_app_playerwindow_save_current_media_state"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L862",
+      "weight": 1.0,
+      "source": "player_app_playerwindow_save_current_media_state",
+      "target": "player_config_store_set_media_state"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L865",
+      "weight": 1.0,
+      "source": "player_app_playerwindow_save_current_media_state",
+      "target": "player_config_store_mediastate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L874",
+      "weight": 1.0,
+      "source": "player_app_playerwindow_save_current_media_state",
+      "target": "player_config_store_save_config"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L877",
+      "weight": 1.0,
+      "source": "player_app_playerwindow_restore_media_state",
+      "target": "player_config_store_media_state_from_config"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L898",
+      "weight": 1.0,
+      "source": "player_app_playerwindow_restore_media_state",
+      "target": "player_config_store_resumable_position"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L908",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow_refresh_inspector",
+      "target": "player_app_file_size"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L951",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_app_playerwindow_next_shuffle_index",
+      "target": "player_app_playerwindow_rebuild_shuffle_queue"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L978",
+      "weight": 1.0,
+      "source": "player_app_playerwindow_closeevent",
+      "target": "player_config_store_set_recent_files"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L979",
+      "weight": 1.0,
+      "source": "player_app_playerwindow_closeevent",
+      "target": "player_config_store_save_config"
     },
     {
       "relation": "calls",
@@ -10930,11 +12682,317 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "src/ffmpeg_pywrapper/player/app.py",
+      "source_location": "L18",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "player_app_clipexportdialog",
+      "target": "player_config_store_mediastate"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "src/ffmpeg_pywrapper/player/app.py",
       "source_location": "L15",
       "weight": 0.8,
       "confidence_score": 0.5,
       "source": "player_app_clipexportdialog",
       "target": "player_theme_themeerror"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/config_store.py",
+      "source_location": "L11",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_ffmpeg_pywrapper_player_config_store_py",
+      "target": "player_config_store_mediastate"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/config_store.py",
+      "source_location": "L21",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_ffmpeg_pywrapper_player_config_store_py",
+      "target": "player_config_store_normalize_media_key"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/config_store.py",
+      "source_location": "L29",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_ffmpeg_pywrapper_player_config_store_py",
+      "target": "player_config_store_load_config"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/config_store.py",
+      "source_location": "L37",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_ffmpeg_pywrapper_player_config_store_py",
+      "target": "player_config_store_save_config"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/config_store.py",
+      "source_location": "L42",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_ffmpeg_pywrapper_player_config_store_py",
+      "target": "player_config_store_recent_files_from_config"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/config_store.py",
+      "source_location": "L49",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_ffmpeg_pywrapper_player_config_store_py",
+      "target": "player_config_store_set_recent_files"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/config_store.py",
+      "source_location": "L60",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_ffmpeg_pywrapper_player_config_store_py",
+      "target": "player_config_store_media_state_from_config"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/config_store.py",
+      "source_location": "L78",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_ffmpeg_pywrapper_player_config_store_py",
+      "target": "player_config_store_set_media_state"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/config_store.py",
+      "source_location": "L90",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_ffmpeg_pywrapper_player_config_store_py",
+      "target": "player_config_store_resumable_position"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/config_store.py",
+      "source_location": "L99",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_ffmpeg_pywrapper_player_config_store_py",
+      "target": "player_config_store_float"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/config_store.py",
+      "source_location": "L106",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_ffmpeg_pywrapper_player_config_store_py",
+      "target": "player_config_store_optional_int"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/config_store.py",
+      "source_location": "L113",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_ffmpeg_pywrapper_player_config_store_py",
+      "target": "player_config_store_subtitle_source"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/config_store.py",
+      "source_location": "L67",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_config_store_media_state_from_config",
+      "target": "player_config_store_mediastate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "tests/test_player_config.py",
+      "source_location": "L27",
+      "weight": 1.0,
+      "source": "tests_test_player_config_test_media_state_round_trip",
+      "target": "player_config_store_mediastate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "tests/test_player_config.py",
+      "source_location": "L43",
+      "weight": 1.0,
+      "source": "tests_test_player_config_test_resumable_position_skips_edges",
+      "target": "player_config_store_mediastate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/config_store.py",
+      "source_location": "L64",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_config_store_media_state_from_config",
+      "target": "player_config_store_normalize_media_key"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/config_store.py",
+      "source_location": "L85",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_config_store_set_media_state",
+      "target": "player_config_store_normalize_media_key"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "tests/test_player_config.py",
+      "source_location": "L31",
+      "weight": 1.0,
+      "source": "tests_test_player_config_test_media_state_round_trip",
+      "target": "player_config_store_load_config"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "tests/test_player_config.py",
+      "source_location": "L53",
+      "weight": 1.0,
+      "source": "tests_test_player_config_test_corrupt_config_returns_empty",
+      "target": "player_config_store_load_config"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "tests/test_player_config.py",
+      "source_location": "L29",
+      "weight": 1.0,
+      "source": "tests_test_player_config_test_media_state_round_trip",
+      "target": "player_config_store_save_config"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "tests/test_player_config.py",
+      "source_location": "L22",
+      "weight": 1.0,
+      "source": "tests_test_player_config_test_recent_files_config_preserves_unknown_keys",
+      "target": "player_config_store_recent_files_from_config"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "tests/test_player_config.py",
+      "source_location": "L19",
+      "weight": 1.0,
+      "source": "tests_test_player_config_test_recent_files_config_preserves_unknown_keys",
+      "target": "player_config_store_set_recent_files"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/config_store.py",
+      "source_location": "L68",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_config_store_media_state_from_config",
+      "target": "player_config_store_float"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/config_store.py",
+      "source_location": "L69",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_config_store_media_state_from_config",
+      "target": "player_config_store_optional_int"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/ffmpeg_pywrapper/player/config_store.py",
+      "source_location": "L70",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "player_config_store_media_state_from_config",
+      "target": "player_config_store_subtitle_source"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "tests/test_player_config.py",
+      "source_location": "L31",
+      "weight": 1.0,
+      "source": "tests_test_player_config_test_media_state_round_trip",
+      "target": "player_config_store_media_state_from_config"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "tests/test_player_config.py",
+      "source_location": "L28",
+      "weight": 1.0,
+      "source": "tests_test_player_config_test_media_state_round_trip",
+      "target": "player_config_store_set_media_state"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "tests/test_player_config.py",
+      "source_location": "L43",
+      "weight": 1.0,
+      "source": "tests_test_player_config_test_resumable_position_skips_edges",
+      "target": "player_config_store_resumable_position"
     },
     {
       "relation": "contains",
@@ -11547,6 +13605,46 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "tests/test_player_config.py",
+      "source_location": "L17",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_test_player_config_py",
+      "target": "tests_test_player_config_test_recent_files_config_preserves_unknown_keys"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_player_config.py",
+      "source_location": "L25",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_test_player_config_py",
+      "target": "tests_test_player_config_test_media_state_round_trip"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_player_config.py",
+      "source_location": "L42",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_test_player_config_py",
+      "target": "tests_test_player_config_test_resumable_position_skips_edges"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_player_config.py",
+      "source_location": "L49",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_test_player_config_py",
+      "target": "tests_test_player_config_test_corrupt_config_returns_empty"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "tests/test_player_smoke.py",
       "source_location": "L8",
       "weight": 1.0,
@@ -11573,6 +13671,16 @@
       "confidence_score": 1.0,
       "source": "tests_test_player_smoke_py",
       "target": "tests_test_player_smoke_test_playlist_drawer_tracks_current_item"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_player_smoke.py",
+      "source_location": "L76",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_test_player_smoke_py",
+      "target": "tests_test_player_smoke_test_playlist_repeat_and_remove"
     },
     {
       "relation": "contains",
@@ -11707,6 +13815,16 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "tests/test_subtitles.py",
+      "source_location": "L50",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_test_subtitles_py",
+      "target": "tests_test_subtitles_test_subtitle_track_lookup_supports_delay_math"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "tests/test_theme.py",
       "source_location": "L26",
       "weight": 1.0,
@@ -11763,6 +13881,46 @@
       "confidence_score": 1.0,
       "source": "tests_test_theme_py",
       "target": "tests_test_theme_theme_module"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_timeline.py",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_test_timeline_py",
+      "target": "tests_test_timeline_test_parse_chapters_from_probe_payload"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_timeline.py",
+      "source_location": "L25",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_test_timeline_py",
+      "target": "tests_test_timeline_test_preview_timestamps_are_bounded"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_timeline.py",
+      "source_location": "L32",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_test_timeline_py",
+      "target": "tests_test_timeline_test_thumbnail_cache_dir_changes_with_mtime"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_timeline.py",
+      "source_location": "L44",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_test_timeline_py",
+      "target": "tests_test_timeline_test_generate_timeline_thumbnails_uses_thumbnail_helper"
     },
     {
       "relation": "contains",
@@ -12592,5 +14750,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "b7bec1608563ccf314c3390a762eca9523b73c67"
+  "built_at_commit": "fb790354e7e08fcf66e25175d5c5261c92d180cc"
 }

@@ -3,21 +3,37 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import random
+import subprocess
 import sys
+import threading
 from contextlib import ExitStack
 from importlib.resources import as_file, files
 from pathlib import Path
+from typing import Any
 
-from ffmpeg_pywrapper import format_timestamp, trim
+from ffmpeg_pywrapper import format_timestamp, probe, trim
+from ffmpeg_pywrapper.media import MediaInfo
 from ffmpeg_pywrapper.playback import DecodeLoopPlayer, PlaybackState, VideoFrame, configure_debug_logging
+from ffmpeg_pywrapper.player.config_store import (
+    MediaState,
+    load_config,
+    media_state_from_config,
+    recent_files_from_config,
+    resumable_position,
+    save_config,
+    set_media_state,
+    set_recent_files,
+)
 from ffmpeg_pywrapper.subtitles import SubtitleError, SubtitleTrack, load_subtitles
+from ffmpeg_pywrapper.timeline import Chapter, generate_timeline_thumbnails, nearest_preview, parse_chapters, thumbnail_cache_dir
 
 from .theme import DEFAULT_THEME, ThemeError, load_theme, render_stylesheet
 
 try:
     from PIL.ImageQt import ImageQt
-    from PySide6.QtCore import QObject, QSize, Qt, QTimer, Signal
-    from PySide6.QtGui import QAction, QDragEnterEvent, QDropEvent, QIcon, QImage, QKeySequence, QMouseEvent, QPixmap
+    from PySide6.QtCore import QObject, QSize, Qt, QTimer, QUrl, Signal
+    from PySide6.QtGui import QAction, QDesktopServices, QDragEnterEvent, QDropEvent, QIcon, QImage, QKeySequence, QMouseEvent, QPixmap
     from PySide6.QtWidgets import (
         QApplication,
         QCheckBox,
@@ -35,6 +51,8 @@ try:
         QListWidgetItem,
         QMainWindow,
         QMenu,
+        QMessageBox,
+        QPlainTextEdit,
         QPushButton,
         QSlider,
         QSplitter,
@@ -60,27 +78,31 @@ def user_config_path() -> Path:
     return Path.home() / ".config" / "voidplayer" / "config.json"
 
 
+def user_cache_path() -> Path:
+    base = os.environ.get("LOCALAPPDATA") or os.environ.get("APPDATA")
+    if base:
+        return Path(base) / "VoidPlayer" / "cache"
+    return Path.home() / ".cache" / "voidplayer"
+
+
 def load_recent_files(config_path: Path | None = None) -> list[Path]:
-    path = config_path or user_config_path()
-    try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return []
-    files = data.get("recent_files", [])
-    if not isinstance(files, list):
-        return []
-    return [Path(item) for item in files if isinstance(item, str)]
+    return recent_files_from_config(load_config(config_path or user_config_path()))
 
 
 def save_recent_files(recent_files: list[Path], config_path: Path | None = None, *, limit: int = 10) -> None:
     path = config_path or user_config_path()
-    unique: list[str] = []
-    for item in recent_files:
-        value = str(Path(item))
-        if value not in unique:
-            unique.append(value)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps({"recent_files": unique[:limit]}, indent=2), encoding="utf-8")
+    save_config(path, set_recent_files(load_config(path), recent_files, limit=limit))
+
+
+class TimelineSlider(QSlider):
+    preview_requested = Signal(float)
+
+    def mouseMoveEvent(self, event: QMouseEvent) -> None:
+        super().mouseMoveEvent(event)
+        if self.maximum() <= self.minimum():
+            return
+        ratio = min(1.0, max(0.0, event.position().x() / max(1, self.width())))
+        self.preview_requested.emit(self.minimum() + (self.maximum() - self.minimum()) * ratio)
 
 
 class PlayerSignals(QObject):
@@ -121,10 +143,20 @@ class PlayerWindow(QMainWindow):
         self._last_pixmap: QPixmap | None = None
         self.playlist: list[Path] = []
         self.playlist_index = -1
+        self.playlist_failures: dict[int, str] = {}
         self.recent_files = load_recent_files()
+        self.config_path = user_config_path()
+        self.config = load_config(self.config_path)
         self.subtitle_track: SubtitleTrack | None = None
         self.subtitle_external_path: Path | None = None
+        self.subtitle_delay = 0.0
         self._last_position = 0.0
+        self._current_probe_data: dict[str, Any] | None = None
+        self.chapters: tuple[Chapter, ...] = ()
+        self.timeline_previews: dict[float, Path] = {}
+        self.repeat_mode = "off"
+        self.shuffle_enabled = False
+        self._shuffle_queue: list[int] = []
 
         self.setAcceptDrops(True)
         self._build_ui()
@@ -143,6 +175,7 @@ class PlayerWindow(QMainWindow):
         self.subtitle_combo.currentIndexChanged.connect(lambda _index: self._select_subtitle_source())
         self.speed_combo.currentTextChanged.connect(self._select_playback_speed)
         self.playlist_widget.itemDoubleClicked.connect(self._play_playlist_item)
+        self.seek_slider.preview_requested.connect(self._show_timeline_preview)
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.refresh_position)
@@ -151,6 +184,9 @@ class PlayerWindow(QMainWindow):
         self.controls_timer = QTimer(self)
         self.controls_timer.setSingleShot(True)
         self.controls_timer.timeout.connect(self._hide_controls_if_fullscreen)
+        self.state_timer = QTimer(self)
+        self.state_timer.timeout.connect(self.save_current_media_state)
+        self.state_timer.start(5000)
 
         if initial_media is not None:
             self.set_playlist([initial_media], start_index=0)
@@ -192,9 +228,10 @@ class PlayerWindow(QMainWindow):
         self.total_label = QLabel("00:00:00.00")
         self.total_label.setObjectName("timeLabel")
 
-        self.seek_slider = QSlider(Qt.Orientation.Horizontal)
+        self.seek_slider = TimelineSlider(Qt.Orientation.Horizontal)
         self.seek_slider.setRange(0, 1000)
         self.seek_slider.setObjectName("seekSlider")
+        self.seek_slider.setMouseTracking(True)
 
         self.volume_label = QLabel("Volume")
         self.volume_label.setObjectName("volumeLabel")
@@ -254,11 +291,24 @@ class PlayerWindow(QMainWindow):
         self.playlist_widget = QListWidget()
         self.playlist_widget.setObjectName("playlistDrawer")
         self.playlist_widget.setMinimumWidth(220)
+        self.playlist_widget.setDragDropMode(QListWidget.DragDropMode.InternalMove)
+        self.playlist_widget.model().rowsMoved.connect(lambda *_args: self._sync_playlist_from_widget())
         self.playlist_widget.hide()
+
+        self.inspector_panel = QPlainTextEdit()
+        self.inspector_panel.setObjectName("inspectorPanel")
+        self.inspector_panel.setReadOnly(True)
+        self.inspector_panel.setMinimumWidth(280)
+        self.inspector_panel.hide()
+
+        self.timeline_preview = QLabel()
+        self.timeline_preview.setObjectName("timelinePreview")
+        self.timeline_preview.hide()
 
         self.splitter = QSplitter()
         self.splitter.addWidget(player_container)
         self.splitter.addWidget(self.playlist_widget)
+        self.splitter.addWidget(self.inspector_panel)
         self.splitter.setStretchFactor(0, 1)
         self.setCentralWidget(self.splitter)
         self.setStatusBar(QStatusBar())
@@ -286,6 +336,25 @@ class PlayerWindow(QMainWindow):
 
         self.load_subtitles_action = QAction("Load Subtitles", self)
         self.load_subtitles_action.triggered.connect(self.load_external_subtitles)
+        self.inspector_action = QAction("Inspector", self)
+        self.inspector_action.triggered.connect(self.toggle_inspector)
+        self.copy_probe_action = QAction("Copy FFprobe JSON", self)
+        self.copy_probe_action.triggered.connect(self.copy_probe_json)
+        self.open_folder_action = QAction("Open Containing Folder", self)
+        self.open_folder_action.triggered.connect(self.open_containing_folder)
+        self.remove_playlist_action = QAction("Remove Selected", self)
+        self.remove_playlist_action.triggered.connect(self.remove_selected_playlist_item)
+        self.clear_playlist_action = QAction("Clear Playlist", self)
+        self.clear_playlist_action.triggered.connect(self.clear_playlist)
+        self.shuffle_action = QAction("Shuffle", self)
+        self.shuffle_action.setCheckable(True)
+        self.shuffle_action.triggered.connect(self.toggle_shuffle)
+        self.repeat_action = QAction("Repeat: Off", self)
+        self.repeat_action.triggered.connect(self.cycle_repeat_mode)
+        self.previous_chapter_action = QAction("Previous Chapter", self)
+        self.previous_chapter_action.triggered.connect(self.previous_chapter)
+        self.next_chapter_action = QAction("Next Chapter", self)
+        self.next_chapter_action.triggered.connect(self.next_chapter)
 
         self.recent_menu = QMenu("Recent", self)
         self._refresh_recent_menu()
@@ -296,10 +365,23 @@ class PlayerWindow(QMainWindow):
         file_menu.addAction(self.load_subtitles_action)
         file_menu.addAction(self.save_frame_action)
         file_menu.addAction(self.export_clip_action)
+        file_menu.addAction(self.open_folder_action)
 
         playback_menu = self.menuBar().addMenu("Playback")
         playback_menu.addAction(self.fullscreen_action)
         playback_menu.addAction(self.mute_action)
+        playback_menu.addAction(self.previous_chapter_action)
+        playback_menu.addAction(self.next_chapter_action)
+
+        playlist_menu = self.menuBar().addMenu("Playlist")
+        playlist_menu.addAction(self.remove_playlist_action)
+        playlist_menu.addAction(self.clear_playlist_action)
+        playlist_menu.addAction(self.shuffle_action)
+        playlist_menu.addAction(self.repeat_action)
+
+        view_menu = self.menuBar().addMenu("View")
+        view_menu.addAction(self.inspector_action)
+        view_menu.addAction(self.copy_probe_action)
 
         for action in (
             self.open_action,
@@ -308,6 +390,15 @@ class PlayerWindow(QMainWindow):
             self.save_frame_action,
             self.export_clip_action,
             self.load_subtitles_action,
+            self.inspector_action,
+            self.copy_probe_action,
+            self.open_folder_action,
+            self.remove_playlist_action,
+            self.clear_playlist_action,
+            self.shuffle_action,
+            self.repeat_action,
+            self.previous_chapter_action,
+            self.next_chapter_action,
         ):
             self.addAction(action)
         self._add_shortcut("Space", self.toggle_playback)
@@ -320,6 +411,8 @@ class PlayerWindow(QMainWindow):
         self._add_shortcut("N", self.play_next)
         self._add_shortcut("P", self.play_previous)
         self._add_shortcut("Esc", self.exit_fullscreen)
+        self._add_shortcut("[", lambda: self.adjust_subtitle_delay(-0.25))
+        self._add_shortcut("]", lambda: self.adjust_subtitle_delay(0.25))
 
     def _add_shortcut(self, shortcut: str, callback) -> None:  # noqa: ANN001
         action = QAction(self)
@@ -362,18 +455,35 @@ class PlayerWindow(QMainWindow):
             return
         self.playlist = list(paths)
         self.playlist_index = max(0, min(start_index, len(self.playlist) - 1))
+        self.playlist_failures.clear()
+        self._rebuild_shuffle_queue()
         self._refresh_playlist_drawer()
         self._load_current_playlist_item()
 
     def play_next(self) -> None:
-        if self.playlist_index + 1 >= len(self.playlist):
+        if not self.playlist:
             return
-        self.playlist_index += 1
+        self.save_current_media_state()
+        if self.repeat_mode == "one":
+            self._load_current_playlist_item()
+            return
+        if self.shuffle_enabled:
+            self.playlist_index = self._next_shuffle_index()
+            self._load_current_playlist_item()
+            return
+        if self.playlist_index + 1 >= len(self.playlist):
+            if self.repeat_mode == "all":
+                self.playlist_index = 0
+            else:
+                return
+        else:
+            self.playlist_index += 1
         self._load_current_playlist_item()
 
     def play_previous(self) -> None:
         if self.playlist_index <= 0:
             return
+        self.save_current_media_state()
         self.playlist_index -= 1
         self._load_current_playlist_item()
 
@@ -385,13 +495,25 @@ class PlayerWindow(QMainWindow):
         try:
             media = self.player.load(path)
             self.duration = media.duration or 0.0
+            self._current_probe_data = probe(path).data
+            self.chapters = parse_chapters(self._current_probe_data)
             self._populate_audio_streams()
             self._populate_subtitle_sources()
+            resumed = self._restore_media_state(path, media)
             self._remember_recent_file(media.path)
-            self.statusBar().showMessage(str(media.path))
+            self._refresh_inspector(media)
+            self._start_preview_generation(media.path, self.duration)
+            self.playlist_failures.pop(self.playlist_index, None)
+            self._refresh_playlist_drawer()
+            if not resumed:
+                self.statusBar().showMessage(str(media.path))
             self.player.play()
         except Exception as exc:
+            if 0 <= self.playlist_index < len(self.playlist):
+                self.playlist_failures[self.playlist_index] = str(exc)
+                self._refresh_playlist_drawer()
             self.on_error(exc)
+            self._advance_after_failed_load()
 
     def toggle_playback(self) -> None:
         if self.player.state == PlaybackState.PLAYING:
@@ -518,7 +640,7 @@ class PlayerWindow(QMainWindow):
     def _render_subtitle(self, position: float) -> None:
         if self.subtitle_track is None:
             return
-        text = self.subtitle_track.text_at(position)
+        text = self.subtitle_track.text_at(position + self.subtitle_delay)
         self.subtitle_label.setText(text)
         self.subtitle_label.setVisible(bool(text))
 
@@ -529,7 +651,8 @@ class PlayerWindow(QMainWindow):
 
     def _remember_recent_file(self, path: Path) -> None:
         self.recent_files = [path, *[item for item in self.recent_files if item != path]]
-        save_recent_files(self.recent_files)
+        self.config = set_recent_files(self.config, self.recent_files)
+        save_config(self.config_path, self.config)
         self._refresh_recent_menu()
 
     def _refresh_recent_menu(self) -> None:
@@ -553,6 +676,9 @@ class PlayerWindow(QMainWindow):
             item = QListWidgetItem(path.name)
             item.setToolTip(str(path))
             item.setData(Qt.ItemDataRole.UserRole, index)
+            if index in self.playlist_failures:
+                item.setText(f"! {path.name}")
+                item.setToolTip(f"{path}\n{self.playlist_failures[index]}")
             self.playlist_widget.addItem(item)
         if 0 <= self.playlist_index < self.playlist_widget.count():
             self.playlist_widget.setCurrentRow(self.playlist_index)
@@ -565,6 +691,34 @@ class PlayerWindow(QMainWindow):
 
     def toggle_playlist_drawer(self) -> None:
         self.playlist_widget.setVisible(not self.playlist_widget.isVisible())
+
+    def remove_selected_playlist_item(self) -> None:
+        row = self.playlist_widget.currentRow()
+        if row < 0 or row >= len(self.playlist):
+            return
+        self.playlist.pop(row)
+        self.playlist_failures = {index - (1 if index > row else 0): value for index, value in self.playlist_failures.items() if index != row}
+        self.playlist_index = min(self.playlist_index, len(self.playlist) - 1)
+        self._rebuild_shuffle_queue()
+        self._refresh_playlist_drawer()
+
+    def clear_playlist(self) -> None:
+        self.playlist.clear()
+        self.playlist_index = -1
+        self.playlist_failures.clear()
+        self._shuffle_queue.clear()
+        self._refresh_playlist_drawer()
+
+    def toggle_shuffle(self) -> None:
+        self.shuffle_enabled = self.shuffle_action.isChecked()
+        self._rebuild_shuffle_queue()
+        self.statusBar().showMessage("Shuffle on" if self.shuffle_enabled else "Shuffle off")
+
+    def cycle_repeat_mode(self) -> None:
+        modes = ["off", "one", "all"]
+        self.repeat_mode = modes[(modes.index(self.repeat_mode) + 1) % len(modes)]
+        self.repeat_action.setText(f"Repeat: {self.repeat_mode.title()}")
+        self.statusBar().showMessage(self.repeat_action.text())
 
     def toggle_fullscreen(self) -> None:
         if self.isFullScreen():
@@ -601,6 +755,11 @@ class PlayerWindow(QMainWindow):
         self.player.set_muted(not self.player.settings.muted)
         self.statusBar().showMessage("Muted" if self.player.settings.muted else "Unmuted")
 
+    def adjust_subtitle_delay(self, delta: float) -> None:
+        self.subtitle_delay = round(self.subtitle_delay + delta, 2)
+        self.statusBar().showMessage(f"Subtitle delay: {self.subtitle_delay:+.2f}s")
+        self.save_current_media_state()
+
     def seek_relative(self, delta: float) -> None:
         target = max(0.0, self.player.master_position() + delta)
         if self.duration > 0:
@@ -610,6 +769,23 @@ class PlayerWindow(QMainWindow):
 
     def adjust_volume(self, delta: int) -> None:
         self.volume_slider.setValue(max(0, min(100, self.volume_slider.value() + delta)))
+
+    def previous_chapter(self) -> None:
+        if not self.chapters:
+            return
+        position = self.player.master_position()
+        previous = [chapter for chapter in self.chapters if chapter.start < position - 1]
+        if previous:
+            self.player.seek(previous[-1].start)
+
+    def next_chapter(self) -> None:
+        if not self.chapters:
+            return
+        position = self.player.master_position()
+        for chapter in self.chapters:
+            if chapter.start > position + 1:
+                self.player.seek(chapter.start)
+                return
 
     def save_current_frame(self) -> None:
         if self._last_pixmap is None:
@@ -660,8 +836,147 @@ class PlayerWindow(QMainWindow):
                 self.statusBar().showMessage(str(exc))
         event.acceptProposedAction()
 
+    def toggle_inspector(self) -> None:
+        self.inspector_panel.setVisible(not self.inspector_panel.isVisible())
+
+    def copy_probe_json(self) -> None:
+        if self._current_probe_data is None:
+            return
+        QApplication.clipboard().setText(json.dumps(self._current_probe_data, indent=2))
+        self.statusBar().showMessage("Copied FFprobe JSON")
+
+    def open_containing_folder(self) -> None:
+        path = self.player.current_path
+        if path is None:
+            return
+        folder = path.parent
+        if sys.platform == "win32":
+            subprocess.Popen(["explorer", str(folder)], shell=False)
+        else:
+            QDesktopServices.openUrl(QUrl.fromLocalFile(str(folder)))
+
+    def save_current_media_state(self) -> None:
+        path = self.player.current_path
+        if path is None:
+            return
+        self.config = set_media_state(
+            self.config,
+            path,
+            MediaState(
+                position=self.player.master_position(),
+                audio_stream_index=self.player.selected_audio_stream_index,
+                subtitle_source=self.player.settings.subtitle_source,
+                subtitle_delay=self.subtitle_delay,
+                volume=self.volume_slider.value() / 100,
+                playback_speed=self.player.settings.playback_speed,
+            ),
+        )
+        save_config(self.config_path, self.config)
+
+    def _restore_media_state(self, path: Path, media: MediaInfo) -> bool:
+        state = media_state_from_config(self.config, path)
+        if state is None:
+            return False
+        self.subtitle_delay = state.subtitle_delay
+        self.volume_slider.setValue(int(max(0.0, min(1.0, state.volume)) * 100))
+        if state.playback_speed in {0.5, 0.75, 1.0, 1.25, 1.5, 2.0}:
+            self.speed_combo.setCurrentText(f"{state.playback_speed:g}x")
+            self.player.set_playback_speed(state.playback_speed)
+        if state.audio_stream_index is not None:
+            try:
+                self.player.set_audio_stream(state.audio_stream_index)
+            except Exception:
+                pass
+        if isinstance(state.subtitle_source, str) and Path(state.subtitle_source).exists():
+            try:
+                self.subtitle_track = load_subtitles(state.subtitle_source)
+                self.subtitle_external_path = Path(state.subtitle_source)
+                self._populate_subtitle_sources()
+                self.subtitle_combo.setCurrentIndex(self.subtitle_combo.count() - 1)
+            except (OSError, SubtitleError):
+                pass
+        position = resumable_position(state, media.duration)
+        if position is not None:
+            self.player.seek(position)
+            self.statusBar().showMessage(f"Resumed at {format_timestamp(position)}")
+            return True
+        return False
+
+    def _refresh_inspector(self, media: MediaInfo) -> None:
+        lines = [
+            f"Path: {media.path}",
+            f"File size: {_file_size(media.path)}",
+            f"Duration: {format_timestamp(media.duration)}",
+        ]
+        if self._current_probe_data is not None:
+            fmt = self._current_probe_data.get("format", {})
+            if isinstance(fmt, dict):
+                lines.append(f"Container: {fmt.get('format_long_name') or fmt.get('format_name') or 'unknown'}")
+        if media.primary_video is not None:
+            video = media.primary_video
+            lines.append(f"Video: {video.codec_name or 'unknown'} {video.width or '?'}x{video.height or '?'} {video.frame_rate or '?'}fps")
+        for stream in media.audio_streams:
+            lines.append(f"Audio #{stream.index}: {stream.codec_name or 'unknown'} {stream.language or ''} {stream.channels or '?'}ch")
+        for stream in media.subtitle_streams:
+            lines.append(f"Subtitle #{stream.index}: {stream.codec_name or 'unknown'} {stream.language or ''}")
+        if self.chapters:
+            lines.append("Chapters:")
+            lines.extend(f"  {format_timestamp(chapter.start)} {chapter.title}" for chapter in self.chapters)
+        self.inspector_panel.setPlainText("\n".join(lines))
+
+    def _start_preview_generation(self, path: Path, duration: float | None) -> None:
+        self.timeline_previews.clear()
+        cache_dir = thumbnail_cache_dir(user_cache_path(), path)
+
+        def worker() -> None:
+            try:
+                self.timeline_previews = generate_timeline_thumbnails(path, duration, cache_dir)
+            except Exception:
+                self.timeline_previews = {}
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    def _show_timeline_preview(self, slider_value: float) -> None:
+        if self.duration <= 0:
+            return
+        timestamp = slider_value / 1000 * self.duration
+        preview = nearest_preview(self.timeline_previews, timestamp)
+        if preview is not None and preview.exists():
+            self.timeline_preview.setPixmap(QPixmap(str(preview)).scaled(160, 90, Qt.AspectRatioMode.KeepAspectRatio))
+            self.timeline_preview.show()
+        self.statusBar().showMessage(f"Preview {format_timestamp(timestamp)}")
+
+    def _next_shuffle_index(self) -> int:
+        if not self._shuffle_queue:
+            self._rebuild_shuffle_queue()
+        return self._shuffle_queue.pop(0) if self._shuffle_queue else self.playlist_index
+
+    def _rebuild_shuffle_queue(self) -> None:
+        self._shuffle_queue = [index for index in range(len(self.playlist)) if index != self.playlist_index]
+        random.shuffle(self._shuffle_queue)
+
+    def _advance_after_failed_load(self) -> None:
+        if len(self.playlist) > 1 and self.playlist_index + 1 < len(self.playlist):
+            self.playlist_index += 1
+            self._load_current_playlist_item()
+
+    def _sync_playlist_from_widget(self) -> None:
+        reordered: list[Path] = []
+        for row in range(self.playlist_widget.count()):
+            index = self.playlist_widget.item(row).data(Qt.ItemDataRole.UserRole)
+            if isinstance(index, int) and 0 <= index < len(self.playlist):
+                reordered.append(self.playlist[index])
+        if len(reordered) == len(self.playlist):
+            current_path = self.playlist[self.playlist_index] if 0 <= self.playlist_index < len(self.playlist) else None
+            self.playlist = reordered
+            self.playlist_index = self.playlist.index(current_path) if current_path in self.playlist else -1
+            self.playlist_failures.clear()
+            self._refresh_playlist_drawer()
+
     def closeEvent(self, event) -> None:  # noqa: ANN001
-        save_recent_files(self.recent_files)
+        self.save_current_media_state()
+        self.config = set_recent_files(self.config, self.recent_files)
+        save_config(self.config_path, self.config)
         self.player.close()
         self._resources.close()
         event.accept()
@@ -724,6 +1039,18 @@ class ClipExportDialog(QDialog):
             "output": Path(self.output_input.text()),
             "overwrite": self.overwrite_check.isChecked(),
         }
+
+
+def _file_size(path: Path) -> str:
+    try:
+        size = path.stat().st_size
+    except OSError:
+        return "unknown"
+    for unit in ("B", "KB", "MB", "GB"):
+        if size < 1024:
+            return f"{size:.0f} {unit}"
+        size /= 1024
+    return f"{size:.1f} TB"
 
 
 def main() -> int:

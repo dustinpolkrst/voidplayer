@@ -111,7 +111,9 @@ VoidPlayer supports opening multiple local files as a playlist, previous/next
 transport controls, recent-file persistence under the user config directory,
 audio stream selection for media with multiple audio tracks, fullscreen
 playback, keyboard seeking, mute, playback speed controls, text subtitles, frame
-capture, and clip export.
+capture, clip export, per-file resume state, subtitle delay controls, repeat and
+shuffle playback, chapter navigation, a media inspector, and best-effort
+timeline preview generation.
 
 Keyboard shortcuts:
 
@@ -123,5 +125,6 @@ Up / Down      Volume
 F              Fullscreen
 M              Mute
 N / P          Next / previous item
+[ / ]          Subtitle delay -/+ 250ms
 Esc            Exit fullscreen
 ```
