@@ -51,7 +51,6 @@ try:
         QListWidgetItem,
         QMainWindow,
         QMenu,
-        QMessageBox,
         QPlainTextEdit,
         QPushButton,
         QSlider,
@@ -124,6 +123,15 @@ class PlayerWindow(QMainWindow):
         self._resources = ExitStack()
         self._app_icon = self._resource_file("assets", "app-icon.svg")
         self._open_media_icon = self._resource_file("assets", "open-media.svg")
+        self._add_playlist_icon = self._resource_file("assets", "add-playlist.svg")
+        self._playlist_icon = self._resource_file("assets", "playlist.svg")
+        self._previous_icon = self._resource_file("assets", "previous.svg")
+        self._play_icon = self._resource_file("assets", "play.svg")
+        self._pause_icon = self._resource_file("assets", "pause.svg")
+        self._stop_icon = self._resource_file("assets", "stop.svg")
+        self._next_icon = self._resource_file("assets", "next.svg")
+        self._remove_icon = self._resource_file("assets", "remove.svg")
+        self._clear_icon = self._resource_file("assets", "clear.svg")
         self.setWindowTitle("VoidPlayer")
         self.setWindowIcon(QIcon(str(self._app_icon)))
         self.resize(1000, 620)
@@ -163,6 +171,10 @@ class PlayerWindow(QMainWindow):
         self._apply_theme(theme_name, theme_path)
         self._build_actions()
         self.open_button.clicked.connect(self.open_file)
+        self.add_playlist_button.clicked.connect(self.add_files_to_playlist)
+        self.playlist_add_button.clicked.connect(self.add_files_to_playlist)
+        self.playlist_remove_button.clicked.connect(self.remove_selected_playlist_item)
+        self.playlist_clear_button.clicked.connect(self.clear_playlist)
         self.previous_button.clicked.connect(self.play_previous)
         self.play_button.clicked.connect(self.toggle_playback)
         self.stop_button.clicked.connect(self.player.stop)
@@ -217,11 +229,12 @@ class PlayerWindow(QMainWindow):
         self.video_frame.setLayout(video_layout)
 
         self.open_button = self._tool_button("Open", QIcon(str(self._open_media_icon)))
-        self.drawer_button = self._tool_button("Playlist", QStyle.StandardPixmap.SP_FileDialogDetailedView)
-        self.previous_button = self._tool_button("Previous", QStyle.StandardPixmap.SP_MediaSkipBackward)
-        self.play_button = self._tool_button("Play", QStyle.StandardPixmap.SP_MediaPlay)
-        self.stop_button = self._tool_button("Stop", QStyle.StandardPixmap.SP_MediaStop)
-        self.next_button = self._tool_button("Next", QStyle.StandardPixmap.SP_MediaSkipForward)
+        self.add_playlist_button = self._tool_button("Add to Playlist", QIcon(str(self._add_playlist_icon)))
+        self.drawer_button = self._tool_button("Playlist", QIcon(str(self._playlist_icon)))
+        self.previous_button = self._tool_button("Previous", QIcon(str(self._previous_icon)))
+        self.play_button = self._tool_button("Play", QIcon(str(self._play_icon)))
+        self.stop_button = self._tool_button("Stop", QIcon(str(self._stop_icon)))
+        self.next_button = self._tool_button("Next", QIcon(str(self._next_icon)))
 
         self.elapsed_label = QLabel("00:00:00.00")
         self.elapsed_label.setObjectName("timeLabel")
@@ -232,6 +245,7 @@ class PlayerWindow(QMainWindow):
         self.seek_slider.setRange(0, 1000)
         self.seek_slider.setObjectName("seekSlider")
         self.seek_slider.setMouseTracking(True)
+        self.seek_slider.setMinimumHeight(34)
 
         self.volume_label = QLabel("Volume")
         self.volume_label.setObjectName("volumeLabel")
@@ -242,10 +256,10 @@ class PlayerWindow(QMainWindow):
         self.volume_slider.setObjectName("volumeSlider")
         self.audio_stream_combo = QComboBox()
         self.audio_stream_combo.setObjectName("audioStreamCombo")
-        self.audio_stream_combo.setMinimumWidth(140)
+        self.audio_stream_combo.setMinimumWidth(150)
         self.subtitle_combo = QComboBox()
         self.subtitle_combo.setObjectName("subtitleCombo")
-        self.subtitle_combo.setMinimumWidth(130)
+        self.subtitle_combo.setMinimumWidth(150)
         self.subtitle_combo.addItem("Subtitles Off", None)
         self.speed_combo = QComboBox()
         self.speed_combo.setObjectName("speedCombo")
@@ -254,33 +268,53 @@ class PlayerWindow(QMainWindow):
         self.speed_combo.setCurrentText("1x")
         self.speed_combo.setFixedWidth(82)
 
-        transport = QHBoxLayout()
-        transport.setContentsMargins(0, 0, 0, 0)
-        transport.setSpacing(8)
-        transport.addWidget(self.open_button)
-        transport.addWidget(self.drawer_button)
-        transport.addWidget(self.previous_button)
-        transport.addWidget(self.play_button)
-        transport.addWidget(self.stop_button)
-        transport.addWidget(self.next_button)
-        transport.addSpacing(4)
-        transport.addWidget(self.elapsed_label)
-        transport.addWidget(self.seek_slider, 1)
-        transport.addWidget(self.total_label)
-        transport.addSpacing(10)
-        transport.addWidget(self.volume_label)
-        transport.addWidget(self.volume_slider)
-        transport.addWidget(self.speed_combo)
-        transport.addWidget(self.audio_stream_combo)
-        transport.addWidget(self.subtitle_combo)
+        timeline_layout = QHBoxLayout()
+        timeline_layout.setContentsMargins(0, 0, 0, 0)
+        timeline_layout.setSpacing(12)
+        timeline_layout.addWidget(self.elapsed_label)
+        timeline_layout.addWidget(self.seek_slider, 1)
+        timeline_layout.addWidget(self.total_label)
+
+        timeline_bar = QFrame()
+        timeline_bar.setObjectName("timelineBar")
+        timeline_bar.setLayout(timeline_layout)
+
+        button_layout = QHBoxLayout()
+        button_layout.setContentsMargins(0, 0, 0, 0)
+        button_layout.setSpacing(10)
+        button_layout.addWidget(self.open_button)
+        button_layout.addWidget(self.add_playlist_button)
+        button_layout.addWidget(self.drawer_button)
+        button_layout.addSpacing(6)
+        button_layout.addWidget(self.previous_button)
+        button_layout.addWidget(self.play_button)
+        button_layout.addWidget(self.stop_button)
+        button_layout.addWidget(self.next_button)
+        button_layout.addSpacing(10)
+        button_layout.addWidget(self.volume_label)
+        button_layout.addWidget(self.volume_slider)
+        button_layout.addWidget(self.speed_combo)
+        button_layout.addWidget(self.audio_stream_combo)
+        button_layout.addWidget(self.subtitle_combo)
+        button_layout.addStretch(1)
+
+        button_bar = QFrame()
+        button_bar.setObjectName("buttonBar")
+        button_bar.setLayout(button_layout)
+
+        controls_layout = QVBoxLayout()
+        controls_layout.setContentsMargins(0, 0, 0, 0)
+        controls_layout.setSpacing(10)
+        controls_layout.addWidget(timeline_bar)
+        controls_layout.addWidget(button_bar)
 
         controls = QFrame()
         controls.setObjectName("controlBar")
-        controls.setLayout(transport)
+        controls.setLayout(controls_layout)
 
         root = QVBoxLayout()
-        root.setContentsMargins(14, 14, 14, 14)
-        root.setSpacing(12)
+        root.setContentsMargins(20, 20, 20, 20)
+        root.setSpacing(16)
         root.addWidget(self.video_frame, 1)
         root.addWidget(controls)
 
@@ -290,10 +324,43 @@ class PlayerWindow(QMainWindow):
 
         self.playlist_widget = QListWidget()
         self.playlist_widget.setObjectName("playlistDrawer")
-        self.playlist_widget.setMinimumWidth(220)
+        self.playlist_widget.setMinimumWidth(320)
         self.playlist_widget.setDragDropMode(QListWidget.DragDropMode.InternalMove)
         self.playlist_widget.model().rowsMoved.connect(lambda *_args: self._sync_playlist_from_widget())
-        self.playlist_widget.hide()
+
+        self.playlist_title = QLabel("Playlist")
+        self.playlist_title.setObjectName("playlistTitle")
+        self.playlist_count_label = QLabel("0 items")
+        self.playlist_count_label.setObjectName("playlistCount")
+        self.playlist_add_button = self._tool_button("Add to Playlist", QIcon(str(self._add_playlist_icon)))
+        self.playlist_remove_button = self._tool_button("Remove Selected", QIcon(str(self._remove_icon)))
+        self.playlist_clear_button = self._tool_button("Clear Playlist", QIcon(str(self._clear_icon)))
+
+        playlist_header_layout = QHBoxLayout()
+        playlist_header_layout.setContentsMargins(0, 0, 0, 0)
+        playlist_header_layout.setSpacing(8)
+        playlist_header_layout.addWidget(self.playlist_title)
+        playlist_header_layout.addWidget(self.playlist_count_label)
+        playlist_header_layout.addStretch(1)
+        playlist_header_layout.addWidget(self.playlist_add_button)
+        playlist_header_layout.addWidget(self.playlist_remove_button)
+        playlist_header_layout.addWidget(self.playlist_clear_button)
+
+        self.playlist_header = QFrame()
+        self.playlist_header.setObjectName("playlistHeader")
+        self.playlist_header.setLayout(playlist_header_layout)
+
+        playlist_layout = QVBoxLayout()
+        playlist_layout.setContentsMargins(14, 14, 14, 14)
+        playlist_layout.setSpacing(12)
+        playlist_layout.addWidget(self.playlist_header)
+        playlist_layout.addWidget(self.playlist_widget, 1)
+
+        self.playlist_panel = QFrame()
+        self.playlist_panel.setObjectName("playlistPanel")
+        self.playlist_panel.setMinimumWidth(340)
+        self.playlist_panel.setLayout(playlist_layout)
+        self.playlist_panel.hide()
 
         self.inspector_panel = QPlainTextEdit()
         self.inspector_panel.setObjectName("inspectorPanel")
@@ -307,9 +374,10 @@ class PlayerWindow(QMainWindow):
 
         self.splitter = QSplitter()
         self.splitter.addWidget(player_container)
-        self.splitter.addWidget(self.playlist_widget)
+        self.splitter.addWidget(self.playlist_panel)
         self.splitter.addWidget(self.inspector_panel)
         self.splitter.setStretchFactor(0, 1)
+        self.splitter.setSizes([820, 340, 300])
         self.setCentralWidget(self.splitter)
         self.setStatusBar(QStatusBar())
         self.statusBar().showMessage("Ready")
@@ -374,6 +442,9 @@ class PlayerWindow(QMainWindow):
         playback_menu.addAction(self.next_chapter_action)
 
         playlist_menu = self.menuBar().addMenu("Playlist")
+        self.add_playlist_action = QAction("Add Files...", self)
+        self.add_playlist_action.triggered.connect(self.add_files_to_playlist)
+        playlist_menu.addAction(self.add_playlist_action)
         playlist_menu.addAction(self.remove_playlist_action)
         playlist_menu.addAction(self.clear_playlist_action)
         playlist_menu.addAction(self.shuffle_action)
@@ -393,6 +464,7 @@ class PlayerWindow(QMainWindow):
             self.inspector_action,
             self.copy_probe_action,
             self.open_folder_action,
+            self.add_playlist_action,
             self.remove_playlist_action,
             self.clear_playlist_action,
             self.shuffle_action,
@@ -428,7 +500,7 @@ class PlayerWindow(QMainWindow):
             button.setIcon(self.style().standardIcon(icon))
         button.setToolTip(tooltip)
         button.setFixedSize(36, 36)
-        button.setIconSize(QSize(20, 20))
+        button.setIconSize(QSize(22, 22))
         button.setCursor(Qt.CursorShape.PointingHandCursor)
         return button
 
@@ -450,6 +522,16 @@ class PlayerWindow(QMainWindow):
         if paths:
             self.set_playlist([Path(path) for path in paths], start_index=0)
 
+    def add_files_to_playlist(self) -> None:
+        paths, _ = QFileDialog.getOpenFileNames(
+            self,
+            "Add videos to playlist",
+            "",
+            "Video files (*.mp4 *.mkv *.mov *.avi *.webm);;All files (*.*)",
+        )
+        if paths:
+            self.add_to_playlist([Path(path) for path in paths])
+
     def set_playlist(self, paths: list[Path], *, start_index: int = 0) -> None:
         if not paths:
             return
@@ -459,6 +541,20 @@ class PlayerWindow(QMainWindow):
         self._rebuild_shuffle_queue()
         self._refresh_playlist_drawer()
         self._load_current_playlist_item()
+
+    def add_to_playlist(self, paths: list[Path]) -> None:
+        if not paths:
+            return
+        had_playlist = bool(self.playlist)
+        self.playlist.extend(paths)
+        if not had_playlist:
+            self.playlist_index = 0
+            self._rebuild_shuffle_queue()
+            self._refresh_playlist_drawer()
+            self._load_current_playlist_item()
+            return
+        self._rebuild_shuffle_queue()
+        self._refresh_playlist_drawer()
 
     def play_next(self) -> None:
         if not self.playlist:
@@ -529,14 +625,14 @@ class PlayerWindow(QMainWindow):
 
     def on_state(self, state: PlaybackState) -> None:
         if state == PlaybackState.PLAYING:
-            self.play_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_MediaPause))
+            self.play_button.setIcon(QIcon(str(self._pause_icon)))
             self.play_button.setToolTip("Pause")
         elif state == PlaybackState.ENDED:
-            self.play_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_MediaPlay))
+            self.play_button.setIcon(QIcon(str(self._play_icon)))
             self.play_button.setToolTip("Play")
             self.play_next()
         else:
-            self.play_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_MediaPlay))
+            self.play_button.setIcon(QIcon(str(self._play_icon)))
             self.play_button.setToolTip("Play")
 
     def on_error(self, error: Exception) -> None:
@@ -672,8 +768,9 @@ class PlayerWindow(QMainWindow):
 
     def _refresh_playlist_drawer(self) -> None:
         self.playlist_widget.clear()
+        self.playlist_count_label.setText(f"{len(self.playlist)} item{'s' if len(self.playlist) != 1 else ''}")
         for index, path in enumerate(self.playlist):
-            item = QListWidgetItem(path.name)
+            item = QListWidgetItem(f"{path.name}\n{path.parent}")
             item.setToolTip(str(path))
             item.setData(Qt.ItemDataRole.UserRole, index)
             if index in self.playlist_failures:
@@ -690,7 +787,7 @@ class PlayerWindow(QMainWindow):
             self._load_current_playlist_item()
 
     def toggle_playlist_drawer(self) -> None:
-        self.playlist_widget.setVisible(not self.playlist_widget.isVisible())
+        self.playlist_panel.setVisible(not self.playlist_panel.isVisible())
 
     def remove_selected_playlist_item(self) -> None:
         row = self.playlist_widget.currentRow()
@@ -825,7 +922,10 @@ class PlayerWindow(QMainWindow):
         media_paths = [path for path in paths if path.suffix.lower() in {".mp4", ".mkv", ".mov", ".avi", ".webm"}]
         subtitle_paths = [path for path in paths if path.suffix.lower() in {".srt", ".vtt", ".ass"}]
         if media_paths:
-            self.set_playlist(media_paths, start_index=0)
+            if self.playlist:
+                self.add_to_playlist(media_paths)
+            else:
+                self.set_playlist(media_paths, start_index=0)
         if subtitle_paths:
             try:
                 self.subtitle_track = load_subtitles(subtitle_paths[0])

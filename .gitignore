@@ -5,6 +5,26 @@ build/
 dist/
 wheels/
 *.egg-info
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
 
 # Virtual environments
 .venv
+.env
+.env.*
+
+# Local/generated agent artifacts
+AGENTS.md
+graphify-out/
+
+# Local desktop/OS files
+*.lnk
+.DS_Store
+Thumbs.db
+
+# Logs and temporary files
+*.log
+*.tmp
+*.bak
