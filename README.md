@@ -2,8 +2,8 @@
 
 <img width="1165" height="839" alt="image" src="https://github.com/user-attachments/assets/9620ea0c-e537-4495-b806-bbc0bf5699c1" />
 
-
-
+<br>
+<br>
 
 VoidPlayer is a hackable anime streaming client built with PySide6, FFmpeg,
 PyAV, and sounddevice. It is designed to be easy to inspect, modify, and theme
