@@ -4,6 +4,7 @@ from .commands import build_command, convert, thumbnail, trim
 from .config import FFmpegConfig
 from .errors import (
     FFmpegError,
+    FFmpegCancelledError,
     FFmpegExecutableNotFound,
     FFmpegInvalidCommand,
     FFmpegProcessError,
@@ -19,6 +20,7 @@ from .runner import FFmpegResult, Progress, run_ffmpeg
 __all__ = [
     "FFmpegConfig",
     "FFmpegError",
+    "FFmpegCancelledError",
     "FFmpegExecutableNotFound",
     "FFmpegInvalidCommand",
     "FFmpegProcessError",

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import argparse
+import json
+import os
 import sys
 from contextlib import ExitStack
 from importlib.resources import as_file, files
@@ -17,6 +19,7 @@ try:
     from PySide6.QtGui import QAction, QIcon, QImage, QKeySequence, QPixmap
     from PySide6.QtWidgets import (
         QApplication,
+        QComboBox,
         QFileDialog,
         QFrame,
         QHBoxLayout,
@@ -36,6 +39,36 @@ except ImportError as exc:  # pragma: no cover - manual app dependency guard
 def resource_path(*parts: str) -> Path:
     resource = files(__package__).joinpath(*parts)
     return Path(str(resource))
+
+
+def user_config_path() -> Path:
+    base = os.environ.get("APPDATA")
+    if base:
+        return Path(base) / "VoidPlayer" / "config.json"
+    return Path.home() / ".config" / "voidplayer" / "config.json"
+
+
+def load_recent_files(config_path: Path | None = None) -> list[Path]:
+    path = config_path or user_config_path()
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return []
+    files = data.get("recent_files", [])
+    if not isinstance(files, list):
+        return []
+    return [Path(item) for item in files if isinstance(item, str)]
+
+
+def save_recent_files(recent_files: list[Path], config_path: Path | None = None, *, limit: int = 10) -> None:
+    path = config_path or user_config_path()
+    unique: list[str] = []
+    for item in recent_files:
+        value = str(Path(item))
+        if value not in unique:
+            unique.append(value)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({"recent_files": unique[:limit]}, indent=2), encoding="utf-8")
 
 
 class PlayerSignals(QObject):
@@ -74,6 +107,9 @@ class PlayerWindow(QMainWindow):
         self.duration = 0.0
         self._seeking = False
         self._last_pixmap: QPixmap | None = None
+        self.playlist: list[Path] = []
+        self.playlist_index = -1
+        self.recent_files = load_recent_files()
 
         self._build_ui()
         self._apply_theme(theme_name, theme_path)
@@ -83,18 +119,21 @@ class PlayerWindow(QMainWindow):
         self.open_action.triggered.connect(self.open_file)
         self.addAction(self.open_action)
         self.open_button.clicked.connect(self.open_file)
+        self.previous_button.clicked.connect(self.play_previous)
         self.play_button.clicked.connect(self.toggle_playback)
         self.stop_button.clicked.connect(self.player.stop)
+        self.next_button.clicked.connect(self.play_next)
         self.seek_slider.sliderPressed.connect(self._begin_seek)
         self.seek_slider.sliderReleased.connect(self._finish_seek)
         self.volume_slider.valueChanged.connect(lambda value: self.player.set_volume(value / 100))
+        self.audio_stream_combo.currentIndexChanged.connect(lambda _index: self._select_audio_stream())
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.refresh_position)
         self.timer.start(100)
 
         if initial_media is not None:
-            self.load_and_play(initial_media)
+            self.set_playlist([initial_media], start_index=0)
 
     def _resource_file(self, *parts: str) -> Path:
         resource = files(__package__).joinpath(*parts)
@@ -107,8 +146,10 @@ class PlayerWindow(QMainWindow):
         self.video_label.setMinimumSize(640, 360)
 
         self.open_button = self._tool_button("Open", QIcon(str(self._open_media_icon)))
+        self.previous_button = self._tool_button("Previous", QStyle.StandardPixmap.SP_MediaSkipBackward)
         self.play_button = self._tool_button("Play", QStyle.StandardPixmap.SP_MediaPlay)
         self.stop_button = self._tool_button("Stop", QStyle.StandardPixmap.SP_MediaStop)
+        self.next_button = self._tool_button("Next", QStyle.StandardPixmap.SP_MediaSkipForward)
 
         self.elapsed_label = QLabel("00:00:00.00")
         self.elapsed_label.setObjectName("timeLabel")
@@ -126,13 +167,18 @@ class PlayerWindow(QMainWindow):
         self.volume_slider.setValue(100)
         self.volume_slider.setFixedWidth(130)
         self.volume_slider.setObjectName("volumeSlider")
+        self.audio_stream_combo = QComboBox()
+        self.audio_stream_combo.setObjectName("audioStreamCombo")
+        self.audio_stream_combo.setMinimumWidth(140)
 
         transport = QHBoxLayout()
         transport.setContentsMargins(0, 0, 0, 0)
         transport.setSpacing(8)
         transport.addWidget(self.open_button)
+        transport.addWidget(self.previous_button)
         transport.addWidget(self.play_button)
         transport.addWidget(self.stop_button)
+        transport.addWidget(self.next_button)
         transport.addSpacing(4)
         transport.addWidget(self.elapsed_label)
         transport.addWidget(self.seek_slider, 1)
@@ -140,6 +186,7 @@ class PlayerWindow(QMainWindow):
         transport.addSpacing(10)
         transport.addWidget(self.volume_label)
         transport.addWidget(self.volume_slider)
+        transport.addWidget(self.audio_stream_combo)
 
         controls = QFrame()
         controls.setObjectName("controlBar")
@@ -179,19 +226,44 @@ class PlayerWindow(QMainWindow):
         self.setStyleSheet(render_stylesheet(theme))
 
     def open_file(self) -> None:
-        path, _ = QFileDialog.getOpenFileName(
+        paths, _ = QFileDialog.getOpenFileNames(
             self,
-            "Open video",
+            "Open video files",
             "",
             "Video files (*.mp4 *.mkv *.mov *.avi *.webm);;All files (*.*)",
         )
-        if path:
-            self.load_and_play(Path(path))
+        if paths:
+            self.set_playlist([Path(path) for path in paths], start_index=0)
+
+    def set_playlist(self, paths: list[Path], *, start_index: int = 0) -> None:
+        if not paths:
+            return
+        self.playlist = list(paths)
+        self.playlist_index = max(0, min(start_index, len(self.playlist) - 1))
+        self._load_current_playlist_item()
+
+    def play_next(self) -> None:
+        if self.playlist_index + 1 >= len(self.playlist):
+            return
+        self.playlist_index += 1
+        self._load_current_playlist_item()
+
+    def play_previous(self) -> None:
+        if self.playlist_index <= 0:
+            return
+        self.playlist_index -= 1
+        self._load_current_playlist_item()
+
+    def _load_current_playlist_item(self) -> None:
+        if 0 <= self.playlist_index < len(self.playlist):
+            self.load_and_play(self.playlist[self.playlist_index])
 
     def load_and_play(self, path: Path) -> None:
         try:
             media = self.player.load(path)
             self.duration = media.duration or 0.0
+            self._populate_audio_streams()
+            self._remember_recent_file(media.path)
             self.statusBar().showMessage(str(media.path))
             self.player.play()
         except Exception as exc:
@@ -213,6 +285,10 @@ class PlayerWindow(QMainWindow):
         if state == PlaybackState.PLAYING:
             self.play_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_MediaPause))
             self.play_button.setToolTip("Pause")
+        elif state == PlaybackState.ENDED:
+            self.play_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_MediaPlay))
+            self.play_button.setToolTip("Play")
+            self.play_next()
         else:
             self.play_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_MediaPlay))
             self.play_button.setToolTip("Play")
@@ -238,7 +314,41 @@ class PlayerWindow(QMainWindow):
             self.player.seek(self.seek_slider.value() / 1000 * self.duration)
         self._seeking = False
 
+    def _populate_audio_streams(self) -> None:
+        self.audio_stream_combo.blockSignals(True)
+        self.audio_stream_combo.clear()
+        media = self.player.media
+        if media is None or not media.audio_streams:
+            self.audio_stream_combo.addItem("No audio", None)
+            self.audio_stream_combo.setEnabled(False)
+            self.audio_stream_combo.blockSignals(False)
+            return
+        self.audio_stream_combo.setEnabled(True)
+        selected = self.player.selected_audio_stream_index
+        selected_row = 0
+        for row, stream in enumerate(media.audio_streams):
+            label = f"Audio #{stream.index}"
+            if stream.language:
+                label += f" {stream.language}"
+            if stream.codec_name:
+                label += f" ({stream.codec_name})"
+            self.audio_stream_combo.addItem(label, stream.index)
+            if stream.index == selected:
+                selected_row = row
+        self.audio_stream_combo.setCurrentIndex(selected_row)
+        self.audio_stream_combo.blockSignals(False)
+
+    def _select_audio_stream(self) -> None:
+        stream_index = self.audio_stream_combo.currentData()
+        if stream_index is not None:
+            self.player.set_audio_stream(int(stream_index))
+
+    def _remember_recent_file(self, path: Path) -> None:
+        self.recent_files = [path, *[item for item in self.recent_files if item != path]]
+        save_recent_files(self.recent_files)
+
     def closeEvent(self, event) -> None:  # noqa: ANN001
+        save_recent_files(self.recent_files)
         self.player.close()
         self._resources.close()
         event.accept()
@@ -278,4 +388,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

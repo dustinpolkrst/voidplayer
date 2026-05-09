@@ -32,6 +32,28 @@ def test_media_info_selects_primary_streams() -> None:
     assert info.primary_audio.sample_rate == 48000
 
 
+def test_media_info_exposes_subtitles_and_stream_tags() -> None:
+    info = media_info_from_probe(
+        "movie.mkv",
+        FFProbeResult(
+            {
+                "format": {"duration": "10"},
+                "streams": [
+                    {"index": 0, "codec_type": "video", "codec_name": "h264"},
+                    {"index": 1, "codec_type": "audio", "codec_name": "aac", "tags": {"language": "eng"}},
+                    {"index": 2, "codec_type": "subtitle", "codec_name": "subrip", "tags": {"title": "English CC"}},
+                ],
+            }
+        ),
+    )
+
+    assert info.primary_audio is not None
+    assert info.primary_audio.language == "eng"
+    assert info.has_subtitles is True
+    assert info.primary_subtitle is not None
+    assert info.primary_subtitle.title == "English CC"
+
+
 def test_timestamp_helpers() -> None:
     assert seconds_from_timestamp("01:02:03.5") == 3723.5
     assert seconds_from_timestamp("02:03") == 123

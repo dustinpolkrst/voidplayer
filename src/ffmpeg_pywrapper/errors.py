@@ -16,6 +16,10 @@ class FFmpegTimeoutError(FFmpegError):
     """Raised when a process exceeds its timeout."""
 
 
+class FFmpegCancelledError(FFmpegError):
+    """Raised when a process is cancelled cooperatively."""
+
+
 class FFmpegInvalidCommand(FFmpegError):
     """Raised when FFmpeg rejects the supplied command."""
 

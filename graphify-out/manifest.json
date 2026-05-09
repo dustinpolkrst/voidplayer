@@ -16,20 +16,20 @@
     "hash": "07ee9c27ce6f307fc7106402a28f191d"
   },
   "C:\\data\\ffmpeg_pywrapper\\src\\ffmpeg_pywrapper\\errors.py": {
-    "mtime": 1778265922.424905,
-    "hash": "212b1e199bfcc08351107a9a5a9f71c3"
+    "mtime": 1778336584.2942512,
+    "hash": "38381d1a27fbf9a5e6dbd4fb0ba4d928"
   },
   "C:\\data\\ffmpeg_pywrapper\\src\\ffmpeg_pywrapper\\media.py": {
-    "mtime": 1778265922.4259052,
-    "hash": "0dea5f2d21654a1d9c502959411e055b"
+    "mtime": 1778336584.2952898,
+    "hash": "2a6104a4bfb53b90bb203f804a9952aa"
   },
   "C:\\data\\ffmpeg_pywrapper\\src\\ffmpeg_pywrapper\\options.py": {
     "mtime": 1778265364.43277,
     "hash": "1b4dfade577cc98dab5421bf53a1cdc5"
   },
   "C:\\data\\ffmpeg_pywrapper\\src\\ffmpeg_pywrapper\\playback.py": {
-    "mtime": 1778335758.4131887,
-    "hash": "5aab1cb74aa57afb19602dd4749db3fc"
+    "mtime": 1778336609.6873364,
+    "hash": "42506c8c7bf92bcc0a2d74645c64fcbe"
   },
   "C:\\data\\ffmpeg_pywrapper\\src\\ffmpeg_pywrapper\\probe.py": {
     "mtime": 1778265364.433769,
@@ -40,20 +40,20 @@
     "hash": "3c665b5d0651b1ce39c88dd8005476cd"
   },
   "C:\\data\\ffmpeg_pywrapper\\src\\ffmpeg_pywrapper\\runner.py": {
-    "mtime": 1778335845.6376362,
-    "hash": "9e6764cb29e57e90ead2b75c77dfbcfd"
+    "mtime": 1778336584.2947752,
+    "hash": "4f36f8f49e7f40722c44c97bf4dc60e0"
   },
   "C:\\data\\ffmpeg_pywrapper\\src\\ffmpeg_pywrapper\\__init__.py": {
-    "mtime": 1778265922.424905,
-    "hash": "1ea5e6aad27abd8dfc4b97c4edf2453d"
+    "mtime": 1778336584.2942512,
+    "hash": "a104ea3ecb05e02ded9d398825f9acda"
   },
   "C:\\data\\ffmpeg_pywrapper\\src\\ffmpeg_pywrapper\\__main__.py": {
-    "mtime": 1778269905.1489735,
-    "hash": "02cb577d97eb54979e70130c38e20768"
+    "mtime": 1778336584.2958784,
+    "hash": "737dbf1bbb5478d7cbef8d81fc6ce79b"
   },
   "C:\\data\\ffmpeg_pywrapper\\src\\ffmpeg_pywrapper\\player\\app.py": {
-    "mtime": 1778335615.9738288,
-    "hash": "1a5ae519846b142b6295089e8d72cd63"
+    "mtime": 1778336762.3946311,
+    "hash": "0fcb0f40a5c59468184ea5eb01087ef2"
   },
   "C:\\data\\ffmpeg_pywrapper\\src\\ffmpeg_pywrapper\\player\\theme.py": {
     "mtime": 1778335615.9728286,
@@ -62,6 +62,10 @@
   "C:\\data\\ffmpeg_pywrapper\\src\\ffmpeg_pywrapper\\player\\__init__.py": {
     "mtime": 1778335615.9728286,
     "hash": "f690ad93392fd2583401d6f9a3fb5566"
+  },
+  "C:\\data\\ffmpeg_pywrapper\\tests\\test_cli.py": {
+    "mtime": 1778336738.7347567,
+    "hash": "e8eb77464b3557c44519c4c0c09c5bdf"
   },
   "C:\\data\\ffmpeg_pywrapper\\tests\\test_commands.py": {
     "mtime": 1778265364.4347687,
@@ -80,16 +84,16 @@
     "hash": "eb3075cfd92fbb7cf55be430978842ae"
   },
   "C:\\data\\ffmpeg_pywrapper\\tests\\test_media.py": {
-    "mtime": 1778265922.4279048,
-    "hash": "be383e42711abec6119be5c82c680811"
+    "mtime": 1778336738.7362611,
+    "hash": "f315514db0bb115d35aedad7e45c15fe"
   },
   "C:\\data\\ffmpeg_pywrapper\\tests\\test_playback.py": {
-    "mtime": 1778335783.2696602,
-    "hash": "ef7e687dbcfcbf75a65243ab5944b3b4"
+    "mtime": 1778336738.7372658,
+    "hash": "68c0e6c87a5d3c077ece12e9aedbdd44"
   },
   "C:\\data\\ffmpeg_pywrapper\\tests\\test_player_smoke.py": {
-    "mtime": 1778335912.640715,
-    "hash": "181709eb77676d36fff7bf4229d36610"
+    "mtime": 1778336738.7372658,
+    "hash": "356247da23b2f3a83d13ae81693882df"
   },
   "C:\\data\\ffmpeg_pywrapper\\tests\\test_probe.py": {
     "mtime": 1778265364.4357693,
@@ -100,8 +104,8 @@
     "hash": "f70edae025b3e5db81bd044f8ca0b47f"
   },
   "C:\\data\\ffmpeg_pywrapper\\tests\\test_runner.py": {
-    "mtime": 1778335873.9410496,
-    "hash": "f1f325c536d3ac28597e87b078cfcb9e"
+    "mtime": 1778336738.7362611,
+    "hash": "8130c144c204bee6dfa8afa90a0dc3c3"
   },
   "C:\\data\\ffmpeg_pywrapper\\tests\\test_theme.py": {
     "mtime": 1778335647.6280007,
@@ -112,8 +116,8 @@
     "hash": "839d86949234f3b2aa782ce8b4b11adb"
   },
   "C:\\data\\ffmpeg_pywrapper\\README.md": {
-    "mtime": 1778335647.6289985,
-    "hash": "30ed165b21b3ac8d120e40b7ccfa30c5"
+    "mtime": 1778336762.3956316,
+    "hash": "e3836bed2457c2bb55bc5e23c0f86c26"
   },
   "C:\\data\\ffmpeg_pywrapper\\examples\\simple_player\\README.md": {
     "mtime": 1778335647.6289985,

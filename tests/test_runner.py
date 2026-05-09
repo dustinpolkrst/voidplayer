@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import subprocess
 import sys
+import threading
+import time
 
 import pytest
 
-from ffmpeg_pywrapper import FFmpegProcessError, FFmpegTimeoutError, run_ffmpeg
+from ffmpeg_pywrapper import FFmpegCancelledError, FFmpegProcessError, FFmpegTimeoutError, run_ffmpeg
 
 
 def test_run_ffmpeg_timeout(monkeypatch) -> None:
@@ -64,6 +66,39 @@ def test_run_ffmpeg_stream_output_parses_progress() -> None:
     )
 
     assert [block.frame for block in result.progress] == [1, 2]
+
+
+def test_run_ffmpeg_on_progress_receives_blocks() -> None:
+    frames = []
+
+    result = run_ffmpeg(
+        [
+            sys.executable,
+            "-c",
+            "import sys; sys.stdout.write('frame=1\\nprogress=continue\\nframe=2\\nprogress=end\\n')",
+        ],
+        on_progress=lambda progress: frames.append(progress.frame),
+    )
+
+    assert [block.frame for block in result.progress] == [1, 2]
+    assert frames == [1, 2]
+
+
+def test_run_ffmpeg_cancellation_kills_process() -> None:
+    cancellation = threading.Event()
+
+    def cancel() -> None:
+        time.sleep(0.05)
+        cancellation.set()
+
+    thread = threading.Thread(target=cancel)
+    thread.start()
+    with pytest.raises(FFmpegCancelledError):
+        run_ffmpeg(
+            [sys.executable, "-c", "import time; time.sleep(5)"],
+            cancellation_event=cancellation,
+        )
+    thread.join()
 
 
 def test_run_ffmpeg_popen_timeout_kills_process() -> None:

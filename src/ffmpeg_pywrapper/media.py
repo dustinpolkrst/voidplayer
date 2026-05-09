@@ -14,6 +14,8 @@ class StreamInfo:
     index: int
     codec_type: str
     codec_name: str | None
+    language: str | None = None
+    title: str | None = None
     width: int | None = None
     height: int | None = None
     frame_rate: float | None = None
@@ -36,6 +38,10 @@ class MediaInfo:
         return tuple(stream for stream in self.streams if stream.codec_type == "audio")
 
     @property
+    def subtitle_streams(self) -> tuple[StreamInfo, ...]:
+        return tuple(stream for stream in self.streams if stream.codec_type == "subtitle")
+
+    @property
     def has_video(self) -> bool:
         return bool(self.video_streams)
 
@@ -44,12 +50,20 @@ class MediaInfo:
         return bool(self.audio_streams)
 
     @property
+    def has_subtitles(self) -> bool:
+        return bool(self.subtitle_streams)
+
+    @property
     def primary_video(self) -> StreamInfo | None:
         return self.video_streams[0] if self.video_streams else None
 
     @property
     def primary_audio(self) -> StreamInfo | None:
         return self.audio_streams[0] if self.audio_streams else None
+
+    @property
+    def primary_subtitle(self) -> StreamInfo | None:
+        return self.subtitle_streams[0] if self.subtitle_streams else None
 
 
 def describe_media(
@@ -100,10 +114,13 @@ def format_timestamp(seconds: float | int | None) -> str:
 
 
 def _stream_info(stream: dict[str, Any]) -> StreamInfo:
+    tags = stream.get("tags") if isinstance(stream.get("tags"), dict) else {}
     return StreamInfo(
         index=int(stream.get("index", 0)),
         codec_type=str(stream.get("codec_type", "")),
         codec_name=stream.get("codec_name"),
+        language=tags.get("language"),
+        title=tags.get("title"),
         width=_optional_int(stream.get("width")),
         height=_optional_int(stream.get("height")),
         frame_rate=_frame_rate(stream.get("avg_frame_rate") or stream.get("r_frame_rate")),

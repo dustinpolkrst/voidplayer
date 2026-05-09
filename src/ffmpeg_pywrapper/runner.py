@@ -2,12 +2,16 @@ from __future__ import annotations
 
 import subprocess
 import threading
+import time
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Callable
 
-from .errors import FFmpegTimeoutError, classify_process_error
+from .errors import FFmpegCancelledError, FFmpegTimeoutError, classify_process_error
 from .progress import Progress, parse_progress_blocks, progress_from_mapping
+
+ProgressCallback = Callable[[Progress], None]
 
 
 @dataclass(frozen=True, slots=True)
@@ -28,11 +32,13 @@ def run_ffmpeg(
     env: dict[str, str] | None = None,
     max_output_bytes: int | None = None,
     stream_output: bool = False,
+    on_progress: ProgressCallback | None = None,
+    cancellation_event: threading.Event | None = None,
 ) -> FFmpegResult:
     """Run an FFmpeg-family command safely with shell=False."""
 
     argv = [str(arg) for arg in args]
-    if max_output_bytes is not None or stream_output:
+    if max_output_bytes is not None or stream_output or on_progress is not None or cancellation_event is not None:
         return _run_ffmpeg_popen(
             argv,
             input_data=input_data,
@@ -41,6 +47,8 @@ def run_ffmpeg(
             env=env,
             max_output_bytes=max_output_bytes,
             stream_output=stream_output,
+            on_progress=on_progress,
+            cancellation_event=cancellation_event,
         )
 
     text_mode = not isinstance(input_data, bytes)
@@ -104,6 +112,8 @@ def _run_ffmpeg_popen(
     env: dict[str, str] | None,
     max_output_bytes: int | None,
     stream_output: bool,
+    on_progress: ProgressCallback | None,
+    cancellation_event: threading.Event | None,
 ) -> FFmpegResult:
     output_limit = max_output_bytes if max_output_bytes is not None else 1024 * 1024
     stdout_buffer = _BoundedBuffer(output_limit)
@@ -125,14 +135,17 @@ def _run_ffmpeg_popen(
         assert process.stdout is not None
         for chunk in iter(process.stdout.readline, b""):
             stdout_buffer.append(chunk)
-            if stream_output:
+            if stream_output or on_progress is not None:
                 line = chunk.decode("utf-8", errors="replace").strip()
                 if "=" not in line:
                     continue
                 key, value = line.split("=", 1)
                 progress_current[key] = value
                 if key == "progress":
-                    progress.append(progress_from_mapping(progress_current))
+                    block = progress_from_mapping(progress_current)
+                    progress.append(block)
+                    if on_progress is not None:
+                        on_progress(block)
                     progress_current.clear()
 
     def read_stderr() -> None:
@@ -151,7 +164,18 @@ def _run_ffmpeg_popen(
             payload = input_data if isinstance(input_data, bytes) else input_data.encode()
             process.stdin.write(payload)
             process.stdin.close()
-        returncode = process.wait(timeout=timeout)
+        started_at = time.monotonic()
+        while True:
+            if cancellation_event is not None and cancellation_event.is_set():
+                process.kill()
+                process.wait()
+                raise FFmpegCancelledError(f"Process was cancelled: {argv}")
+            returncode = process.poll()
+            if returncode is not None:
+                break
+            if timeout is not None and time.monotonic() - started_at >= timeout:
+                raise subprocess.TimeoutExpired(cmd=argv, timeout=timeout)
+            time.sleep(0.02)
     except subprocess.TimeoutExpired as exc:
         process.kill()
         process.wait()
@@ -162,8 +186,11 @@ def _run_ffmpeg_popen(
 
     stdout = stdout_buffer.decode()
     stderr = stderr_buffer.decode()
-    if stream_output and progress_current:
-        progress.append(progress_from_mapping(progress_current))
+    if (stream_output or on_progress is not None) and progress_current:
+        block = progress_from_mapping(progress_current)
+        progress.append(block)
+        if on_progress is not None:
+            on_progress(block)
     if not stream_output:
         progress = parse_progress_blocks(stdout)
     if returncode != 0:

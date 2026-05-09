@@ -35,6 +35,7 @@ class PlaybackState(str, Enum):
     PLAYING = "playing"
     PAUSED = "paused"
     STOPPED = "stopped"
+    ENDED = "ended"
     CLOSED = "closed"
     ERROR = "error"
 
@@ -159,6 +160,7 @@ class DecodeLoopPlayer:
         self.clock = PlaybackClock()
         self.audio_clock = AudioClock()
         self.volume = 1.0
+        self.audio_stream_index: int | None = None
         self._lifecycle_lock = threading.RLock()
         self._path: Path | None = None
         self._stop_event = threading.Event()
@@ -186,6 +188,7 @@ class DecodeLoopPlayer:
         with self._lifecycle_lock:
             self._path = Path(path)
             self.media = media
+            self.audio_stream_index = media.primary_audio.index if media.primary_audio is not None else None
             self.clock.reset()
             self.audio_clock.reset()
             self._reset_playback_flags(reset_audio_output=True)
@@ -217,7 +220,7 @@ class DecodeLoopPlayer:
                 resume_only = False
                 self._audio_ready.clear()
                 self._playback_started.clear()
-                self._audio_expected = self.media.has_audio
+                self._audio_expected = self.selected_audio_stream_index is not None
                 audio_expected = self._audio_expected
                 generation = self._generation
                 start_at = self.clock.position
@@ -263,7 +266,7 @@ class DecodeLoopPlayer:
             self.audio_clock.seek(seconds)
             self.audio_clock.stop()
             self._audio_enabled = False
-            self._audio_expected = bool(self.media is not None and self.media.has_audio and self._audio_output_available)
+            self._audio_expected = bool(self.media is not None and self.selected_audio_stream_index is not None and self._audio_output_available)
             self._audio_ready.clear()
             self._playback_started.clear()
             self._reset_audio_buffers()
@@ -276,6 +279,23 @@ class DecodeLoopPlayer:
     def set_volume(self, volume: float) -> None:
         with self._lifecycle_lock:
             self.volume = min(1.0, max(0.0, volume))
+
+    @property
+    def selected_audio_stream_index(self) -> int | None:
+        if self.media is None:
+            return self.audio_stream_index
+        available = {stream.index for stream in self.media.audio_streams}
+        if self.audio_stream_index in available:
+            return self.audio_stream_index
+        return self.media.primary_audio.index if self.media.primary_audio is not None else None
+
+    def set_audio_stream(self, stream_index: int | None) -> None:
+        with self._lifecycle_lock:
+            if self.media is not None and stream_index is not None:
+                available = {stream.index for stream in self.media.audio_streams}
+                if stream_index not in available:
+                    raise UnsupportedMediaError(f"Audio stream #{stream_index} is not available.")
+            self.audio_stream_index = stream_index
 
     def close(self) -> None:
         with self._lifecycle_lock:
@@ -291,6 +311,7 @@ class DecodeLoopPlayer:
         with self._lifecycle_lock:
             self._path = None
             self.media = None
+            self.audio_stream_index = None
         if should_set_closed:
             self._set_state(PlaybackState.CLOSED)
 
@@ -324,7 +345,7 @@ class DecodeLoopPlayer:
                 return
             start_video = replace or self._video_thread is None or not self._video_thread.is_alive()
             start_audio = (
-                self.media.has_audio
+                self.selected_audio_stream_index is not None
                 and self._audio_output_available
                 and (replace or self._audio_thread is None or not self._audio_thread.is_alive())
             )
@@ -496,7 +517,7 @@ class DecodeLoopPlayer:
                         if self.on_frame:
                             self.on_frame(VideoFrame(image=image, timestamp=timestamp))
                     else:
-                        self.stop()
+                        self._finish_playback()
                         return
             except Exception as exc:  # pragma: no cover - exercised by integration/manual playback
                 if generation != self._generation:
@@ -514,7 +535,7 @@ class DecodeLoopPlayer:
 
         try:
             with av.open(str(self._path)) as container:
-                stream = container.streams.audio[0]
+                stream = self._select_av_audio_stream(container)
                 self._seek_container_to(container, stream, start_at)
                 sample_rate = self._audio_sample_rate
                 channels = self._audio_channels
@@ -555,6 +576,28 @@ class DecodeLoopPlayer:
     def _wait_if_paused(self) -> None:
         while self._pause_event.is_set() and not self._stop_event.is_set():
             time.sleep(0.03)
+
+    def _select_av_audio_stream(self, container: object) -> object:
+        selected = self.selected_audio_stream_index
+        streams = list(container.streams.audio)
+        for stream in streams:
+            if stream.index == selected:
+                return stream
+        if streams:
+            return streams[0]
+        raise UnsupportedMediaError("No audio stream found in media file.")
+
+    def _finish_playback(self) -> None:
+        with self._lifecycle_lock:
+            self._stop_event.set()
+            self._pause_event.clear()
+            self.clock.reset()
+            self.audio_clock.reset()
+            self._reset_playback_flags(reset_audio_output=True)
+            self._reset_audio_buffers()
+            self._next_generation()
+        self._join_workers(timeout=0.5, include_audio_output=True)
+        self._set_state(PlaybackState.ENDED)
 
     def _set_state(self, state: PlaybackState) -> None:
         with self._lifecycle_lock:

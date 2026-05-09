@@ -8,6 +8,14 @@ The package is intentionally pure Python. It does not bundle FFmpeg binaries;
 install FFmpeg separately and make sure `ffmpeg` and `ffprobe` are on `PATH`, or
 pass explicit executable paths with `FFmpegConfig`.
 
+On Windows, install FFmpeg from your package manager or from the official
+project builds, then verify both commands are available:
+
+```powershell
+ffmpeg -version
+ffprobe -version
+```
+
 ## Development
 
 ```powershell
@@ -26,7 +34,12 @@ uv run voidplayer input.mp4
 ## CLI
 
 ```powershell
-python -m ffmpeg_pywrapper input.mp4
+python -m ffmpeg_pywrapper probe input.mp4 --json
+python -m ffmpeg_pywrapper describe input.mp4
+python -m ffmpeg_pywrapper convert input.mp4 output.mkv --video-codec libx264 --audio-codec aac --overwrite
+python -m ffmpeg_pywrapper trim input.mp4 clip.mp4 --start 00:00:05 --duration 10 --overwrite
+python -m ffmpeg_pywrapper thumbnail input.mp4 thumb.jpg --timestamp 00:00:01 --overwrite
+ffmpeg-pywrapper describe input.mp4
 ```
 
 ## Python Quick Start
@@ -60,6 +73,28 @@ print(args)
 
 All process execution uses argument lists with `shell=False`.
 
+## Progress and Cancellation
+
+```python
+import threading
+from ffmpeg_pywrapper import FFmpegCancelledError, run_ffmpeg
+
+cancel = threading.Event()
+
+try:
+    result = run_ffmpeg(
+        ["ffmpeg", "-progress", "pipe:1", "-i", "input.mp4", "output.mp4"],
+        stream_output=True,
+        on_progress=lambda progress: print(progress.frame, progress.time),
+        cancellation_event=cancel,
+    )
+except FFmpegCancelledError:
+    print("conversion cancelled")
+```
+
+The callback receives parsed `Progress` objects while `FFmpegResult.progress`
+still contains the collected progress blocks after completion.
+
 ## Media Description
 
 ```python
@@ -67,4 +102,11 @@ from ffmpeg_pywrapper import describe_media
 
 info = describe_media("input.mp4")
 print(info.duration, info.primary_video, info.has_audio)
+print(info.audio_streams, info.subtitle_streams)
 ```
+
+## Player Features
+
+VoidPlayer supports opening multiple local files as a playlist, previous/next
+transport controls, recent-file persistence under the user config directory,
+and audio stream selection for media with multiple audio tracks.

@@ -38,6 +38,7 @@ def test_playback_clock_seek_pause_reset() -> None:
 def test_playback_state_values_are_stable() -> None:
     assert PlaybackState.PLAYING.value == "playing"
     assert PlaybackState.ERROR.value == "error"
+    assert PlaybackState.ENDED.value == "ended"
 
 
 def test_state_callback_is_not_called_while_lifecycle_lock_is_held() -> None:
@@ -326,6 +327,22 @@ def test_seek_clears_audio_buffers_without_reopening_output(monkeypatch) -> None
     assert player._audio_current is None
     assert player._audio_queue.empty()
     assert player._audio_ready.is_set() is False
+
+
+def test_set_audio_stream_validates_available_streams() -> None:
+    player = DecodeLoopPlayer()
+    player.media = MediaInfo(
+        path=Path("movie.mp4"),
+        duration=20,
+        streams=(
+            StreamInfo(index=0, codec_type="video", codec_name="h264"),
+            StreamInfo(index=2, codec_type="audio", codec_name="aac"),
+        ),
+    )
+
+    player.set_audio_stream(2)
+
+    assert player.selected_audio_stream_index == 2
 
 
 def test_audio_callback_outputs_silence_before_ready_without_advancing_clock() -> None:

@@ -22,6 +22,7 @@ player = [
 ]
 
 [project.scripts]
+ffmpeg-pywrapper = "ffmpeg_pywrapper.__main__:main"
 voidplayer = "ffmpeg_pywrapper.player.app:main"
 
 [dependency-groups]
