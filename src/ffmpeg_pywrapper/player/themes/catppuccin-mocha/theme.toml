@@ -1,0 +1,33 @@
+[color]
+window_background = "#1e1e2e"
+video_background = "#11111b"
+control_background = "#181825"
+button_background = "#313244"
+button_hover_background = "#45475a"
+button_pressed_background = "#181825"
+slider_groove = "#45475a"
+accent = "#89b4fa"
+text_primary = "#cdd6f4"
+text_button = "#cdd6f4"
+text_time = "#bac2de"
+text_muted = "#7f849c"
+text_secondary = "#a6adc8"
+status_text = "#a6adc8"
+border_video = "#313244"
+border_control = "#313244"
+border_button = "#585b70"
+border_button_hover = "#89b4fa"
+slider_handle = "#cdd6f4"
+slider_handle_hover = "#ffffff"
+slider_handle_border = "#89b4fa"
+slider_handle_border_hover = "#b4befe"
+status_border = "#313244"
+
+[font]
+time_label = 'Consolas, "Cascadia Mono", monospace'
+
+[size]
+control_radius = "8px"
+button_radius = "6px"
+slider_groove_radius = "2px"
+slider_handle_radius = "7px"

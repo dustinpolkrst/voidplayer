@@ -9,6 +9,12 @@ from typing import Any
 
 
 DEFAULT_THEME = "default"
+PACKAGED_THEMES = {
+    "default": "VoidPlayer",
+    "catppuccin-frappe": "Catppuccin Frappe",
+    "catppuccin-macchiato": "Catppuccin Macchiato",
+    "catppuccin-mocha": "Catppuccin Mocha",
+}
 TOKEN_PATTERN = re.compile(r"\{\{\s*([a-zA-Z0-9_.-]+)\s*\}\}")
 
 
@@ -54,6 +60,7 @@ def load_theme(name: str = DEFAULT_THEME, theme_path: Path | None = None) -> The
         raise ThemeError(f"Theme token file is invalid TOML: {source}") from exc
 
     tokens = _flatten_tokens(raw_tokens)
+    tokens.setdefault("asset.chevron_down", _qss_url(files(__package__).joinpath("assets", "chevron-down.svg")))
     _validate_tokens(tokens, template, source)
     return Theme(name=name, path=source, tokens=tokens, template=template)
 
@@ -89,3 +96,6 @@ def _validate_tokens(tokens: dict[str, str], template: str, source: str) -> None
         joined = ", ".join(missing)
         raise ThemeError(f"Theme token file {source} is missing required token(s): {joined}")
 
+
+def _qss_url(path: Any) -> str:
+    return str(path).replace("\\", "/")

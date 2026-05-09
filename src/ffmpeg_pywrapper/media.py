@@ -10,6 +10,38 @@ from .probe import FFProbeResult, probe
 
 
 @dataclass(frozen=True, slots=True)
+class MediaSource:
+    location: str
+    title: str | None = None
+    headers: dict[str, str] | None = None
+    subtitle_url: str | None = None
+    metadata: dict[str, str] | None = None
+
+    @classmethod
+    def from_path(cls, path: str | Path) -> "MediaSource":
+        value = Path(path)
+        return cls(location=str(value), title=value.name)
+
+    @property
+    def is_remote(self) -> bool:
+        return self.location.startswith(("http://", "https://"))
+
+    @property
+    def display_name(self) -> str:
+        return self.title or self.location
+
+    @property
+    def local_path(self) -> Path | None:
+        return None if self.is_remote else Path(self.location)
+
+    def ffmpeg_input_options(self) -> dict[str, str]:
+        if not self.headers:
+            return {}
+        headers = "".join(f"{key}: {value}\r\n" for key, value in self.headers.items())
+        return {"headers": headers}
+
+
+@dataclass(frozen=True, slots=True)
 class StreamInfo:
     index: int
     codec_type: str
@@ -25,7 +57,7 @@ class StreamInfo:
 
 @dataclass(frozen=True, slots=True)
 class MediaInfo:
-    path: Path
+    path: Path | str
     duration: float | None
     streams: tuple[StreamInfo, ...]
 
@@ -67,21 +99,32 @@ class MediaInfo:
 
 
 def describe_media(
-    path: str | Path,
+    path: str | Path | MediaSource,
     *,
     config: FFmpegConfig | None = None,
     timeout: float | None = None,
 ) -> MediaInfo:
-    result = probe(path, config=config, timeout=timeout)
-    return media_info_from_probe(path, result)
+    source = ensure_media_source(path)
+    result = probe(source.location, config=config, timeout=timeout, input_options=source.ffmpeg_input_options())
+    return media_info_from_probe(source.location, result)
 
 
 def media_info_from_probe(path: str | Path, result: FFProbeResult) -> MediaInfo:
+    media_path: Path | str = str(path) if str(path).startswith(("http://", "https://")) else Path(path)
     return MediaInfo(
-        path=Path(path),
+        path=media_path,
         duration=_optional_float(result.format.get("duration")),
         streams=tuple(_stream_info(stream) for stream in result.streams),
     )
+
+
+def ensure_media_source(source: str | Path | MediaSource) -> MediaSource:
+    if isinstance(source, MediaSource):
+        return source
+    value = str(source)
+    if value.startswith(("http://", "https://")):
+        return MediaSource(location=value, title=value)
+    return MediaSource.from_path(source)
 
 
 def seconds_from_timestamp(value: str | int | float | None) -> float:

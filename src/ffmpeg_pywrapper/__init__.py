@@ -1,4 +1,4 @@
-"""Typed helpers for running system FFmpeg and FFprobe."""
+"""VoidPlayer runtime helpers and typed FFmpeg/FFprobe APIs."""
 
 from .commands import build_command, convert, thumbnail, trim
 from .config import FFmpegConfig

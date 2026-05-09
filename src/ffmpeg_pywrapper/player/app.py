@@ -3,7 +3,6 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import random
 import subprocess
 import sys
 import threading
@@ -12,35 +11,39 @@ from importlib.resources import as_file, files
 from pathlib import Path
 from typing import Any
 
-from ffmpeg_pywrapper import format_timestamp, probe, trim
-from ffmpeg_pywrapper.media import MediaInfo
+from ffmpeg_pywrapper.anime import AnimeClient, AnimeClientError, AnimeEpisode, AnimeMode, AnimeSearchResult, AnimeStream, select_quality
+from ffmpeg_pywrapper import format_timestamp, probe
+from ffmpeg_pywrapper.media import MediaInfo, MediaSource, ensure_media_source
 from ffmpeg_pywrapper.playback import DecodeLoopPlayer, PlaybackState, VideoFrame, configure_debug_logging
 from ffmpeg_pywrapper.player.config_store import (
+    AnimeHistoryItem,
     MediaState,
+    anime_history_from_config,
     load_config,
     media_state_from_config,
     recent_files_from_config,
     resumable_position,
     save_config,
+    set_anime_history_item,
     set_media_state,
     set_recent_files,
 )
 from ffmpeg_pywrapper.subtitles import SubtitleError, SubtitleTrack, load_subtitles
 from ffmpeg_pywrapper.timeline import Chapter, generate_timeline_thumbnails, nearest_preview, parse_chapters, thumbnail_cache_dir
 
-from .theme import DEFAULT_THEME, ThemeError, load_theme, render_stylesheet
+from .theme import DEFAULT_THEME, PACKAGED_THEMES, ThemeError, load_theme, render_stylesheet
 
 try:
     from PIL.ImageQt import ImageQt
     from PySide6.QtCore import QObject, QSize, Qt, QTimer, QUrl, Signal
-    from PySide6.QtGui import QAction, QDesktopServices, QDragEnterEvent, QDropEvent, QIcon, QImage, QKeySequence, QMouseEvent, QPixmap
+    from PySide6.QtGui import QAction, QActionGroup, QDragEnterEvent, QDropEvent, QIcon, QImage, QKeySequence, QMouseEvent, QPixmap
     from PySide6.QtWidgets import (
         QApplication,
         QCheckBox,
+        QBoxLayout,
         QComboBox,
         QDialog,
         QDialogButtonBox,
-        QFileDialog,
         QFormLayout,
         QFrame,
         QGridLayout,
@@ -51,6 +54,7 @@ try:
         QListWidgetItem,
         QMainWindow,
         QMenu,
+        QMessageBox,
         QPlainTextEdit,
         QPushButton,
         QSlider,
@@ -109,29 +113,29 @@ class PlayerSignals(QObject):
     state_changed = Signal(object)
     error = Signal(object)
     warning = Signal(object)
+    anime_next_ready = Signal(object, object)
+
+
+class AnimeWorkerSignals(QObject):
+    finished = Signal(str, object, object)
 
 
 class PlayerWindow(QMainWindow):
     def __init__(
         self,
         *,
-        theme_name: str = DEFAULT_THEME,
+        theme_name: str | None = None,
         theme_path: Path | None = None,
         initial_media: Path | None = None,
     ) -> None:
         super().__init__()
         self._resources = ExitStack()
         self._app_icon = self._resource_file("assets", "app-icon.svg")
-        self._open_media_icon = self._resource_file("assets", "open-media.svg")
-        self._add_playlist_icon = self._resource_file("assets", "add-playlist.svg")
         self._playlist_icon = self._resource_file("assets", "playlist.svg")
-        self._previous_icon = self._resource_file("assets", "previous.svg")
         self._play_icon = self._resource_file("assets", "play.svg")
         self._pause_icon = self._resource_file("assets", "pause.svg")
         self._stop_icon = self._resource_file("assets", "stop.svg")
         self._next_icon = self._resource_file("assets", "next.svg")
-        self._remove_icon = self._resource_file("assets", "remove.svg")
-        self._clear_icon = self._resource_file("assets", "clear.svg")
         self.setWindowTitle("VoidPlayer")
         self.setWindowIcon(QIcon(str(self._app_icon)))
         self.resize(1000, 620)
@@ -140,6 +144,7 @@ class PlayerWindow(QMainWindow):
         self.signals.state_changed.connect(self.on_state)
         self.signals.error.connect(self.on_error)
         self.signals.warning.connect(self.on_warning)
+        self.signals.anime_next_ready.connect(self._handle_next_anime_source)
         self.player = DecodeLoopPlayer(
             on_frame=self.signals.frame_ready.emit,
             on_state=self.signals.state_changed.emit,
@@ -149,44 +154,37 @@ class PlayerWindow(QMainWindow):
         self.duration = 0.0
         self._seeking = False
         self._last_pixmap: QPixmap | None = None
-        self.playlist: list[Path] = []
+        self.current_source: MediaSource | None = None
+        self.playlist: list[MediaSource] = []
         self.playlist_index = -1
         self.playlist_failures: dict[int, str] = {}
         self.recent_files = load_recent_files()
         self.config_path = user_config_path()
         self.config = load_config(self.config_path)
+        stored_theme = self.config.get("theme")
+        self.current_theme_name = stored_theme if theme_path is None and theme_name is None and isinstance(stored_theme, str) else theme_name or DEFAULT_THEME
+        self.current_theme_path = theme_path
+        self.anime_history = anime_history_from_config(self.config)
         self.subtitle_track: SubtitleTrack | None = None
         self.subtitle_external_path: Path | None = None
         self.subtitle_delay = 0.0
         self._last_position = 0.0
         self._current_probe_data: dict[str, Any] | None = None
+        self.anime_client: AnimeClient | None = None
         self.chapters: tuple[Chapter, ...] = ()
         self.timeline_previews: dict[float, Path] = {}
-        self.repeat_mode = "off"
-        self.shuffle_enabled = False
-        self._shuffle_queue: list[int] = []
 
         self.setAcceptDrops(True)
         self._build_ui()
-        self._apply_theme(theme_name, theme_path)
+        self._apply_theme(self.current_theme_name, self.current_theme_path)
         self._build_actions()
-        self.open_button.clicked.connect(self.open_file)
-        self.add_playlist_button.clicked.connect(self.add_files_to_playlist)
-        self.playlist_add_button.clicked.connect(self.add_files_to_playlist)
-        self.playlist_remove_button.clicked.connect(self.remove_selected_playlist_item)
-        self.playlist_clear_button.clicked.connect(self.clear_playlist)
-        self.previous_button.clicked.connect(self.play_previous)
+        self.home_button.clicked.connect(self.show_anime_home)
         self.play_button.clicked.connect(self.toggle_playback)
         self.stop_button.clicked.connect(self.player.stop)
         self.next_button.clicked.connect(self.play_next)
-        self.drawer_button.clicked.connect(self.toggle_playlist_drawer)
         self.seek_slider.sliderPressed.connect(self._begin_seek)
         self.seek_slider.sliderReleased.connect(self._finish_seek)
         self.volume_slider.valueChanged.connect(lambda value: self.player.set_volume(value / 100))
-        self.audio_stream_combo.currentIndexChanged.connect(lambda _index: self._select_audio_stream())
-        self.subtitle_combo.currentIndexChanged.connect(lambda _index: self._select_subtitle_source())
-        self.speed_combo.currentTextChanged.connect(self._select_playback_speed)
-        self.playlist_widget.itemDoubleClicked.connect(self._play_playlist_item)
         self.seek_slider.preview_requested.connect(self._show_timeline_preview)
 
         self.timer = QTimer(self)
@@ -201,7 +199,7 @@ class PlayerWindow(QMainWindow):
         self.state_timer.start(5000)
 
         if initial_media is not None:
-            self.set_playlist([initial_media], start_index=0)
+            self.play_source(initial_media)
 
     def _resource_file(self, *parts: str) -> Path:
         resource = files(__package__).joinpath(*parts)
@@ -210,8 +208,9 @@ class PlayerWindow(QMainWindow):
     def _build_ui(self) -> None:
         self.video_label = QLabel(alignment=Qt.AlignmentFlag.AlignCenter)
         self.video_label.setObjectName("videoSurface")
-        self.video_label.setText("Open a video file")
+        self.video_label.setText("")
         self.video_label.setMinimumSize(640, 360)
+        self.video_label.mousePressEvent = self._video_click  # type: ignore[method-assign]
         self.video_label.mouseDoubleClickEvent = self._video_double_click  # type: ignore[method-assign]
 
         self.subtitle_label = QLabel(alignment=Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignBottom)
@@ -223,18 +222,20 @@ class PlayerWindow(QMainWindow):
         video_layout = QGridLayout()
         video_layout.setContentsMargins(0, 0, 0, 0)
         video_layout.addWidget(self.video_label, 0, 0)
+        self.anime_home = self._build_anime_home()
+        video_layout.addWidget(self.anime_home, 0, 0)
         video_layout.addWidget(self.subtitle_label, 0, 0, Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignBottom)
         self.video_frame = QFrame()
         self.video_frame.setObjectName("videoFrame")
         self.video_frame.setLayout(video_layout)
 
-        self.open_button = self._tool_button("Open", QIcon(str(self._open_media_icon)))
-        self.add_playlist_button = self._tool_button("Add to Playlist", QIcon(str(self._add_playlist_icon)))
-        self.drawer_button = self._tool_button("Playlist", QIcon(str(self._playlist_icon)))
-        self.previous_button = self._tool_button("Previous", QIcon(str(self._previous_icon)))
+        self.home_button = self._tool_button("Home", QIcon(str(self._playlist_icon)))
         self.play_button = self._tool_button("Play", QIcon(str(self._play_icon)))
         self.stop_button = self._tool_button("Stop", QIcon(str(self._stop_icon)))
-        self.next_button = self._tool_button("Next", QIcon(str(self._next_icon)))
+        self.next_button = self._tool_button("Next Episode", QIcon(str(self._next_icon)))
+        self.now_playing_label = QLabel("")
+        self.now_playing_label.setObjectName("nowPlayingLabel")
+        self.now_playing_label.setMinimumWidth(180)
 
         self.elapsed_label = QLabel("00:00:00.00")
         self.elapsed_label.setObjectName("timeLabel")
@@ -254,19 +255,6 @@ class PlayerWindow(QMainWindow):
         self.volume_slider.setValue(100)
         self.volume_slider.setFixedWidth(130)
         self.volume_slider.setObjectName("volumeSlider")
-        self.audio_stream_combo = QComboBox()
-        self.audio_stream_combo.setObjectName("audioStreamCombo")
-        self.audio_stream_combo.setMinimumWidth(150)
-        self.subtitle_combo = QComboBox()
-        self.subtitle_combo.setObjectName("subtitleCombo")
-        self.subtitle_combo.setMinimumWidth(150)
-        self.subtitle_combo.addItem("Subtitles Off", None)
-        self.speed_combo = QComboBox()
-        self.speed_combo.setObjectName("speedCombo")
-        for speed in ("0.5x", "0.75x", "1x", "1.25x", "1.5x", "2x"):
-            self.speed_combo.addItem(speed)
-        self.speed_combo.setCurrentText("1x")
-        self.speed_combo.setFixedWidth(82)
 
         timeline_layout = QHBoxLayout()
         timeline_layout.setContentsMargins(0, 0, 0, 0)
@@ -282,20 +270,15 @@ class PlayerWindow(QMainWindow):
         button_layout = QHBoxLayout()
         button_layout.setContentsMargins(0, 0, 0, 0)
         button_layout.setSpacing(10)
-        button_layout.addWidget(self.open_button)
-        button_layout.addWidget(self.add_playlist_button)
-        button_layout.addWidget(self.drawer_button)
+        button_layout.addWidget(self.home_button)
         button_layout.addSpacing(6)
-        button_layout.addWidget(self.previous_button)
         button_layout.addWidget(self.play_button)
         button_layout.addWidget(self.stop_button)
         button_layout.addWidget(self.next_button)
         button_layout.addSpacing(10)
         button_layout.addWidget(self.volume_label)
         button_layout.addWidget(self.volume_slider)
-        button_layout.addWidget(self.speed_combo)
-        button_layout.addWidget(self.audio_stream_combo)
-        button_layout.addWidget(self.subtitle_combo)
+        button_layout.addWidget(self.now_playing_label, 1)
         button_layout.addStretch(1)
 
         button_bar = QFrame()
@@ -322,46 +305,6 @@ class PlayerWindow(QMainWindow):
         player_container.setObjectName("appRoot")
         player_container.setLayout(root)
 
-        self.playlist_widget = QListWidget()
-        self.playlist_widget.setObjectName("playlistDrawer")
-        self.playlist_widget.setMinimumWidth(320)
-        self.playlist_widget.setDragDropMode(QListWidget.DragDropMode.InternalMove)
-        self.playlist_widget.model().rowsMoved.connect(lambda *_args: self._sync_playlist_from_widget())
-
-        self.playlist_title = QLabel("Playlist")
-        self.playlist_title.setObjectName("playlistTitle")
-        self.playlist_count_label = QLabel("0 items")
-        self.playlist_count_label.setObjectName("playlistCount")
-        self.playlist_add_button = self._tool_button("Add to Playlist", QIcon(str(self._add_playlist_icon)))
-        self.playlist_remove_button = self._tool_button("Remove Selected", QIcon(str(self._remove_icon)))
-        self.playlist_clear_button = self._tool_button("Clear Playlist", QIcon(str(self._clear_icon)))
-
-        playlist_header_layout = QHBoxLayout()
-        playlist_header_layout.setContentsMargins(0, 0, 0, 0)
-        playlist_header_layout.setSpacing(8)
-        playlist_header_layout.addWidget(self.playlist_title)
-        playlist_header_layout.addWidget(self.playlist_count_label)
-        playlist_header_layout.addStretch(1)
-        playlist_header_layout.addWidget(self.playlist_add_button)
-        playlist_header_layout.addWidget(self.playlist_remove_button)
-        playlist_header_layout.addWidget(self.playlist_clear_button)
-
-        self.playlist_header = QFrame()
-        self.playlist_header.setObjectName("playlistHeader")
-        self.playlist_header.setLayout(playlist_header_layout)
-
-        playlist_layout = QVBoxLayout()
-        playlist_layout.setContentsMargins(14, 14, 14, 14)
-        playlist_layout.setSpacing(12)
-        playlist_layout.addWidget(self.playlist_header)
-        playlist_layout.addWidget(self.playlist_widget, 1)
-
-        self.playlist_panel = QFrame()
-        self.playlist_panel.setObjectName("playlistPanel")
-        self.playlist_panel.setMinimumWidth(340)
-        self.playlist_panel.setLayout(playlist_layout)
-        self.playlist_panel.hide()
-
         self.inspector_panel = QPlainTextEdit()
         self.inspector_panel.setObjectName("inspectorPanel")
         self.inspector_panel.setReadOnly(True)
@@ -374,20 +317,80 @@ class PlayerWindow(QMainWindow):
 
         self.splitter = QSplitter()
         self.splitter.addWidget(player_container)
-        self.splitter.addWidget(self.playlist_panel)
         self.splitter.addWidget(self.inspector_panel)
         self.splitter.setStretchFactor(0, 1)
-        self.splitter.setSizes([820, 340, 300])
+        self.splitter.setSizes([820, 300])
         self.setCentralWidget(self.splitter)
         self.setStatusBar(QStatusBar())
         self.statusBar().showMessage("Ready")
 
-    def _build_actions(self) -> None:
-        self.open_action = QAction("Open", self)
-        self.open_action.setIcon(QIcon(str(self._open_media_icon)))
-        self.open_action.setShortcut(QKeySequence.StandardKey.Open)
-        self.open_action.triggered.connect(self.open_file)
+    def _build_anime_home(self) -> QFrame:
+        eyebrow = QLabel("ANIME STREAMING")
+        eyebrow.setObjectName("animeHomeEyebrow")
+        title = QLabel("What are we watching?")
+        title.setObjectName("animeHomeTitle")
+        subtitle = QLabel("Search for a series, pick sub or dub, and resume the shows already in progress.")
+        subtitle.setObjectName("animeHomeSubtitle")
 
+        self.anime_home_search_input = QLineEdit()
+        self.anime_home_search_input.setObjectName("animeHomeSearchInput")
+        self.anime_home_search_input.setPlaceholderText("Search anime")
+        self.anime_home_mode_combo = QComboBox()
+        self.anime_home_mode_combo.setObjectName("animeHomeModeCombo")
+        self.anime_home_mode_combo.addItem("Sub", "sub")
+        self.anime_home_mode_combo.addItem("Dub", "dub")
+        self.anime_home_search_button = QPushButton("Search")
+        self.anime_home_search_button.setObjectName("animePrimaryButton")
+        self.anime_home_search_button.clicked.connect(self.open_anime_home_search)
+        self.anime_home_search_input.returnPressed.connect(self.open_anime_home_search)
+
+        self.anime_home_search_row = QBoxLayout(QBoxLayout.Direction.LeftToRight)
+        self.anime_home_search_row.setContentsMargins(0, 0, 0, 0)
+        self.anime_home_search_row.setSpacing(10)
+        self.anime_home_search_row.addWidget(self.anime_home_search_input, 1)
+        self.anime_home_search_row.addWidget(self.anime_home_mode_combo)
+        self.anime_home_search_row.addWidget(self.anime_home_search_button)
+        search_panel = QFrame()
+        search_panel.setObjectName("animeHomeSearchPanel")
+        search_panel.setLayout(self.anime_home_search_row)
+
+        continue_title = QLabel("Continue Watching")
+        continue_title.setObjectName("animePanelTitle")
+        self.anime_continue_list = QListWidget()
+        self.anime_continue_list.setObjectName("animeContinueList")
+        self.anime_continue_list.itemDoubleClicked.connect(self.play_anime_history_item)
+        self._refresh_anime_home()
+
+        search_column = QVBoxLayout()
+        search_column.setContentsMargins(0, 0, 0, 0)
+        search_column.setSpacing(12)
+        search_column.addWidget(eyebrow)
+        search_column.addWidget(title)
+        search_column.addWidget(subtitle)
+        search_column.addWidget(search_panel)
+        search_column.addStretch(1)
+
+        continue_panel_layout = QVBoxLayout()
+        continue_panel_layout.setContentsMargins(18, 16, 18, 18)
+        continue_panel_layout.setSpacing(12)
+        continue_panel_layout.addWidget(continue_title)
+        continue_panel_layout.addWidget(self.anime_continue_list, 1)
+        self.anime_continue_panel = QFrame()
+        self.anime_continue_panel.setObjectName("animeContinuePanel")
+        self.anime_continue_panel.setLayout(continue_panel_layout)
+
+        self.anime_home_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
+        self.anime_home_layout.setContentsMargins(50, 38, 50, 36)
+        self.anime_home_layout.setSpacing(26)
+        self.anime_home_layout.addLayout(search_column, 3)
+        self.anime_home_layout.addWidget(self.anime_continue_panel, 2)
+
+        frame = QFrame()
+        frame.setObjectName("animeHome")
+        frame.setLayout(self.anime_home_layout)
+        return frame
+
+    def _build_actions(self) -> None:
         self.fullscreen_action = QAction("Fullscreen", self)
         self.fullscreen_action.setShortcut(QKeySequence("F"))
         self.fullscreen_action.triggered.connect(self.toggle_fullscreen)
@@ -396,81 +399,51 @@ class PlayerWindow(QMainWindow):
         self.mute_action.setShortcut(QKeySequence("M"))
         self.mute_action.triggered.connect(self.toggle_mute)
 
-        self.save_frame_action = QAction("Save Frame", self)
-        self.save_frame_action.triggered.connect(self.save_current_frame)
-
-        self.export_clip_action = QAction("Export Clip", self)
-        self.export_clip_action.triggered.connect(self.export_clip)
-
-        self.load_subtitles_action = QAction("Load Subtitles", self)
-        self.load_subtitles_action.triggered.connect(self.load_external_subtitles)
         self.inspector_action = QAction("Inspector", self)
         self.inspector_action.triggered.connect(self.toggle_inspector)
-        self.copy_probe_action = QAction("Copy FFprobe JSON", self)
-        self.copy_probe_action.triggered.connect(self.copy_probe_json)
-        self.open_folder_action = QAction("Open Containing Folder", self)
-        self.open_folder_action.triggered.connect(self.open_containing_folder)
-        self.remove_playlist_action = QAction("Remove Selected", self)
-        self.remove_playlist_action.triggered.connect(self.remove_selected_playlist_item)
-        self.clear_playlist_action = QAction("Clear Playlist", self)
-        self.clear_playlist_action.triggered.connect(self.clear_playlist)
-        self.shuffle_action = QAction("Shuffle", self)
-        self.shuffle_action.setCheckable(True)
-        self.shuffle_action.triggered.connect(self.toggle_shuffle)
-        self.repeat_action = QAction("Repeat: Off", self)
-        self.repeat_action.triggered.connect(self.cycle_repeat_mode)
-        self.previous_chapter_action = QAction("Previous Chapter", self)
-        self.previous_chapter_action.triggered.connect(self.previous_chapter)
-        self.next_chapter_action = QAction("Next Chapter", self)
-        self.next_chapter_action.triggered.connect(self.next_chapter)
+        self.home_action = QAction("Home", self)
+        self.home_action.triggered.connect(self.show_anime_home)
+        self.search_anime_action = QAction("Search Anime...", self)
+        self.search_anime_action.triggered.connect(self.open_anime_browser)
+        self.next_episode_action = QAction("Next Episode", self)
+        self.next_episode_action.setShortcut(QKeySequence("N"))
+        self.next_episode_action.triggered.connect(self.play_next)
+        self.disclaimer_action = QAction("Anime Source Disclaimer", self)
+        self.disclaimer_action.triggered.connect(self.show_anime_disclaimer)
 
-        self.recent_menu = QMenu("Recent", self)
-        self._refresh_recent_menu()
+        self.anime_menu = self.menuBar().addMenu("Anime")
+        self.anime_menu.addAction(self.home_action)
+        self.anime_menu.addAction(self.search_anime_action)
+        self.anime_menu.addAction(self.next_episode_action)
 
-        file_menu = self.menuBar().addMenu("File")
-        file_menu.addAction(self.open_action)
-        file_menu.addMenu(self.recent_menu)
-        file_menu.addAction(self.load_subtitles_action)
-        file_menu.addAction(self.save_frame_action)
-        file_menu.addAction(self.export_clip_action)
-        file_menu.addAction(self.open_folder_action)
+        self.view_menu = self.menuBar().addMenu("View")
+        self.view_menu.addAction(self.fullscreen_action)
+        self.view_menu.addAction(self.mute_action)
+        self.view_menu.addAction(self.inspector_action)
+        self.theme_menu = QMenu("Theme", self)
+        self.theme_action_group = QActionGroup(self)
+        self.theme_action_group.setExclusive(True)
+        for theme_id, label in PACKAGED_THEMES.items():
+            action = QAction(label, self)
+            action.setCheckable(True)
+            action.setData(theme_id)
+            action.setChecked(theme_id == self.current_theme_name)
+            action.triggered.connect(lambda _checked=False, selected=theme_id: self.select_theme(selected))
+            self.theme_action_group.addAction(action)
+            self.theme_menu.addAction(action)
+        self.view_menu.addMenu(self.theme_menu)
 
-        playback_menu = self.menuBar().addMenu("Playback")
-        playback_menu.addAction(self.fullscreen_action)
-        playback_menu.addAction(self.mute_action)
-        playback_menu.addAction(self.previous_chapter_action)
-        playback_menu.addAction(self.next_chapter_action)
-
-        playlist_menu = self.menuBar().addMenu("Playlist")
-        self.add_playlist_action = QAction("Add Files...", self)
-        self.add_playlist_action.triggered.connect(self.add_files_to_playlist)
-        playlist_menu.addAction(self.add_playlist_action)
-        playlist_menu.addAction(self.remove_playlist_action)
-        playlist_menu.addAction(self.clear_playlist_action)
-        playlist_menu.addAction(self.shuffle_action)
-        playlist_menu.addAction(self.repeat_action)
-
-        view_menu = self.menuBar().addMenu("View")
-        view_menu.addAction(self.inspector_action)
-        view_menu.addAction(self.copy_probe_action)
+        self.help_menu = self.menuBar().addMenu("Help")
+        self.help_menu.addAction(self.disclaimer_action)
 
         for action in (
-            self.open_action,
             self.fullscreen_action,
             self.mute_action,
-            self.save_frame_action,
-            self.export_clip_action,
-            self.load_subtitles_action,
             self.inspector_action,
-            self.copy_probe_action,
-            self.open_folder_action,
-            self.add_playlist_action,
-            self.remove_playlist_action,
-            self.clear_playlist_action,
-            self.shuffle_action,
-            self.repeat_action,
-            self.previous_chapter_action,
-            self.next_chapter_action,
+            self.home_action,
+            self.search_anime_action,
+            self.next_episode_action,
+            self.disclaimer_action,
         ):
             self.addAction(action)
         self._add_shortcut("Space", self.toggle_playback)
@@ -480,11 +453,7 @@ class PlayerWindow(QMainWindow):
         self._add_shortcut("Shift+Right", lambda: self.seek_relative(30))
         self._add_shortcut("Up", lambda: self.adjust_volume(5))
         self._add_shortcut("Down", lambda: self.adjust_volume(-5))
-        self._add_shortcut("N", self.play_next)
-        self._add_shortcut("P", self.play_previous)
         self._add_shortcut("Esc", self.exit_fullscreen)
-        self._add_shortcut("[", lambda: self.adjust_subtitle_delay(-0.25))
-        self._add_shortcut("]", lambda: self.adjust_subtitle_delay(0.25))
 
     def _add_shortcut(self, shortcut: str, callback) -> None:  # noqa: ANN001
         action = QAction(self)
@@ -509,8 +478,18 @@ class PlayerWindow(QMainWindow):
             theme = load_theme(theme_name, theme_path)
         except ThemeError as exc:
             theme = load_theme(DEFAULT_THEME)
+            self.current_theme_name = DEFAULT_THEME
+            self.current_theme_path = None
             self.statusBar().showMessage(f"{exc}; loaded default theme")
         self.setStyleSheet(render_stylesheet(theme))
+
+    def select_theme(self, theme_name: str) -> None:
+        self.current_theme_name = theme_name
+        self.current_theme_path = None
+        self._apply_theme(theme_name)
+        self.config = {**self.config, "theme": self.current_theme_name}
+        save_config(self.config_path, self.config)
+        self.statusBar().showMessage(f"Loaded {PACKAGED_THEMES.get(theme_name, theme_name)} theme")
 
     def open_file(self) -> None:
         paths, _ = QFileDialog.getOpenFileNames(
@@ -520,7 +499,7 @@ class PlayerWindow(QMainWindow):
             "Video files (*.mp4 *.mkv *.mov *.avi *.webm);;All files (*.*)",
         )
         if paths:
-            self.set_playlist([Path(path) for path in paths], start_index=0)
+            self.set_playlist([MediaSource.from_path(path) for path in paths], start_index=0)
 
     def add_files_to_playlist(self) -> None:
         paths, _ = QFileDialog.getOpenFileNames(
@@ -530,51 +509,33 @@ class PlayerWindow(QMainWindow):
             "Video files (*.mp4 *.mkv *.mov *.avi *.webm);;All files (*.*)",
         )
         if paths:
-            self.add_to_playlist([Path(path) for path in paths])
+            self.add_to_playlist([MediaSource.from_path(path) for path in paths])
 
-    def set_playlist(self, paths: list[Path], *, start_index: int = 0) -> None:
-        if not paths:
+    def set_playlist(self, sources: list[Path | str | MediaSource], *, start_index: int = 0) -> None:
+        if not sources:
             return
-        self.playlist = list(paths)
+        self.playlist = [ensure_media_source(source) for source in sources]
         self.playlist_index = max(0, min(start_index, len(self.playlist) - 1))
         self.playlist_failures.clear()
-        self._rebuild_shuffle_queue()
-        self._refresh_playlist_drawer()
         self._load_current_playlist_item()
 
-    def add_to_playlist(self, paths: list[Path]) -> None:
-        if not paths:
+    def add_to_playlist(self, sources: list[Path | str | MediaSource]) -> None:
+        if not sources:
             return
-        had_playlist = bool(self.playlist)
-        self.playlist.extend(paths)
-        if not had_playlist:
-            self.playlist_index = 0
-            self._rebuild_shuffle_queue()
-            self._refresh_playlist_drawer()
-            self._load_current_playlist_item()
-            return
-        self._rebuild_shuffle_queue()
-        self._refresh_playlist_drawer()
+        self.set_playlist([sources[0]], start_index=0)
+
+    def play_source(self, source: Path | str | MediaSource) -> None:
+        self.current_source = ensure_media_source(source)
+        self.playlist = [self.current_source]
+        self.playlist_index = 0
+        self.playlist_failures.clear()
+        self.load_and_play(self.current_source)
 
     def play_next(self) -> None:
-        if not self.playlist:
+        if self.current_source is None:
             return
         self.save_current_media_state()
-        if self.repeat_mode == "one":
-            self._load_current_playlist_item()
-            return
-        if self.shuffle_enabled:
-            self.playlist_index = self._next_shuffle_index()
-            self._load_current_playlist_item()
-            return
-        if self.playlist_index + 1 >= len(self.playlist):
-            if self.repeat_mode == "all":
-                self.playlist_index = 0
-            else:
-                return
-        else:
-            self.playlist_index += 1
-        self._load_current_playlist_item()
+        self._play_next_anime_episode()
 
     def play_previous(self) -> None:
         if self.playlist_index <= 0:
@@ -585,37 +546,248 @@ class PlayerWindow(QMainWindow):
 
     def _load_current_playlist_item(self) -> None:
         if 0 <= self.playlist_index < len(self.playlist):
-            self.load_and_play(self.playlist[self.playlist_index])
+            self.play_source(self.playlist[self.playlist_index])
 
-    def load_and_play(self, path: Path) -> None:
+    def load_and_play(self, source: Path | str | MediaSource) -> None:
+        media_source = ensure_media_source(source)
         try:
-            media = self.player.load(path)
+            self.current_source = media_source
+            self.anime_home.hide()
+            self.statusBar().showMessage(f"Opening stream: {media_source.display_name}" if media_source.is_remote else f"Opening: {media_source.display_name}")
+            media = self.player.load(media_source)
             self.duration = media.duration or 0.0
-            self._current_probe_data = probe(path).data
-            self.chapters = parse_chapters(self._current_probe_data)
-            self._populate_audio_streams()
-            self._populate_subtitle_sources()
-            resumed = self._restore_media_state(path, media)
-            self._remember_recent_file(media.path)
+            self._current_probe_data = None
+            self.chapters = ()
+            if media_source.local_path is not None:
+                self._current_probe_data = probe(media_source.local_path).data
+                self.chapters = parse_chapters(self._current_probe_data)
+            resumed = False
+            if media_source.local_path is not None:
+                resumed = self._restore_media_state(media_source.local_path, media)
+                self._remember_recent_file(media_source.local_path)
+                self._start_preview_generation(media_source.local_path, self.duration)
+            else:
+                resume_at = self._anime_resume_position(media_source, media)
+                if resume_at is not None:
+                    self.player.seek(resume_at)
+                    resumed = True
+                    self.statusBar().showMessage(f"Resumed at {format_timestamp(resume_at)}")
+                self._remember_anime_source(media_source)
+            if media_source.subtitle_url:
+                self.player.set_subtitle_source(media_source.subtitle_url)
             self._refresh_inspector(media)
-            self._start_preview_generation(media.path, self.duration)
-            self.playlist_failures.pop(self.playlist_index, None)
-            self._refresh_playlist_drawer()
+            self._update_now_playing(media_source)
             if not resumed:
-                self.statusBar().showMessage(str(media.path))
+                self.statusBar().showMessage(media_source.display_name)
             self.player.play()
         except Exception as exc:
-            if 0 <= self.playlist_index < len(self.playlist):
-                self.playlist_failures[self.playlist_index] = str(exc)
-                self._refresh_playlist_drawer()
             self.on_error(exc)
-            self._advance_after_failed_load()
+
+    def open_anime_browser(self) -> None:
+        if not self._confirm_anime_disclaimer():
+            return
+        dialog = AnimeBrowserDialog(self, client=self._anime_client())
+        if dialog.exec() == QDialog.DialogCode.Accepted and dialog.selected_stream is not None:
+            self.play_source(dialog.selected_stream.to_media_source())
+
+    def open_anime_home_search(self) -> None:
+        query = self.anime_home_search_input.text().strip()
+        if not query or not self._confirm_anime_disclaimer():
+            return
+        dialog = AnimeBrowserDialog(self, client=self._anime_client())
+        dialog.search_input.setText(query)
+        mode_index = dialog.mode_combo.findData(self.anime_home_mode_combo.currentData())
+        if mode_index >= 0:
+            dialog.mode_combo.setCurrentIndex(mode_index)
+        dialog.search()
+        if dialog.exec() == QDialog.DialogCode.Accepted and dialog.selected_stream is not None:
+            self.play_source(dialog.selected_stream.to_media_source())
+
+    def play_anime_history_item(self, item: QListWidgetItem) -> None:
+        history_item = item.data(Qt.ItemDataRole.UserRole)
+        if not isinstance(history_item, AnimeHistoryItem):
+            return
+        if not self._confirm_anime_disclaimer():
+            return
+        episode = AnimeEpisode(
+            show_id=history_item.show_id,
+            title=history_item.title,
+            number=history_item.episode,
+            mode=history_item.mode if history_item.mode in {"sub", "dub"} else "sub",
+        )
+        self.statusBar().showMessage(f"Resolving {history_item.display_name}...")
+
+        def worker() -> None:
+            try:
+                stream = self._anime_client().fast_stream_for_episode(episode)
+                if stream is None:
+                    raise RuntimeError(f"No playable stream found for {history_item.display_name}.")
+                source = stream.to_media_source()
+                metadata = dict(source.metadata or {})
+                metadata["resume_position"] = f"{history_item.position:.6f}"
+                source = MediaSource(
+                    location=source.location,
+                    title=source.title,
+                    headers=source.headers,
+                    subtitle_url=source.subtitle_url or history_item.subtitle_url,
+                    metadata=metadata,
+                )
+                self.signals.anime_next_ready.emit(source, None)
+            except Exception as exc:  # pragma: no cover - UI/manual path
+                self.signals.anime_next_ready.emit(None, exc)
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    def _refresh_anime_home(self) -> None:
+        if not hasattr(self, "anime_continue_list"):
+            return
+        self.anime_continue_list.clear()
+        if not self.anime_history:
+            item = QListWidgetItem("No anime history yet")
+            item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEnabled)
+            self.anime_continue_list.addItem(item)
+            return
+        for history_item in self.anime_history[:10]:
+            item = QListWidgetItem(f"{history_item.display_name}    Resume {format_timestamp(history_item.position)}")
+            item.setToolTip(history_item.stream_url)
+            item.setData(Qt.ItemDataRole.UserRole, history_item)
+            self.anime_continue_list.addItem(item)
+
+    def _remember_anime_source(self, source: MediaSource, *, position: float = 0.0) -> None:
+        metadata = source.metadata or {}
+        if metadata.get("kind") != "anime":
+            return
+        title = metadata.get("title")
+        show_id = metadata.get("show_id")
+        episode = metadata.get("episode")
+        mode = metadata.get("mode", "sub")
+        if not all(isinstance(value, str) and value for value in (title, show_id, episode, mode)):
+            return
+        self.config = set_anime_history_item(
+            self.config,
+            AnimeHistoryItem(
+                title=title,
+                show_id=show_id,
+                episode=episode,
+                mode=mode,
+                stream_url=source.location,
+                display_name=source.display_name,
+                position=position,
+                subtitle_url=source.subtitle_url,
+            ),
+        )
+        self.anime_history = anime_history_from_config(self.config)
+        save_config(self.config_path, self.config)
+        self._refresh_anime_home()
+
+    def _anime_resume_position(self, source: MediaSource, media: MediaInfo) -> float | None:
+        metadata = source.metadata or {}
+        if metadata.get("kind") != "anime":
+            return None
+        try:
+            position = float(metadata.get("resume_position", 0.0))
+        except (TypeError, ValueError):
+            return None
+        return resumable_position(MediaState(position=position), media.duration)
+
+    def _confirm_anime_disclaimer(self) -> bool:
+        if self.config.get("anime_disclaimer_accepted") is True:
+            return True
+        message = QMessageBox(self)
+        message.setWindowTitle("Enable Anime Search")
+        message.setIcon(QMessageBox.Icon.Warning)
+        message.setText("Anime search uses third-party public sources and is inspired by ani-cli.")
+        message.setInformativeText(
+            "VoidPlayer does not host or control the content. Use this feature at your own risk and follow the laws and terms that apply to you."
+        )
+        message.setStandardButtons(QMessageBox.StandardButton.Cancel | QMessageBox.StandardButton.Ok)
+        message.button(QMessageBox.StandardButton.Ok).setText("Enable")
+        if message.exec() != QMessageBox.StandardButton.Ok:
+            return False
+        self.config = dict(self.config)
+        self.config["anime_disclaimer_accepted"] = True
+        save_config(self.config_path, self.config)
+        return True
+
+    def show_anime_disclaimer(self) -> None:
+        message = QMessageBox(self)
+        message.setWindowTitle("Anime Source Disclaimer")
+        message.setIcon(QMessageBox.Icon.Information)
+        message.setText("Anime search uses third-party public sources and is inspired by ani-cli.")
+        message.setInformativeText(
+            "VoidPlayer does not host or control the content. Use this feature at your own risk and follow the laws and terms that apply to you."
+        )
+        message.setStandardButtons(QMessageBox.StandardButton.Ok)
+        message.exec()
+
+    def _anime_client(self) -> AnimeClient:
+        if self.anime_client is None:
+            self.anime_client = AnimeClient()
+        return self.anime_client
+
+    def _play_next_anime_episode(self) -> bool:
+        if self.current_source is None:
+            return False
+        current = self.current_source
+        metadata = current.metadata or {}
+        if metadata.get("kind") != "anime":
+            return False
+        show_id = metadata.get("show_id")
+        title = metadata.get("title")
+        episode_number = metadata.get("episode")
+        mode = metadata.get("mode", "sub")
+        if not show_id or not title or not episode_number or mode not in ("sub", "dub"):
+            return False
+        episode = AnimeEpisode(show_id=show_id, title=title, number=episode_number, mode=mode)
+        self.statusBar().showMessage("Resolving next anime episode...")
+
+        def worker() -> None:
+            try:
+                next_episode = self._anime_client().next_episode(episode)
+                if next_episode is None:
+                    raise RuntimeError("No next episode found.")
+                stream = self._anime_client().fast_stream_for_episode(next_episode)
+                if stream is None:
+                    raise RuntimeError(f"No playable stream found for episode {next_episode.number}.")
+                self.signals.anime_next_ready.emit(stream.to_media_source(), None)
+            except Exception as exc:  # pragma: no cover - UI/manual path
+                self.signals.anime_next_ready.emit(None, exc)
+
+        threading.Thread(target=worker, daemon=True).start()
+        return True
+
+    def _handle_next_anime_source(self, source: object, error: object) -> None:
+        if isinstance(error, Exception):
+            self.statusBar().showMessage(str(error))
+            return
+        if not isinstance(source, MediaSource):
+            return
+        self.play_source(source)
 
     def toggle_playback(self) -> None:
         if self.player.state == PlaybackState.PLAYING:
             self.player.pause()
         else:
             self.player.play()
+
+    def _update_now_playing(self, source: MediaSource | None = None) -> None:
+        if source is None:
+            self.now_playing_label.setText("")
+            self.now_playing_label.setToolTip("")
+            return
+        metadata = source.metadata or {}
+        if metadata.get("kind") == "anime":
+            title = metadata.get("title") or source.display_name
+            episode = metadata.get("episode")
+            mode = metadata.get("mode")
+            suffix = f"Episode {episode}" if episode else "Anime"
+            if mode in {"sub", "dub"}:
+                suffix = f"{suffix} ({mode.upper()})"
+            text = f"Now playing: {title} - {suffix}"
+        else:
+            text = f"Now playing: {source.display_name}"
+        self.now_playing_label.setText(text)
+        self.now_playing_label.setToolTip(text)
 
     def show_frame(self, frame: VideoFrame) -> None:
         image = ImageQt(frame.image)
@@ -703,12 +875,19 @@ class PlayerWindow(QMainWindow):
                 self.subtitle_combo.addItem(label, stream.index)
         if self.subtitle_external_path is not None:
             self.subtitle_combo.addItem(self.subtitle_external_path.name, str(self.subtitle_external_path))
+        current_source = self.player.current_source
+        if current_source is not None and current_source.subtitle_url:
+            self.subtitle_combo.addItem("Remote subtitles", current_source.subtitle_url)
         self.subtitle_combo.blockSignals(False)
 
     def _select_subtitle_source(self) -> None:
         source = self.subtitle_combo.currentData()
         self.player.set_subtitle_source(source)
         if isinstance(source, str):
+            if source.startswith(("http://", "https://")):
+                self.subtitle_track = None
+                self.subtitle_external_path = None
+                return
             try:
                 self.subtitle_track = load_subtitles(source)
                 self.subtitle_external_path = Path(source)
@@ -769,13 +948,14 @@ class PlayerWindow(QMainWindow):
     def _refresh_playlist_drawer(self) -> None:
         self.playlist_widget.clear()
         self.playlist_count_label.setText(f"{len(self.playlist)} item{'s' if len(self.playlist) != 1 else ''}")
-        for index, path in enumerate(self.playlist):
-            item = QListWidgetItem(f"{path.name}\n{path.parent}")
-            item.setToolTip(str(path))
+        for index, source in enumerate(self.playlist):
+            parent = str(source.local_path.parent) if source.local_path is not None else "Remote stream"
+            item = QListWidgetItem(f"{source.display_name}\n{parent}")
+            item.setToolTip(source.location)
             item.setData(Qt.ItemDataRole.UserRole, index)
             if index in self.playlist_failures:
-                item.setText(f"! {path.name}")
-                item.setToolTip(f"{path}\n{self.playlist_failures[index]}")
+                item.setText(f"! {source.display_name}")
+                item.setToolTip(f"{source.location}\n{self.playlist_failures[index]}")
             self.playlist_widget.addItem(item)
         if 0 <= self.playlist_index < self.playlist_widget.count():
             self.playlist_widget.setCurrentRow(self.playlist_index)
@@ -803,8 +983,40 @@ class PlayerWindow(QMainWindow):
         self.playlist.clear()
         self.playlist_index = -1
         self.playlist_failures.clear()
-        self._shuffle_queue.clear()
-        self._refresh_playlist_drawer()
+        self.current_source = None
+        self._update_now_playing()
+        self.anime_home.show()
+
+    def show_anime_home(self) -> None:
+        self._save_current_anime_position()
+        self.player.stop()
+        self.playlist.clear()
+        self.playlist_index = -1
+        self.playlist_failures.clear()
+        self.current_source = None
+        self._last_pixmap = None
+        self.video_label.clear()
+        self.subtitle_label.hide()
+        self.duration = 0.0
+        self.seek_slider.setValue(0)
+        self.elapsed_label.setText(format_timestamp(0))
+        self.total_label.setText(format_timestamp(0))
+        self.anime_history = anime_history_from_config(self.config)
+        self._refresh_anime_home()
+        self._update_now_playing()
+        self.anime_home.show()
+        self.statusBar().showMessage("Home")
+
+    def _save_current_anime_position(self) -> None:
+        source = self.player.current_source or self.current_source
+        if source is None:
+            return
+        metadata = source.metadata or {}
+        if metadata.get("kind") != "anime":
+            self.save_current_media_state()
+            return
+        position = max(self.player.master_position(), self._last_position)
+        self._remember_anime_source(source, position=position)
 
     def toggle_shuffle(self) -> None:
         self.shuffle_enabled = self.shuffle_action.isChecked()
@@ -832,6 +1044,10 @@ class PlayerWindow(QMainWindow):
 
     def _video_double_click(self, _event: QMouseEvent) -> None:
         self.toggle_fullscreen()
+
+    def _video_click(self, event: QMouseEvent) -> None:
+        if event.button() == Qt.MouseButton.LeftButton and self.player.media is not None:
+            self.toggle_playback()
 
     def mouseMoveEvent(self, event: QMouseEvent) -> None:
         super().mouseMoveEvent(event)
@@ -918,22 +1134,7 @@ class PlayerWindow(QMainWindow):
             event.acceptProposedAction()
 
     def dropEvent(self, event: QDropEvent) -> None:
-        paths = [Path(url.toLocalFile()) for url in event.mimeData().urls() if url.isLocalFile()]
-        media_paths = [path for path in paths if path.suffix.lower() in {".mp4", ".mkv", ".mov", ".avi", ".webm"}]
-        subtitle_paths = [path for path in paths if path.suffix.lower() in {".srt", ".vtt", ".ass"}]
-        if media_paths:
-            if self.playlist:
-                self.add_to_playlist(media_paths)
-            else:
-                self.set_playlist(media_paths, start_index=0)
-        if subtitle_paths:
-            try:
-                self.subtitle_track = load_subtitles(subtitle_paths[0])
-                self.subtitle_external_path = subtitle_paths[0]
-                self._populate_subtitle_sources()
-                self.subtitle_combo.setCurrentIndex(self.subtitle_combo.count() - 1)
-            except (OSError, SubtitleError) as exc:
-                self.statusBar().showMessage(str(exc))
+        self.statusBar().showMessage("Anime search is the primary app flow.")
         event.acceptProposedAction()
 
     def toggle_inspector(self) -> None:
@@ -958,6 +1159,9 @@ class PlayerWindow(QMainWindow):
     def save_current_media_state(self) -> None:
         path = self.player.current_path
         if path is None:
+            source = self.player.current_source or self.current_source
+            if source is not None:
+                self._remember_anime_source(source, position=self.player.master_position())
             return
         self.config = set_media_state(
             self.config,
@@ -980,20 +1184,11 @@ class PlayerWindow(QMainWindow):
         self.subtitle_delay = state.subtitle_delay
         self.volume_slider.setValue(int(max(0.0, min(1.0, state.volume)) * 100))
         if state.playback_speed in {0.5, 0.75, 1.0, 1.25, 1.5, 2.0}:
-            self.speed_combo.setCurrentText(f"{state.playback_speed:g}x")
             self.player.set_playback_speed(state.playback_speed)
         if state.audio_stream_index is not None:
             try:
                 self.player.set_audio_stream(state.audio_stream_index)
             except Exception:
-                pass
-        if isinstance(state.subtitle_source, str) and Path(state.subtitle_source).exists():
-            try:
-                self.subtitle_track = load_subtitles(state.subtitle_source)
-                self.subtitle_external_path = Path(state.subtitle_source)
-                self._populate_subtitle_sources()
-                self.subtitle_combo.setCurrentIndex(self.subtitle_combo.count() - 1)
-            except (OSError, SubtitleError):
                 pass
         position = resumable_position(state, media.duration)
         if position is not None:
@@ -1003,9 +1198,10 @@ class PlayerWindow(QMainWindow):
         return False
 
     def _refresh_inspector(self, media: MediaInfo) -> None:
+        file_size = _file_size(media.path) if isinstance(media.path, Path) else "remote"
         lines = [
             f"Path: {media.path}",
-            f"File size: {_file_size(media.path)}",
+            f"File size: {file_size}",
             f"Duration: {format_timestamp(media.duration)}",
         ]
         if self._current_probe_data is not None:
@@ -1061,7 +1257,7 @@ class PlayerWindow(QMainWindow):
             self._load_current_playlist_item()
 
     def _sync_playlist_from_widget(self) -> None:
-        reordered: list[Path] = []
+        reordered: list[MediaSource] = []
         for row in range(self.playlist_widget.count()):
             index = self.playlist_widget.item(row).data(Qt.ItemDataRole.UserRole)
             if isinstance(index, int) and 0 <= index < len(self.playlist):
@@ -1083,7 +1279,22 @@ class PlayerWindow(QMainWindow):
 
     def resizeEvent(self, event) -> None:  # noqa: ANN001
         super().resizeEvent(event)
+        self._update_anime_home_layout()
         self._render_pixmap()
+
+    def _update_anime_home_layout(self) -> None:
+        if not hasattr(self, "anime_home_layout"):
+            return
+        width = self.width()
+        compact = width < 780
+        narrow = width < 620
+        self.anime_home_layout.setDirection(QBoxLayout.Direction.TopToBottom if compact else QBoxLayout.Direction.LeftToRight)
+        self.anime_home_layout.setContentsMargins(28 if compact else 50, 24 if compact else 38, 28 if compact else 50, 24 if compact else 36)
+        self.anime_home_layout.setSpacing(16 if compact else 26)
+        self.anime_home_layout.setStretch(0, 0 if compact else 3)
+        self.anime_home_layout.setStretch(1, 1 if compact else 2)
+        self.anime_home_search_row.setDirection(QBoxLayout.Direction.TopToBottom if narrow else QBoxLayout.Direction.LeftToRight)
+        self.anime_continue_panel.setMinimumHeight(220 if compact else 0)
 
     def _render_pixmap(self) -> None:
         if self._last_pixmap is None:
@@ -1095,6 +1306,251 @@ class PlayerWindow(QMainWindow):
                 Qt.TransformationMode.SmoothTransformation,
             )
         )
+
+
+class AnimeBrowserDialog(QDialog):
+    def __init__(self, parent: QWidget | None = None, *, client: AnimeClient | None = None) -> None:
+        super().__init__(parent)
+        self.setWindowTitle("Search Anime")
+        self.setObjectName("animeBrowserDialog")
+        self.setMinimumSize(820, 600)
+        self.client: AnimeClient | None = client
+        self.selected_stream: AnimeStream | None = None
+        self._current_streams: list[AnimeStream] = []
+        self._request_counter = 0
+        self._active_search_request = ""
+        self._active_episodes_request = ""
+        self._active_streams_request = ""
+        self._worker_signals = AnimeWorkerSignals()
+        self._worker_signals.finished.connect(self._handle_worker_result)
+
+        self.search_input = QLineEdit()
+        self.search_input.setObjectName("animeSearchInput")
+        self.search_input.setPlaceholderText("Search anime")
+        self.mode_combo = QComboBox()
+        self.mode_combo.setObjectName("animeModeCombo")
+        self.mode_combo.addItem("Sub", "sub")
+        self.mode_combo.addItem("Dub", "dub")
+        self.search_button = QPushButton("Search")
+        self.search_button.setObjectName("animePrimaryButton")
+        self.results_list = QListWidget()
+        self.results_list.setObjectName("animeResultsList")
+        self.episodes_list = QListWidget()
+        self.episodes_list.setObjectName("animeEpisodesList")
+        self.quality_combo = QComboBox()
+        self.quality_combo.setObjectName("animeQualityCombo")
+        self.play_button = QPushButton("Play")
+        self.play_button.setObjectName("animePlayButton")
+        self.play_button.setEnabled(False)
+        self.status_label = QLabel("Powered by public third-party sources. Inspired by ani-cli.")
+        self.status_label.setObjectName("animeStatus")
+        self.status_label.setWordWrap(True)
+
+        search_row = QHBoxLayout()
+        search_row.setContentsMargins(0, 0, 0, 0)
+        search_row.setSpacing(10)
+        search_row.addWidget(self.search_input, 1)
+        search_row.addWidget(self.mode_combo)
+        search_row.addWidget(self.search_button)
+
+        search_frame = QFrame()
+        search_frame.setObjectName("animeSearchBar")
+        search_frame.setLayout(search_row)
+
+        lists_splitter = QSplitter(Qt.Orientation.Horizontal)
+        lists_splitter.setObjectName("animeListsSplitter")
+        results_column = QVBoxLayout()
+        results_column.setContentsMargins(12, 12, 12, 12)
+        results_title = QLabel("Results")
+        results_title.setObjectName("animePanelTitle")
+        results_column.addWidget(results_title)
+        results_column.addWidget(self.results_list, 1)
+        results_panel = QFrame()
+        results_panel.setObjectName("animePanel")
+        results_panel.setLayout(results_column)
+        episodes_column = QVBoxLayout()
+        episodes_column.setContentsMargins(12, 12, 12, 12)
+        episodes_title = QLabel("Episodes")
+        episodes_title.setObjectName("animePanelTitle")
+        episodes_column.addWidget(episodes_title)
+        episodes_column.addWidget(self.episodes_list, 1)
+        episodes_panel = QFrame()
+        episodes_panel.setObjectName("animePanel")
+        episodes_panel.setLayout(episodes_column)
+        lists_splitter.addWidget(results_panel)
+        lists_splitter.addWidget(episodes_panel)
+        lists_splitter.setSizes([420, 360])
+
+        bottom_row = QHBoxLayout()
+        bottom_row.setContentsMargins(0, 0, 0, 0)
+        bottom_row.setSpacing(10)
+        bottom_row.addWidget(QLabel("Quality"))
+        bottom_row.addWidget(self.quality_combo, 1)
+        bottom_row.addWidget(self.play_button)
+
+        bottom_frame = QFrame()
+        bottom_frame.setObjectName("animeBottomBar")
+        bottom_frame.setLayout(bottom_row)
+
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
+        buttons.rejected.connect(self.reject)
+
+        layout = QVBoxLayout()
+        layout.setContentsMargins(14, 14, 14, 14)
+        layout.setSpacing(12)
+        layout.addWidget(search_frame)
+        layout.addWidget(lists_splitter, 1)
+        layout.addWidget(bottom_frame)
+        layout.addWidget(self.status_label)
+        layout.addWidget(buttons)
+        self.setLayout(layout)
+
+        self.search_button.clicked.connect(self.search)
+        self.search_input.returnPressed.connect(self.search)
+        self.results_list.itemSelectionChanged.connect(self.load_episodes)
+        self.episodes_list.itemSelectionChanged.connect(self.load_streams)
+        self.quality_combo.currentIndexChanged.connect(lambda _index: self.play_button.setEnabled(self.quality_combo.currentData() is not None))
+        self.play_button.clicked.connect(self.accept_selected_stream)
+
+    @property
+    def mode(self) -> AnimeMode:
+        return self.mode_combo.currentData() or "sub"
+
+    def search(self) -> None:
+        query = self.search_input.text().strip()
+        if not query:
+            return
+        request_id = self._next_request_id("search")
+        self._active_search_request = request_id
+        self.search_button.setEnabled(False)
+        self._set_status("Searching...")
+        self._run_worker(request_id, lambda: self._client().search(query, mode=self.mode))
+
+    def _apply_search_results(self, results: list[AnimeSearchResult]) -> None:
+        self.results_list.clear()
+        self.episodes_list.clear()
+        self.quality_combo.clear()
+        self.play_button.setEnabled(False)
+        if not results:
+            self._set_status("No results found.")
+            return
+        for result in results:
+            suffix = f" ({result.episode_count} episodes)" if result.episode_count else ""
+            item = QListWidgetItem(f"{result.title}{suffix}")
+            item.setData(Qt.ItemDataRole.UserRole, result)
+            self.results_list.addItem(item)
+        self._set_status(f"{len(results)} result{'s' if len(results) != 1 else ''}")
+
+    def load_episodes(self) -> None:
+        item = self.results_list.currentItem()
+        result = item.data(Qt.ItemDataRole.UserRole) if item is not None else None
+        if not isinstance(result, AnimeSearchResult):
+            return
+        request_id = self._next_request_id("episodes")
+        self._active_episodes_request = request_id
+        self.episodes_list.clear()
+        self.quality_combo.clear()
+        self.play_button.setEnabled(False)
+        self._set_status("Loading episodes...")
+        self._run_worker(request_id, lambda: self._client().episodes(result, mode=self.mode))
+
+    def _apply_episode_results(self, episodes: list[AnimeEpisode]) -> None:
+        self.episodes_list.clear()
+        self.quality_combo.clear()
+        self.play_button.setEnabled(False)
+        if not episodes:
+            self._set_status("No episodes found for this title.")
+            return
+        for episode in episodes:
+            item = QListWidgetItem(f"Episode {episode.number}")
+            item.setData(Qt.ItemDataRole.UserRole, episode)
+            self.episodes_list.addItem(item)
+        self._set_status(f"{len(episodes)} episode{'s' if len(episodes) != 1 else ''}")
+
+    def load_streams(self) -> None:
+        item = self.episodes_list.currentItem()
+        episode = item.data(Qt.ItemDataRole.UserRole) if item is not None else None
+        if not isinstance(episode, AnimeEpisode):
+            return
+        request_id = self._next_request_id("streams")
+        self._active_streams_request = request_id
+        self._current_streams = []
+        self.quality_combo.clear()
+        self.play_button.setEnabled(False)
+        self._set_status("Resolving fast stream...")
+        self._run_worker(request_id, lambda: self._client().fast_streams(episode))
+
+    def _apply_stream_results(self, streams: list[AnimeStream]) -> None:
+        self._current_streams = list(streams)
+        self.quality_combo.clear()
+        for stream in self._current_streams:
+            self.quality_combo.addItem(stream.quality, stream)
+        self.play_button.setEnabled(bool(self._current_streams))
+        if not self._current_streams:
+            self._set_status("No playable streams found for this episode.")
+            return
+        self._set_status(f"Fast stream ready ({len(self._current_streams)} option{'s' if len(self._current_streams) != 1 else ''})")
+
+    def accept_selected_stream(self) -> None:
+        stream = self.quality_combo.currentData()
+        if isinstance(stream, AnimeStream):
+            self.selected_stream = stream
+        else:
+            self.selected_stream = select_quality(self._current_streams)
+        if self.selected_stream is not None:
+            self.accept()
+
+    def _client(self) -> AnimeClient:
+        if self.client is None:
+            try:
+                self.client = AnimeClient()
+            except AnimeClientError:
+                raise
+        return self.client
+
+    def _set_status(self, message: str) -> None:
+        self.status_label.setText(message)
+
+    def _next_request_id(self, prefix: str) -> str:
+        self._request_counter += 1
+        return f"{prefix}:{self._request_counter}"
+
+    def _run_worker(self, request_id: str, work) -> None:  # noqa: ANN001
+        def runner() -> None:
+            try:
+                result = work()
+                error = None
+            except Exception as exc:  # pragma: no cover - exercised through UI/manual paths
+                result = None
+                error = exc
+            self._worker_signals.finished.emit(request_id, result, error)
+
+        threading.Thread(target=runner, daemon=True).start()
+
+    def _handle_worker_result(self, request_id: str, result: object, error: object) -> None:
+        kind = request_id.split(":", 1)[0]
+        if kind == "search":
+            self.search_button.setEnabled(True)
+            if request_id != self._active_search_request:
+                return
+            if isinstance(error, Exception):
+                self._set_status(str(error))
+                return
+            self._apply_search_results(result if isinstance(result, list) else [])
+        elif kind == "episodes":
+            if request_id != self._active_episodes_request:
+                return
+            if isinstance(error, Exception):
+                self._set_status(str(error))
+                return
+            self._apply_episode_results(result if isinstance(result, list) else [])
+        elif kind == "streams":
+            if request_id != self._active_streams_request:
+                return
+            if isinstance(error, Exception):
+                self._set_status(str(error))
+                return
+            self._apply_stream_results(result if isinstance(result, list) else [])
 
 
 class ClipExportDialog(QDialog):
@@ -1157,7 +1613,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(prog="voidplayer")
     parser.add_argument("input", nargs="?", type=Path, help="Media file to open")
     parser.add_argument("--debug", action="store_true", help="Enable playback debug logging")
-    parser.add_argument("--theme", default=DEFAULT_THEME, help="Theme name from bundled themes")
+    parser.add_argument("--theme", help="Theme name from bundled themes")
     parser.add_argument("--theme-path", type=Path, help="Path to a custom theme directory")
     args, qt_args = parser.parse_known_args()
 
