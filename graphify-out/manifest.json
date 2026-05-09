@@ -87,6 +87,10 @@
     "mtime": 1778335783.2696602,
     "hash": "ef7e687dbcfcbf75a65243ab5944b3b4"
   },
+  "C:\\data\\ffmpeg_pywrapper\\tests\\test_player_smoke.py": {
+    "mtime": 1778335912.640715,
+    "hash": "181709eb77676d36fff7bf4229d36610"
+  },
   "C:\\data\\ffmpeg_pywrapper\\tests\\test_probe.py": {
     "mtime": 1778265364.4357693,
     "hash": "5dbe7df5edb02be95a61ebda6304c853"
