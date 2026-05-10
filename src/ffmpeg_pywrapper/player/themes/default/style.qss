@@ -23,40 +23,6 @@ QLabel#subtitleOverlay {
     margin: 0 48px 28px 48px;
     font-size: 20px;
 }
-QListWidget#playlistDrawer {
-    background: {{ color.control_background }};
-    color: {{ color.text_secondary }};
-    border: 0;
-    outline: 0;
-}
-QListWidget#playlistDrawer::item {
-    min-height: 42px;
-    padding: 8px 10px;
-    border-bottom: 1px solid {{ color.border_control }};
-}
-QListWidget#playlistDrawer::item:selected {
-    background: {{ color.accent }};
-    color: {{ color.text_button }};
-}
-QFrame#playlistPanel {
-    background: {{ color.control_background }};
-    border: 1px solid {{ color.border_control }};
-}
-QFrame#playlistHeader {
-    background: {{ color.button_background }};
-    border: 1px solid {{ color.border_button }};
-    border-radius: {{ size.button_radius }};
-    padding: 8px;
-}
-QLabel#playlistTitle {
-    color: {{ color.text_primary }};
-    font-size: 14px;
-    font-weight: 600;
-}
-QLabel#playlistCount {
-    color: {{ color.text_muted }};
-    font-size: 12px;
-}
 QPlainTextEdit#inspectorPanel {
     background: {{ color.control_background }};
     color: {{ color.text_secondary }};

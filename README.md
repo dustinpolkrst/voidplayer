@@ -23,7 +23,7 @@ now the anime player.
 - Resolves fast playable anime streams.
 - Plays hardsubbed/built-in subtitle streams when the selected source provides
   them.
-- Saves anime watch history separately from local-file history.
+- Saves anime watch history for continue watching.
 - Shows continue-watching entries with saved resume timestamps.
 - Resumes anime episodes from the last known position.
 - Resolves and plays the next episode from the current anime metadata.
@@ -51,9 +51,8 @@ stack:
   present, and update time.
 - The player saves progress on periodic state updates, app close, next episode,
   and when returning Home.
-- Direct local-file launch is still supported for compatibility through
-  `voidplayer input.mp4`, but local file opening is not exposed in the normal
-  anime-first GUI.
+- The desktop app starts from anime search and continue watching; local-file
+  opening belongs to the lower-level wrapper/CLI compatibility layer.
 - The FFmpeg wrapper package remains available for probe, convert, trim, and
   thumbnail scripting.
 

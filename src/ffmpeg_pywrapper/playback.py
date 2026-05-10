@@ -151,10 +151,10 @@ def frame_timing(frame_timestamp: float, clock_position: float) -> FrameTiming:
 
 
 class DecodeLoopPlayer:
-    """Small FFmpeg-backed playback engine for local files.
+    """Small FFmpeg-backed playback engine for media sources.
 
     The engine decodes on worker threads and emits video frames through a
-    callback. It is intentionally minimal so the example GUI owns rendering.
+    callback. It is intentionally minimal so the anime GUI owns rendering.
     """
 
     def __init__(

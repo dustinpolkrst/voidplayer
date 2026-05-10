@@ -14,8 +14,6 @@ def _window(monkeypatch, tmp_path=None):  # noqa: ANN001
     app_module = importlib.import_module("ffmpeg_pywrapper.player.app")
     if tmp_path is not None:
         monkeypatch.setattr(app_module, "user_config_path", lambda: tmp_path / "config.json")
-    monkeypatch.setattr(app_module, "load_recent_files", lambda path=None: [])
-    monkeypatch.setattr(app_module, "save_recent_files", lambda recent_files, path=None, *, limit=10: None)
     app = qt_widgets.QApplication.instance() or qt_widgets.QApplication(["voidplayer-test"])
     return app_module, app_module.PlayerWindow(theme_name="default")
 
@@ -41,13 +39,29 @@ def test_player_window_starts_as_anime_only_shell(monkeypatch, tmp_path) -> None
         assert window.next_button.toolTip() == "Next Episode"
         assert window.seek_slider.objectName() == "seekSlider"
         assert window.now_playing_label.objectName() == "nowPlayingLabel"
-        assert not hasattr(window, "open_button")
-        assert not hasattr(window, "add_playlist_button")
-        assert not hasattr(window, "drawer_button")
-        assert not hasattr(window, "previous_button")
-        assert not hasattr(window, "speed_combo")
-        assert not hasattr(window, "audio_stream_combo")
-        assert not hasattr(window, "subtitle_combo")
+        for removed_name in (
+            "open_button",
+            "add_playlist_button",
+            "drawer_button",
+            "previous_button",
+            "speed_combo",
+            "audio_stream_combo",
+            "subtitle_combo",
+            "playlist",
+            "recent_files",
+        ):
+            assert not hasattr(window, removed_name)
+        for removed_method in (
+            "open_file",
+            "add_files_to_playlist",
+            "set_playlist",
+            "toggle_playlist_drawer",
+            "save_current_frame",
+            "export_clip",
+            "open_containing_folder",
+            "save_current_media_state",
+        ):
+            assert not hasattr(window, removed_method)
         menus = [action.text() for action in window.menuBar().actions()]
         assert menus == ["Anime", "View", "Help"]
         assert [action.text() for action in window.anime_menu.actions()] == ["Home", "Search Anime...", "Next Episode"]
@@ -57,13 +71,11 @@ def test_player_window_starts_as_anime_only_shell(monkeypatch, tmp_path) -> None
         window.close()
 
 
-def test_initial_local_media_launch_still_loads_directly(monkeypatch, tmp_path) -> None:
+def test_initial_local_media_launch_is_ignored(monkeypatch, tmp_path) -> None:
     monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
     qt_widgets = pytest.importorskip("PySide6.QtWidgets")
     app_module = importlib.import_module("ffmpeg_pywrapper.player.app")
     monkeypatch.setattr(app_module, "user_config_path", lambda: tmp_path / "config.json")
-    monkeypatch.setattr(app_module, "load_recent_files", lambda path=None: [])
-    monkeypatch.setattr(app_module, "save_recent_files", lambda recent_files, path=None, *, limit=10: None)
     loaded = []
     monkeypatch.setattr(app_module.PlayerWindow, "load_and_play", lambda self, source: loaded.append(source))
 
@@ -72,9 +84,9 @@ def test_initial_local_media_launch_still_loads_directly(monkeypatch, tmp_path) 
     window = app_module.PlayerWindow(theme_name="default", initial_media=media_path)
 
     try:
-        assert loaded == [app_module.MediaSource.from_path(media_path)]
-        assert window.current_source == app_module.MediaSource.from_path(media_path)
-        assert window.playlist == [app_module.MediaSource.from_path(media_path)]
+        assert loaded == []
+        assert window.current_source is None
+        assert "local launch input was ignored" in window.statusBar().currentMessage()
     finally:
         window.close()
 
@@ -210,7 +222,6 @@ def test_show_anime_home_saves_and_clears_current_source(monkeypatch, tmp_path) 
 
         assert window.anime_home.isHidden() is False
         assert window.current_source is None
-        assert window.playlist == []
         assert window.now_playing_label.text() == ""
         assert window.seek_slider.value() == 0
         history = app_module.anime_history_from_config(app_module.load_config(tmp_path / "config.json"))
@@ -305,29 +316,18 @@ def test_combo_chevron_svg_matches_theme_icon_constraints() -> None:
     assert "background" not in svg.lower()
 
 
-def test_recent_files_round_trip(tmp_path) -> None:
-    from ffmpeg_pywrapper.player.app import load_recent_files, save_recent_files
-
-    config = tmp_path / "config.json"
-    save_recent_files([tmp_path / "a.mp4", tmp_path / "b.mp4", tmp_path / "a.mp4"], config_path=config)
-
-    assert load_recent_files(config) == [tmp_path / "a.mp4", tmp_path / "b.mp4"]
-
-
-def test_remote_load_does_not_run_duplicate_probe(monkeypatch, tmp_path) -> None:
+def test_remote_load_stays_stream_only(monkeypatch, tmp_path) -> None:
     app_module, window = _window(monkeypatch, tmp_path)
     source = MediaSource(location="https://example.test/video.mp4", title="Remote")
     media = MediaInfo(path=source.location, duration=10.0, streams=(StreamInfo(index=0, codec_type="video", codec_name="h264"),))
     monkeypatch.setattr(window.player, "load", lambda loaded_source: media)
     monkeypatch.setattr(window.player, "play", lambda: None)
-    monkeypatch.setattr(app_module, "probe", lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("remote probe should be skipped")))
 
     try:
         window.play_source(source)
 
-        assert window._current_probe_data is None
-        assert window.chapters == ()
         assert "Remote" in window.statusBar().currentMessage()
+        assert "Stream: https://example.test/video.mp4" in window.inspector_panel.toPlainText()
     finally:
         window.close()
 
