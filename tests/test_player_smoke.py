@@ -413,6 +413,14 @@ def test_continue_watching_resumes_saved_anime_position(monkeypatch, tmp_path) -
         assert window.current_source == source
         assert seeks == [61.0]
         assert "Resumed at" in window.statusBar().currentMessage()
+        history = app_module.anime_history_from_config(app_module.load_config(tmp_path / "config.json"))
+        assert len(history) == 1
+        assert history[0].position == 61.0
+        assert history[0].duration == 120.0
+        assert window.anime_continue_list.item(0).text() == "Example"
+        continue_text = window.anime_continue_list.item(1).text()
+        assert "Resume 00:01:01.00" in continue_text
+        assert "50%" in continue_text
     finally:
         window.close()
 

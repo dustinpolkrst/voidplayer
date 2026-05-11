@@ -491,7 +491,7 @@ class PlayerWindow(QMainWindow):
                 self.player.seek(resume_at)
                 resumed = True
                 self.statusBar().showMessage(f"Resumed at {format_timestamp(resume_at)}")
-            self._remember_anime_source(media_source)
+            self._remember_anime_source(media_source, position=resume_at if resume_at is not None else 0.0)
             if media_source.subtitle_url:
                 self.player.set_subtitle_source(media_source.subtitle_url)
             self._refresh_inspector(media)
