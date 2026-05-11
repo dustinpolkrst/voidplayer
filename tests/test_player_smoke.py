@@ -425,6 +425,64 @@ def test_continue_watching_resumes_saved_anime_position(monkeypatch, tmp_path) -
         window.close()
 
 
+def test_continue_watching_keeps_saved_position_when_duration_unknown(monkeypatch, tmp_path) -> None:
+    app_module, window = _window(monkeypatch, tmp_path)
+    source = MediaSource(
+        location="https://example.test/fresh-episode-8.mp4",
+        title="Example - Episode 8",
+        metadata={"kind": "anime", "show_id": "show-1", "title": "Example", "episode": "8", "mode": "sub", "resume_position": "61.0"},
+    )
+    media = MediaInfo(path=source.location, duration=None, streams=(StreamInfo(index=0, codec_type="video", codec_name="h264"),))
+    seeks = []
+    monkeypatch.setattr(window.player, "load", lambda loaded_source: media)
+    monkeypatch.setattr(window.player, "seek", lambda position: seeks.append(position))
+    monkeypatch.setattr(window.player, "play", lambda: None)
+
+    try:
+        window.play_source(source)
+
+        assert seeks == []
+        history = app_module.anime_history_from_config(app_module.load_config(tmp_path / "config.json"))
+        assert len(history) == 1
+        assert history[0].position == 61.0
+    finally:
+        window.close()
+
+
+def test_new_anime_source_does_not_save_previous_last_position(monkeypatch, tmp_path) -> None:
+    app_module, window = _window(monkeypatch, tmp_path)
+    source_a = MediaSource(
+        location="https://example.test/episode-1.mp4",
+        title="Example - Episode 1",
+        metadata={"kind": "anime", "show_id": "show-1", "title": "Example", "episode": "1", "mode": "sub"},
+    )
+    source_b = MediaSource(
+        location="https://example.test/episode-2.mp4",
+        title="Example - Episode 2",
+        metadata={"kind": "anime", "show_id": "show-1", "title": "Example", "episode": "2", "mode": "sub"},
+    )
+
+    def load_source(loaded_source: MediaSource) -> MediaInfo:
+        return MediaInfo(path=loaded_source.location, duration=120.0, streams=(StreamInfo(index=0, codec_type="video", codec_name="h264"),))
+
+    monkeypatch.setattr(window.player, "load", load_source)
+    monkeypatch.setattr(window.player, "play", lambda: None)
+    monkeypatch.setattr(window.player, "master_position", lambda: 0.0)
+
+    try:
+        window.play_source(source_a)
+        window._last_position = 90.0
+        window.play_source(source_b)
+        window._save_current_anime_position()
+
+        history = app_module.anime_history_from_config(app_module.load_config(tmp_path / "config.json"))
+        source_b_history = [item for item in history if item.stream_url == source_b.location]
+        assert len(source_b_history) == 1
+        assert source_b_history[0].position == 0.0
+    finally:
+        window.close()
+
+
 def test_anime_source_load_updates_continue_watching(monkeypatch, tmp_path) -> None:
     app_module, window = _window(monkeypatch, tmp_path)
     source = MediaSource(

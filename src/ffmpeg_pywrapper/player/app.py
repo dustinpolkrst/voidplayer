@@ -480,18 +480,20 @@ class PlayerWindow(QMainWindow):
             self.statusBar().showMessage("Local files are no longer part of the VoidPlayer app flow.")
             return
         try:
+            self._last_position = 0.0
             self.current_source = media_source
             self.anime_home.hide()
             self.statusBar().showMessage(f"Opening stream: {media_source.display_name}")
             media = self.player.load(media_source)
             self.duration = media.duration or 0.0
             resumed = False
+            initial_position = self._anime_metadata_resume_position(media_source) or 0.0
             resume_at = self._anime_resume_position(media_source, media)
             if resume_at is not None:
                 self.player.seek(resume_at)
                 resumed = True
                 self.statusBar().showMessage(f"Resumed at {format_timestamp(resume_at)}")
-            self._remember_anime_source(media_source, position=resume_at if resume_at is not None else 0.0)
+            self._remember_anime_source(media_source, position=resume_at if resume_at is not None else initial_position)
             if media_source.subtitle_url:
                 self.player.set_subtitle_source(media_source.subtitle_url)
             self._refresh_inspector(media)
@@ -683,6 +685,9 @@ class PlayerWindow(QMainWindow):
         self._refresh_anime_home()
 
     def _anime_resume_position(self, source: MediaSource, media: MediaInfo) -> float | None:
+        return resumable_position(self._anime_metadata_resume_position(source), media.duration)
+
+    def _anime_metadata_resume_position(self, source: MediaSource) -> float | None:
         metadata = source.metadata or {}
         if metadata.get("kind") != "anime":
             return None
@@ -690,7 +695,7 @@ class PlayerWindow(QMainWindow):
             position = float(metadata.get("resume_position", 0.0))
         except (TypeError, ValueError):
             return None
-        return resumable_position(position, media.duration)
+        return max(0.0, position)
 
     def _confirm_anime_disclaimer(self) -> bool:
         if self.config.get("anime_disclaimer_accepted") is True:
