@@ -522,6 +522,82 @@ def test_near_end_continue_watching_plays_next_episode(monkeypatch, tmp_path) ->
         window.close()
 
 
+def test_near_end_activated_history_item_plays_its_next_episode_when_selection_differs(monkeypatch, tmp_path) -> None:
+    app_module = importlib.import_module("ffmpeg_pywrapper.player.app")
+    config_path = tmp_path / "config.json"
+    config = {}
+    for item in (
+        app_module.AnimeHistoryItem(
+            title="Selected",
+            show_id="selected-show",
+            episode="1",
+            mode="sub",
+            stream_url="https://example.test/selected-1.mp4",
+            display_name="Selected - Episode 1",
+            position=296,
+            duration=300,
+            updated_at=20,
+        ),
+        app_module.AnimeHistoryItem(
+            title="Activated",
+            show_id="activated-show",
+            episode="5",
+            mode="dub",
+            stream_url="https://example.test/activated-5.mp4",
+            display_name="Activated - Episode 5",
+            position=296,
+            duration=300,
+            updated_at=10,
+        ),
+    ):
+        config = app_module.set_anime_history_item(config, item)
+    app_module.save_config(config_path, config)
+
+    class ImmediateThread:
+        def __init__(self, target, daemon=False):  # noqa: ANN001, FBT002
+            self.target = target
+
+        def start(self) -> None:
+            self.target()
+
+    class FakeAnimeClient:
+        def next_episode(self, episode):  # noqa: ANN001
+            next_number = str(int(episode.number) + 1)
+            return app_module.AnimeEpisode(show_id=episode.show_id, title=episode.title, number=next_number, mode=episode.mode)
+
+        def fast_stream_for_episode(self, episode):  # noqa: ANN001
+            return app_module.AnimeStream(
+                url=f"https://example.test/{episode.show_id}-{episode.number}.mp4",
+                quality="direct",
+                title=episode.title,
+                episode=episode.number,
+                show_id=episode.show_id,
+                mode=episode.mode,
+            )
+
+    monkeypatch.setattr(app_module.threading, "Thread", ImmediateThread)
+    monkeypatch.setattr(app_module, "user_config_path", lambda: config_path)
+    app_module, window = _window(monkeypatch)
+    window.config["anime_disclaimer_accepted"] = True
+    window.anime_client = FakeAnimeClient()
+    loaded = []
+    monkeypatch.setattr(window, "load_and_play", lambda source: loaded.append(source))
+
+    try:
+        window.anime_continue_list.setCurrentRow(1)
+        activated_item = window.anime_continue_list.item(3)
+        window.play_anime_history_item(activated_item)
+
+        assert window.current_source is not None
+        assert window.current_source.metadata["show_id"] == "activated-show"
+        assert window.current_source.metadata["episode"] == "6"
+        assert window.current_source.metadata["mode"] == "dub"
+        assert window.current_source.location == "https://example.test/activated-show-6.mp4"
+        assert loaded == [window.current_source]
+    finally:
+        window.close()
+
+
 def test_show_anime_home_saves_and_clears_current_source(monkeypatch, tmp_path) -> None:
     app_module, window = _window(monkeypatch, tmp_path)
     source = MediaSource(

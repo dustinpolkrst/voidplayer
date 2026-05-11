@@ -529,7 +529,7 @@ class PlayerWindow(QMainWindow):
         if not self._confirm_anime_disclaimer():
             return
         if should_continue_with_next_episode(history_item):
-            self.play_next_for_selected_anime_history_item()
+            self.play_next_for_anime_history_item(history_item)
             return
         episode = AnimeEpisode(
             show_id=history_item.show_id,
@@ -596,6 +596,9 @@ class PlayerWindow(QMainWindow):
         history_item = self._selected_anime_history_item()
         if history_item is None:
             return
+        self.play_next_for_anime_history_item(history_item)
+
+    def play_next_for_anime_history_item(self, history_item: AnimeHistoryItem) -> None:
         if not self._confirm_anime_disclaimer():
             return
         episode = AnimeEpisode(
