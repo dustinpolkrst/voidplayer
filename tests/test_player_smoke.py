@@ -23,8 +23,8 @@ def test_player_window_starts_as_anime_only_shell(monkeypatch, tmp_path) -> None
 
     try:
         assert window.windowTitle() == "VoidPlayer"
-        assert "#0d1017" in window.styleSheet()
-        assert "#4f8cff" in window.styleSheet()
+        assert "#070a12" in window.styleSheet()
+        assert "#1b8cff" in window.styleSheet()
         assert window.anime_home.objectName() == "animeHome"
         assert window.anime_home.findChild(app_module.QLabel, "animeHomeEyebrow").text() == "ANIME STREAMING"
         assert window.anime_home.findChild(app_module.QFrame, "animeHomeSearchPanel") is not None

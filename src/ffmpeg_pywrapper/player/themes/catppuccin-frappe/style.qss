@@ -1,6 +1,7 @@
 QMainWindow {
     background: {{ color.window_background }};
     color: {{ color.text_primary }};
+    font-family: {{ font.ui }};
 }
 QWidget#appRoot {
     background: {{ color.window_background }};
@@ -37,78 +38,82 @@ QLabel#timelinePreview {
     padding: 4px;
 }
 QFrame#animeHome {
-    background: {{ color.video_background }};
-    border: 1px solid {{ color.border_video }};
+    background: {{ color.home_gradient }};
+    border: 1px solid {{ color.border_accent }};
+    border-radius: {{ size.panel_radius }};
 }
 QLabel#animeHomeEyebrow {
     color: {{ color.accent }};
     font-size: 11px;
     font-weight: 700;
-    padding-bottom: 4px;
+    letter-spacing: 0px;
+    padding-bottom: 2px;
 }
 QLabel#animeHomeTitle {
     color: {{ color.text_primary }};
-    font-size: 28px;
+    font-family: {{ font.display }};
+    font-size: 34px;
     font-weight: 700;
 }
 QLabel#animeHomeSubtitle {
     color: {{ color.text_secondary }};
-    font-size: 13px;
-    padding-bottom: 6px;
+    font-size: 14px;
+    padding-bottom: 12px;
 }
 QFrame#animeHomeSearchPanel {
-    background: {{ color.control_background }};
-    border: 1px solid {{ color.border_control }};
-    border-radius: {{ size.control_radius }};
-    padding: 10px;
+    background: {{ color.panel_gradient }};
+    border: 1px solid {{ color.accent_glow }};
+    border-radius: {{ size.panel_radius }};
+    padding: 14px;
 }
 QLineEdit#animeHomeSearchInput {
-    background: {{ color.video_background }};
+    background: {{ color.panel_background }};
     color: {{ color.text_primary }};
-    border: 1px solid {{ color.border_control }};
+    border: 1px solid {{ color.border_button }};
     border-radius: {{ size.button_radius }};
-    padding: 8px 12px;
-    min-height: 30px;
-    font-size: 13px;
+    padding: 9px 13px;
+    min-height: 34px;
+    font-size: 14px;
     selection-background-color: {{ color.accent }};
 }
 QLineEdit#animeHomeSearchInput:focus {
     border-color: {{ color.accent }};
+    background: {{ color.control_background }};
 }
 QComboBox#animeHomeModeCombo {
-    min-height: 30px;
+    min-height: 34px;
     min-width: 86px;
     padding-left: 12px;
     font-size: 12px;
 }
 QFrame#animeHomeSearchPanel QPushButton#animePrimaryButton {
-    background: {{ color.accent }};
+    background: {{ color.primary_gradient }};
     border-color: {{ color.accent }};
     color: {{ color.text_button }};
     font-weight: 700;
-    min-height: 30px;
-    padding: 8px 20px;
+    min-height: 34px;
+    padding: 9px 24px;
 }
 QFrame#animeHomeSearchPanel QPushButton#animePrimaryButton:hover {
-    background: {{ color.button_hover_background }};
-    border-color: {{ color.border_button_hover }};
+    background: {{ color.button_gradient }};
+    border-color: {{ color.accent_soft }};
 }
 QFrame#animeContinuePanel {
-    background: {{ color.control_background }};
-    border: 1px solid {{ color.border_control }};
-    border-radius: {{ size.control_radius }};
+    background: {{ color.panel_gradient }};
+    border: 1px solid {{ color.accent_glow }};
+    border-radius: {{ size.panel_radius }};
 }
 QListWidget#animeContinueList {
-    background: {{ color.video_background }};
+    background: {{ color.panel_background }};
     color: {{ color.text_secondary }};
-    border: 1px solid {{ color.border_control }};
+    border: 1px solid {{ color.line_soft }};
     border-radius: {{ size.button_radius }};
     outline: 0;
 }
 QListWidget#animeContinueList::item {
-    min-height: 52px;
-    padding: 11px 13px;
-    border-bottom: 1px solid {{ color.border_control }};
+    min-height: 56px;
+    padding: 12px 14px;
+    border-bottom: 1px solid {{ color.line_soft }};
     font-size: 12px;
 }
 QListWidget#animeContinueList::item:hover {
@@ -116,16 +121,17 @@ QListWidget#animeContinueList::item:hover {
     color: {{ color.text_primary }};
 }
 QListWidget#animeContinueList::item:selected {
-    background: {{ color.accent }};
+    background: {{ color.button_gradient }};
     color: {{ color.text_button }};
+    border-left: 3px solid {{ color.accent_soft }};
 }
 QPushButton#animeContinueActionButton {
-    background: {{ color.button_background }};
+    background: {{ color.button_gradient }};
     color: {{ color.text_button }};
     border: 1px solid {{ color.border_button }};
     border-radius: {{ size.button_radius }};
-    padding: 7px 12px;
-    min-height: 26px;
+    padding: 8px 14px;
+    min-height: 28px;
 }
 QPushButton#animeContinueActionButton:hover {
     background: {{ color.button_hover_background }};
@@ -136,10 +142,11 @@ QPushButton#animeContinueActionButton:disabled {
     background: {{ color.control_background }};
 }
 QFrame#controlBar {
-    background: {{ color.control_background }};
+    background: {{ color.panel_glass }};
     border: 1px solid {{ color.border_control }};
-    border-radius: {{ size.control_radius }};
-    padding: 14px;
+    border-top: 1px solid {{ color.border_accent }};
+    border-radius: {{ size.panel_radius }};
+    padding: 16px;
 }
 QFrame#timelineBar {
     background: transparent;
@@ -150,7 +157,7 @@ QFrame#buttonBar {
     border: 0;
 }
 QToolButton {
-    background: {{ color.button_background }};
+    background: {{ color.button_gradient }};
     color: {{ color.text_button }};
     border: 1px solid {{ color.border_button }};
     border-radius: {{ size.button_radius }};
@@ -177,7 +184,7 @@ QLabel#nowPlayingLabel {
     font-size: 12px;
 }
 QComboBox {
-    background: {{ color.button_background }};
+    background: {{ color.button_gradient }};
     color: {{ color.text_button }};
     border: 1px solid {{ color.border_button }};
     border-radius: {{ size.button_radius }};
@@ -205,18 +212,19 @@ QComboBox::drop-down:hover {
 QDialog#animeBrowserDialog {
     background: {{ color.window_background }};
     color: {{ color.text_primary }};
+    font-family: {{ font.ui }};
 }
 QFrame#animeSearchBar,
 QFrame#animeBottomBar {
-    background: {{ color.control_background }};
+    background: {{ color.panel_gradient }};
     border: 1px solid {{ color.border_control }};
-    border-radius: {{ size.control_radius }};
-    padding: 10px;
+    border-radius: {{ size.panel_radius }};
+    padding: 12px;
 }
 QFrame#animePanel {
-    background: {{ color.control_background }};
+    background: {{ color.panel_gradient }};
     border: 1px solid {{ color.border_control }};
-    border-radius: {{ size.control_radius }};
+    border-radius: {{ size.panel_radius }};
 }
 QLabel#animePanelTitle {
     color: {{ color.text_primary }};
@@ -228,7 +236,7 @@ QLabel#animeStatus {
     font-size: 12px;
 }
 QLineEdit#animeSearchInput {
-    background: {{ color.video_background }};
+    background: {{ color.panel_background }};
     color: {{ color.text_primary }};
     border: 1px solid {{ color.border_button }};
     border-radius: {{ size.button_radius }};
@@ -237,7 +245,7 @@ QLineEdit#animeSearchInput {
 }
 QPushButton#animePrimaryButton,
 QPushButton#animePlayButton {
-    background: {{ color.button_background }};
+    background: {{ color.button_gradient }};
     color: {{ color.text_button }};
     border: 1px solid {{ color.border_button }};
     border-radius: {{ size.button_radius }};
@@ -255,7 +263,7 @@ QPushButton#animePlayButton:disabled {
 }
 QListWidget#animeResultsList,
 QListWidget#animeEpisodesList {
-    background: {{ color.video_background }};
+    background: {{ color.panel_background }};
     color: {{ color.text_secondary }};
     border: 1px solid {{ color.border_control }};
     border-radius: {{ size.button_radius }};
@@ -278,7 +286,7 @@ QSlider::groove:horizontal {
     border-radius: 4px;
 }
 QSlider::sub-page:horizontal {
-    background: {{ color.accent }};
+    background: {{ color.primary_gradient }};
     border-radius: 4px;
 }
 QSlider::handle:horizontal {
@@ -294,7 +302,7 @@ QSlider::handle:horizontal:hover {
     border-color: {{ color.slider_handle_border_hover }};
 }
 QStatusBar {
-    background: {{ color.window_background }};
+    background: {{ color.panel_background }};
     color: {{ color.status_text }};
     border-top: 1px solid {{ color.status_border }};
 }
