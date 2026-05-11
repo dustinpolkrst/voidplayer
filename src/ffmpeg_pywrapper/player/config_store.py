@@ -16,6 +16,7 @@ class AnimeHistoryItem:
     stream_url: str
     display_name: str
     position: float = 0.0
+    duration: float | None = None
     subtitle_url: str | None = None
     updated_at: float = 0.0
 
@@ -58,6 +59,7 @@ def anime_history_from_config(config: dict[str, Any]) -> list[AnimeHistoryItem]:
                 stream_url=stream_url,
                 display_name=display_name,
                 position=_float(raw.get("position"), 0.0),
+                duration=_optional_positive_float(raw.get("duration")),
                 subtitle_url=raw.get("subtitle_url") if isinstance(raw.get("subtitle_url"), str) else None,
                 updated_at=_float(raw.get("updated_at"), 0.0),
             )
@@ -77,12 +79,39 @@ def set_anime_history_item(config: dict[str, Any], item: AnimeHistoryItem, *, li
         stream_url=item.stream_url,
         display_name=item.display_name,
         position=item.position,
+        duration=item.duration,
         subtitle_url=item.subtitle_url,
         updated_at=item.updated_at or time.time(),
     )
     deduped = [existing for existing in current if (existing.show_id, existing.episode, existing.mode) != key]
     updated["anime_history"] = [asdict(entry) for entry in [fresh, *deduped][:limit]]
     return updated
+
+
+def remove_anime_history_item(config: dict[str, Any], *, show_id: str, episode: str, mode: str) -> dict[str, Any]:
+    updated = dict(config)
+    key = (show_id, episode, mode)
+    kept = [item for item in anime_history_from_config(config) if (item.show_id, item.episode, item.mode) != key]
+    updated["anime_history"] = [asdict(item) for item in kept]
+    return updated
+
+
+def sorted_anime_history(items: list[AnimeHistoryItem]) -> list[AnimeHistoryItem]:
+    return sorted(items, key=lambda item: item.updated_at, reverse=True)
+
+
+def anime_history_progress(item: AnimeHistoryItem) -> str | None:
+    if item.duration is None or item.duration <= 0:
+        return None
+    percent = int(min(max(item.position / item.duration, 0.0), 1.0) * 100)
+    return f"{percent}%"
+
+
+def should_continue_with_next_episode(item: AnimeHistoryItem, *, edge_seconds: float = 15.0) -> bool:
+    if item.duration is None or item.duration <= edge_seconds * 2:
+        return False
+    position = min(max(item.position, 0.0), item.duration)
+    return item.duration - position <= edge_seconds
 
 
 def resumable_position(position: float | int | None, duration: float | None, *, edge_seconds: float = 5.0) -> float | None:
@@ -99,5 +128,13 @@ def _float(value: object, default: float) -> float:
         return float(value)
     except (TypeError, ValueError):
         return default
+
+
+def _optional_positive_float(value: object) -> float | None:
+    try:
+        parsed = float(value)
+    except (TypeError, ValueError):
+        return None
+    return parsed if parsed > 0 else None
 
 
