@@ -17,6 +17,7 @@ from ffmpeg_pywrapper.player.config_store import (
     AnimeHistoryItem,
     anime_history_from_config,
     load_config,
+    remove_anime_history_item,
     resumable_position,
     save_config,
     set_anime_history_item,
@@ -307,7 +308,26 @@ class PlayerWindow(QMainWindow):
         self.anime_continue_list = QListWidget()
         self.anime_continue_list.setObjectName("animeContinueList")
         self.anime_continue_list.itemDoubleClicked.connect(self.play_anime_history_item)
-        self._refresh_anime_home()
+        self.anime_continue_list.currentItemChanged.connect(lambda _current, _previous: self._update_continue_action_buttons())
+
+        self.continue_resume_button = QPushButton("Resume")
+        self.continue_resume_button.setObjectName("animeContinueActionButton")
+        self.continue_resume_button.clicked.connect(self.resume_selected_anime_history_item)
+
+        self.continue_remove_button = QPushButton("Remove")
+        self.continue_remove_button.setObjectName("animeContinueActionButton")
+        self.continue_remove_button.clicked.connect(self.remove_selected_anime_history_item)
+
+        self.continue_next_button = QPushButton("Next Episode")
+        self.continue_next_button.setObjectName("animeContinueActionButton")
+        self.continue_next_button.clicked.connect(self.play_next_for_selected_anime_history_item)
+
+        self.anime_continue_actions = QHBoxLayout()
+        self.anime_continue_actions.setContentsMargins(0, 0, 0, 0)
+        self.anime_continue_actions.setSpacing(8)
+        self.anime_continue_actions.addWidget(self.continue_resume_button)
+        self.anime_continue_actions.addWidget(self.continue_next_button)
+        self.anime_continue_actions.addWidget(self.continue_remove_button)
 
         search_column = QVBoxLayout()
         search_column.setContentsMargins(0, 0, 0, 0)
@@ -323,9 +343,11 @@ class PlayerWindow(QMainWindow):
         continue_panel_layout.setSpacing(12)
         continue_panel_layout.addWidget(continue_title)
         continue_panel_layout.addWidget(self.anime_continue_list, 1)
+        continue_panel_layout.addLayout(self.anime_continue_actions)
         self.anime_continue_panel = QFrame()
         self.anime_continue_panel.setObjectName("animeContinuePanel")
         self.anime_continue_panel.setLayout(continue_panel_layout)
+        self._refresh_anime_home()
 
         self.anime_home_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
         self.anime_home_layout.setContentsMargins(50, 38, 50, 36)
@@ -532,6 +554,66 @@ class PlayerWindow(QMainWindow):
 
         threading.Thread(target=worker, daemon=True).start()
 
+    def _selected_anime_history_item(self) -> AnimeHistoryItem | None:
+        item = self.anime_continue_list.currentItem() if hasattr(self, "anime_continue_list") else None
+        if item is None:
+            return None
+        history_item = item.data(Qt.ItemDataRole.UserRole)
+        return history_item if isinstance(history_item, AnimeHistoryItem) else None
+
+    def _update_continue_action_buttons(self) -> None:
+        enabled = self._selected_anime_history_item() is not None
+        for button_name in ("continue_resume_button", "continue_remove_button", "continue_next_button"):
+            if hasattr(self, button_name):
+                getattr(self, button_name).setEnabled(enabled)
+
+    def resume_selected_anime_history_item(self) -> None:
+        item = self.anime_continue_list.currentItem() if hasattr(self, "anime_continue_list") else None
+        if item is not None:
+            self.play_anime_history_item(item)
+
+    def remove_selected_anime_history_item(self) -> None:
+        history_item = self._selected_anime_history_item()
+        if history_item is None:
+            return
+        self.config = remove_anime_history_item(
+            self.config,
+            show_id=history_item.show_id,
+            episode=history_item.episode,
+            mode=history_item.mode,
+        )
+        save_config(self.config_path, self.config)
+        self.anime_history = anime_history_from_config(self.config)
+        self._refresh_anime_home()
+
+    def play_next_for_selected_anime_history_item(self) -> None:
+        history_item = self._selected_anime_history_item()
+        if history_item is None:
+            return
+        if not self._confirm_anime_disclaimer():
+            return
+        episode = AnimeEpisode(
+            show_id=history_item.show_id,
+            title=history_item.title,
+            number=history_item.episode,
+            mode=history_item.mode if history_item.mode in {"sub", "dub"} else "sub",
+        )
+        self.statusBar().showMessage(f"Resolving next episode after {history_item.display_name}...")
+
+        def worker() -> None:
+            try:
+                next_episode = self._anime_client().next_episode(episode)
+                if next_episode is None:
+                    raise RuntimeError("No next episode found.")
+                stream = self._anime_client().fast_stream_for_episode(next_episode)
+                if stream is None:
+                    raise RuntimeError(f"No playable stream found for episode {next_episode.number}.")
+                self.signals.anime_next_ready.emit(stream.to_media_source(), None)
+            except Exception as exc:  # pragma: no cover - UI/manual path
+                self.signals.anime_next_ready.emit(None, exc)
+
+        threading.Thread(target=worker, daemon=True).start()
+
     def _refresh_anime_home(self) -> None:
         if not hasattr(self, "anime_continue_list"):
             return
@@ -540,12 +622,15 @@ class PlayerWindow(QMainWindow):
             item = QListWidgetItem("No anime history yet")
             item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEnabled)
             self.anime_continue_list.addItem(item)
+            self._update_continue_action_buttons()
             return
         for history_item in self.anime_history[:10]:
             item = QListWidgetItem(f"{history_item.display_name}    Resume {format_timestamp(history_item.position)}")
             item.setToolTip(history_item.stream_url)
             item.setData(Qt.ItemDataRole.UserRole, history_item)
             self.anime_continue_list.addItem(item)
+        self.anime_continue_list.setCurrentRow(-1)
+        self._update_continue_action_buttons()
 
     def _remember_anime_source(self, source: MediaSource, *, position: float = 0.0) -> None:
         metadata = source.metadata or {}

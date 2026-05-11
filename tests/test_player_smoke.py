@@ -155,6 +155,141 @@ def test_anime_home_continue_item_plays_single_current_source(monkeypatch, tmp_p
         window.close()
 
 
+def test_continue_watching_buttons_enable_for_selected_history(monkeypatch, tmp_path) -> None:
+    app_module = importlib.import_module("ffmpeg_pywrapper.player.app")
+    config_path = tmp_path / "config.json"
+    config = app_module.set_anime_history_item(
+        {},
+        app_module.AnimeHistoryItem(
+            title="Example",
+            show_id="show-1",
+            episode="3",
+            mode="sub",
+            stream_url="https://example.test/episode-3.mp4",
+            display_name="Example - Episode 3",
+            position=40,
+            duration=100,
+        ),
+    )
+    app_module.save_config(config_path, config)
+    monkeypatch.setattr(app_module, "user_config_path", lambda: config_path)
+    app_module, window = _window(monkeypatch)
+
+    try:
+        assert window.continue_resume_button.isEnabled() is False
+        assert window.continue_remove_button.isEnabled() is False
+        assert window.continue_next_button.isEnabled() is False
+
+        window.anime_continue_list.setCurrentRow(0)
+
+        assert window.continue_resume_button.isEnabled() is True
+        assert window.continue_remove_button.isEnabled() is True
+        assert window.continue_next_button.isEnabled() is True
+    finally:
+        window.close()
+
+
+def test_remove_selected_continue_watching_item_updates_config_and_list(monkeypatch, tmp_path) -> None:
+    app_module = importlib.import_module("ffmpeg_pywrapper.player.app")
+    config_path = tmp_path / "config.json"
+    config = app_module.set_anime_history_item(
+        {},
+        app_module.AnimeHistoryItem(
+            title="Example",
+            show_id="show-1",
+            episode="3",
+            mode="sub",
+            stream_url="https://example.test/episode-3.mp4",
+            display_name="Example - Episode 3",
+            position=40,
+            duration=100,
+        ),
+    )
+    app_module.save_config(config_path, config)
+    monkeypatch.setattr(app_module, "user_config_path", lambda: config_path)
+    app_module, window = _window(monkeypatch)
+
+    try:
+        window.anime_continue_list.setCurrentRow(0)
+        window.remove_selected_anime_history_item()
+
+        assert app_module.anime_history_from_config(app_module.load_config(config_path)) == []
+        assert window.anime_continue_list.item(0).text() == "No anime history yet"
+        assert window.continue_resume_button.isEnabled() is False
+    finally:
+        window.close()
+
+
+def test_next_selected_continue_watching_item_resolves_and_plays_next_episode(monkeypatch, tmp_path) -> None:
+    app_module = importlib.import_module("ffmpeg_pywrapper.player.app")
+    config_path = tmp_path / "config.json"
+    config = app_module.set_anime_history_item(
+        {},
+        app_module.AnimeHistoryItem(
+            title="Example",
+            show_id="show-1",
+            episode="1",
+            mode="sub",
+            stream_url="https://example.test/episode-1.mp4",
+            display_name="Example - Episode 1",
+            position=40,
+            duration=100,
+        ),
+    )
+    app_module.save_config(config_path, config)
+
+    class ImmediateThread:
+        def __init__(self, target, daemon=False):  # noqa: ANN001, FBT002
+            self.target = target
+
+        def start(self) -> None:
+            self.target()
+
+    class FakeAnimeClient:
+        def __init__(self) -> None:
+            self.next_requests = []
+            self.stream_requests = []
+
+        def next_episode(self, episode):  # noqa: ANN001
+            self.next_requests.append(episode)
+            return app_module.AnimeEpisode(show_id=episode.show_id, title=episode.title, number="2", mode=episode.mode)
+
+        def fast_stream_for_episode(self, episode):  # noqa: ANN001
+            self.stream_requests.append(episode)
+            return app_module.AnimeStream(
+                url="https://example.test/episode-2.mp4",
+                quality="direct",
+                title=episode.title,
+                episode=episode.number,
+                show_id=episode.show_id,
+                mode=episode.mode,
+            )
+
+    monkeypatch.setattr(app_module.threading, "Thread", ImmediateThread)
+    monkeypatch.setattr(app_module, "user_config_path", lambda: config_path)
+    app_module, window = _window(monkeypatch)
+    window.config["anime_disclaimer_accepted"] = True
+    client = FakeAnimeClient()
+    window.anime_client = client
+    loaded = []
+    monkeypatch.setattr(window, "load_and_play", lambda source: loaded.append(source))
+
+    try:
+        window.anime_continue_list.setCurrentRow(0)
+        window.continue_next_button.click()
+
+        assert len(client.next_requests) == 1
+        assert client.next_requests[0].number == "1"
+        assert len(client.stream_requests) == 1
+        assert client.stream_requests[0].number == "2"
+        assert window.current_source is not None
+        assert window.current_source.metadata["episode"] == "2"
+        assert window.current_source.location == "https://example.test/episode-2.mp4"
+        assert loaded == [window.current_source]
+    finally:
+        window.close()
+
+
 def test_continue_watching_resumes_saved_anime_position(monkeypatch, tmp_path) -> None:
     app_module, window = _window(monkeypatch, tmp_path)
     source = MediaSource(
