@@ -442,6 +442,86 @@ def test_anime_source_load_updates_continue_watching(monkeypatch, tmp_path) -> N
         window.close()
 
 
+def test_anime_source_load_updates_continue_watching_duration(monkeypatch, tmp_path) -> None:
+    app_module, window = _window(monkeypatch, tmp_path)
+    source = MediaSource(
+        location="https://example.test/episode-4.mp4",
+        title="Example - Episode 4",
+        metadata={"kind": "anime", "show_id": "show-1", "title": "Example", "episode": "4", "mode": "dub"},
+    )
+    media = MediaInfo(path=source.location, duration=100.0, streams=(StreamInfo(index=0, codec_type="video", codec_name="h264"),))
+    monkeypatch.setattr(window.player, "load", lambda loaded_source: media)
+    monkeypatch.setattr(window.player, "play", lambda: None)
+
+    try:
+        window.play_source(source)
+
+        history = app_module.anime_history_from_config(app_module.load_config(tmp_path / "config.json"))
+        assert history[0].duration == 100.0
+        assert "0%" in window.anime_continue_list.item(1).text()
+    finally:
+        window.close()
+
+
+def test_near_end_continue_watching_plays_next_episode(monkeypatch, tmp_path) -> None:
+    app_module = importlib.import_module("ffmpeg_pywrapper.player.app")
+    config_path = tmp_path / "config.json"
+    config = app_module.set_anime_history_item(
+        {},
+        app_module.AnimeHistoryItem(
+            title="Example",
+            show_id="show-1",
+            episode="1",
+            mode="sub",
+            stream_url="https://example.test/episode-1.mp4",
+            display_name="Example - Episode 1",
+            position=296,
+            duration=300,
+        ),
+    )
+    app_module.save_config(config_path, config)
+
+    class ImmediateThread:
+        def __init__(self, target, daemon=False):  # noqa: ANN001, FBT002
+            self.target = target
+
+        def start(self) -> None:
+            self.target()
+
+    class FakeAnimeClient:
+        def next_episode(self, episode):  # noqa: ANN001
+            return app_module.AnimeEpisode(show_id=episode.show_id, title=episode.title, number="2", mode=episode.mode)
+
+        def fast_stream_for_episode(self, episode):  # noqa: ANN001
+            return app_module.AnimeStream(
+                url="https://example.test/episode-2.mp4",
+                quality="direct",
+                title=episode.title,
+                episode=episode.number,
+                show_id=episode.show_id,
+                mode=episode.mode,
+            )
+
+    monkeypatch.setattr(app_module.threading, "Thread", ImmediateThread)
+    monkeypatch.setattr(app_module, "user_config_path", lambda: config_path)
+    app_module, window = _window(monkeypatch)
+    window.config["anime_disclaimer_accepted"] = True
+    window.anime_client = FakeAnimeClient()
+    loaded = []
+    monkeypatch.setattr(window, "load_and_play", lambda source: loaded.append(source))
+
+    try:
+        window.anime_continue_list.setCurrentRow(1)
+        window.resume_selected_anime_history_item()
+
+        assert window.current_source is not None
+        assert window.current_source.metadata["episode"] == "2"
+        assert window.current_source.location == "https://example.test/episode-2.mp4"
+        assert loaded == [window.current_source]
+    finally:
+        window.close()
+
+
 def test_show_anime_home_saves_and_clears_current_source(monkeypatch, tmp_path) -> None:
     app_module, window = _window(monkeypatch, tmp_path)
     source = MediaSource(

@@ -22,6 +22,7 @@ from ffmpeg_pywrapper.player.config_store import (
     resumable_position,
     save_config,
     set_anime_history_item,
+    should_continue_with_next_episode,
     sorted_anime_history,
 )
 
@@ -527,6 +528,9 @@ class PlayerWindow(QMainWindow):
             return
         if not self._confirm_anime_disclaimer():
             return
+        if should_continue_with_next_episode(history_item):
+            self.play_next_for_selected_anime_history_item()
+            return
         episode = AnimeEpisode(
             show_id=history_item.show_id,
             title=history_item.title,
@@ -667,6 +671,7 @@ class PlayerWindow(QMainWindow):
                 stream_url=source.location,
                 display_name=source.display_name,
                 position=position,
+                duration=self.duration if self.duration > 0 else None,
                 subtitle_url=source.subtitle_url,
             ),
         )
