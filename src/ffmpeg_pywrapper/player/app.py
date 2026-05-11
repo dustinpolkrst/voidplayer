@@ -616,7 +616,7 @@ class PlayerWindow(QMainWindow):
 
     def _anime_client(self) -> AnimeClient:
         if self.anime_client is None:
-            self.anime_client = AnimeClient()
+            self.anime_client = AnimeClient(cache_path=self.config_path.with_name("anime-cache.json"))
         return self.anime_client
 
     def _play_next_anime_episode(self) -> bool:

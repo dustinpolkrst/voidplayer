@@ -5,7 +5,10 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import hashlib
 import json
 import re
-from dataclasses import dataclass
+import time
+from dataclasses import asdict, dataclass
+from enum import Enum
+from pathlib import Path
 from typing import Any, Literal
 from urllib.parse import quote
 
@@ -90,8 +93,112 @@ class AnimeStream:
         )
 
 
+class AnimeProviderStage(str, Enum):
+    SEARCH = "search"
+    EPISODES = "episodes"
+    EPISODE_SOURCES = "episode_sources"
+    FAST_PROVIDER = "fast_provider"
+    SLOW_PROVIDER = "slow_provider"
+    M3U8_PARSE = "m3u8_parse"
+    PLAYBACK_LOAD = "playback_load"
+
+
 class AnimeClientError(RuntimeError):
-    pass
+    def __init__(self, message: str, *, stage: AnimeProviderStage | None = None) -> None:
+        super().__init__(message)
+        self.stage = stage
+        self.debug_detail = message
+
+    def __str__(self) -> str:
+        if self.stage is None:
+            return self.debug_detail
+        return f"{_stage_summary(self.stage)}. {self.debug_detail} {_stage_retry_hint(self.stage)}"
+
+
+class AnimeResolvedCache:
+    def __init__(
+        self,
+        path: Path,
+        *,
+        now=time.time,
+        metadata_ttl: float = 60 * 60 * 24 * 7,
+        stream_ttl: float = 60 * 30,
+    ) -> None:
+        self.path = path
+        self._now = now
+        self.metadata_ttl = metadata_ttl
+        self.stream_ttl = stream_ttl
+        self._data = self._load()
+
+    def search_results(self, query: str, mode: AnimeMode) -> list[AnimeSearchResult] | None:
+        record = self._fresh_record("search", _search_cache_key(query, mode), self.metadata_ttl)
+        if record is None:
+            return None
+        items = record.get("items")
+        if not isinstance(items, list):
+            return None
+        results = [_search_result_from_dict(item) for item in items if isinstance(item, dict)]
+        return [item for item in results if item is not None]
+
+    def set_search_results(self, query: str, mode: AnimeMode, results: list[AnimeSearchResult]) -> None:
+        self._set_record("search", _search_cache_key(query, mode), [asdict(item) for item in results])
+
+    def episodes(self, show_id: str, mode: AnimeMode) -> list[AnimeEpisode] | None:
+        record = self._fresh_record("episodes", _episodes_cache_key(show_id, mode), self.metadata_ttl)
+        if record is None:
+            return None
+        items = record.get("items")
+        if not isinstance(items, list):
+            return None
+        episodes = [_episode_from_dict(item) for item in items if isinstance(item, dict)]
+        return [item for item in episodes if item is not None]
+
+    def set_episodes(self, show_id: str, mode: AnimeMode, episodes: list[AnimeEpisode]) -> None:
+        self._set_record("episodes", _episodes_cache_key(show_id, mode), [asdict(item) for item in episodes])
+
+    def streams(self, show_id: str, mode: AnimeMode, episode: str) -> list[AnimeStream] | None:
+        record = self._fresh_record("streams", _streams_cache_key(show_id, mode, episode), self.stream_ttl)
+        if record is None:
+            return None
+        items = record.get("items")
+        if not isinstance(items, list):
+            return None
+        streams = [_stream_from_dict(item) for item in items if isinstance(item, dict)]
+        return [item for item in streams if item is not None]
+
+    def set_streams(self, show_id: str, mode: AnimeMode, episode: str, streams: list[AnimeStream]) -> None:
+        self._set_record("streams", _streams_cache_key(show_id, mode, episode), [asdict(item) for item in streams])
+
+    def _fresh_record(self, bucket: str, key: str, ttl: float) -> dict[str, Any] | None:
+        records = self._data.get(bucket)
+        if not isinstance(records, dict):
+            return None
+        record = records.get(key)
+        if not isinstance(record, dict):
+            return None
+        saved_at = _optional_float(record.get("saved_at"))
+        if saved_at is None or self._now() - saved_at > ttl:
+            return None
+        return record
+
+    def _set_record(self, bucket: str, key: str, items: list[dict[str, Any]]) -> None:
+        records = self._data.setdefault(bucket, {})
+        if not isinstance(records, dict):
+            records = {}
+            self._data[bucket] = records
+        records[key] = {"saved_at": self._now(), "items": items}
+        self._save()
+
+    def _load(self) -> dict[str, Any]:
+        try:
+            data = json.loads(self.path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return {}
+        return data if isinstance(data, dict) else {}
+
+    def _save(self) -> None:
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        self.path.write_text(json.dumps(self._data, indent=2), encoding="utf-8")
 
 
 class AnimeClient:
@@ -103,6 +210,7 @@ class AnimeClient:
         base_host: str = ALLANIME_BASE,
         api_timeout: float = 8.0,
         provider_timeout: float = 2.0,
+        cache_path: Path | None = None,
     ) -> None:
         try:
             import httpx
@@ -115,6 +223,7 @@ class AnimeClient:
         self.base_host = base_host
         self.api_timeout = api_timeout
         self.provider_timeout = provider_timeout
+        self._resolved_cache = AnimeResolvedCache(cache_path) if cache_path is not None else None
         self._search_cache: dict[tuple[str, AnimeMode], list[AnimeSearchResult]] = {}
         self._episodes_cache: dict[tuple[str, AnimeMode], list[AnimeEpisode]] = {}
         self._streams_cache: dict[tuple[str, AnimeMode, str], list[AnimeStream]] = {}
@@ -123,6 +232,11 @@ class AnimeClient:
         cache_key = (query.strip().casefold(), mode)
         if cache_key in self._search_cache:
             return list(self._search_cache[cache_key])
+        if self._resolved_cache is not None:
+            cached = self._resolved_cache.search_results(query, mode)
+            if cached is not None:
+                self._search_cache[cache_key] = list(cached)
+                return cached
         payload = {
             "variables": {
                 "search": {"allowAdult": False, "allowUnknown": False, "query": query},
@@ -146,12 +260,19 @@ class AnimeClient:
             if isinstance(show_id, str) and isinstance(title, str) and count:
                 results.append(AnimeSearchResult(show_id=show_id, title=title, episode_count=count))
         self._search_cache[cache_key] = list(results)
+        if self._resolved_cache is not None:
+            self._resolved_cache.set_search_results(query, mode, results)
         return results
 
     def episodes(self, show: AnimeSearchResult, *, mode: AnimeMode = "sub") -> list[AnimeEpisode]:
         cache_key = (show.show_id, mode)
         if cache_key in self._episodes_cache:
             return list(self._episodes_cache[cache_key])
+        if self._resolved_cache is not None:
+            cached = self._resolved_cache.episodes(show.show_id, mode)
+            if cached is not None:
+                self._episodes_cache[cache_key] = list(cached)
+                return cached
         data = self._post_graphql({"variables": {"showId": show.show_id}, "query": EPISODES_QUERY})
         detail = data.get("data", {}).get("show", {}).get("availableEpisodesDetail", {})
         numbers = detail.get(mode) if isinstance(detail, dict) else None
@@ -159,23 +280,39 @@ class AnimeClient:
             return []
         episodes = [AnimeEpisode(show_id=show.show_id, title=show.title, number=str(number), mode=mode) for number in sorted(numbers, key=_episode_sort_key)]
         self._episodes_cache[cache_key] = list(episodes)
+        if self._resolved_cache is not None:
+            self._resolved_cache.set_episodes(show.show_id, mode, episodes)
         return episodes
 
     def streams(self, episode: AnimeEpisode) -> list[AnimeStream]:
         cache_key = (episode.show_id, episode.mode, episode.number)
         if cache_key in self._streams_cache:
             return list(self._streams_cache[cache_key])
+        if self._resolved_cache is not None:
+            cached = self._resolved_cache.streams(episode.show_id, episode.mode, episode.number)
+            if cached is not None:
+                self._streams_cache[cache_key] = list(cached)
+                return cached
         streams = self._resolve_streams(episode, fast_only=False)
         self._streams_cache[cache_key] = list(streams)
+        if self._resolved_cache is not None:
+            self._resolved_cache.set_streams(episode.show_id, episode.mode, episode.number, streams)
         return streams
 
     def fast_streams(self, episode: AnimeEpisode) -> list[AnimeStream]:
         cache_key = (episode.show_id, episode.mode, episode.number)
         if cache_key in self._streams_cache:
             return list(self._streams_cache[cache_key])
+        if self._resolved_cache is not None:
+            cached = self._resolved_cache.streams(episode.show_id, episode.mode, episode.number)
+            if cached is not None:
+                self._streams_cache[cache_key] = list(cached)
+                return cached
         streams = self._resolve_streams(episode, fast_only=True)
         if streams:
             self._streams_cache[cache_key] = list(streams)
+            if self._resolved_cache is not None:
+                self._resolved_cache.set_streams(episode.show_id, episode.mode, episode.number, streams)
         return streams
 
     def next_episode(self, episode: AnimeEpisode) -> AnimeEpisode | None:
@@ -206,7 +343,8 @@ class AnimeClient:
             streams.extend(self._resolve_slow_providers(slow_links, episode))
         if not streams:
             message = _graphql_error_message(data) if data is not None else None
-            raise AnimeClientError(message or "No playable streams resolved.")
+            stage = AnimeProviderStage.FAST_PROVIDER if fast_only else AnimeProviderStage.SLOW_PROVIDER
+            raise AnimeClientError(message or "No playable streams resolved.", stage=stage)
         return sorted(_dedupe_streams(streams), key=lambda item: _quality_sort_key(item.quality), reverse=True)
 
     def _episode_provider_links(self, episode: AnimeEpisode) -> tuple[list[str], dict[str, Any] | None]:
@@ -228,7 +366,7 @@ class AnimeClient:
             data = self._post_graphql(payload)
             episode_data = _episode_data(data)
         if episode_data is None and not provider_links:
-            raise AnimeClientError(_graphql_error_message(data) or "Episode source data is unavailable.")
+            raise AnimeClientError(_graphql_error_message(data) or "Episode source data is unavailable.", stage=AnimeProviderStage.EPISODE_SOURCES)
         sources = episode_data.get("sourceUrls", []) if episode_data is not None else []
         provider_links = provider_links or parse_source_urls(sources)
         if not provider_links:
@@ -416,6 +554,86 @@ def _optional_int(value: object) -> int | None:
         return int(value) if value is not None else None
     except (TypeError, ValueError):
         return None
+
+
+def _optional_float(value: object) -> float | None:
+    try:
+        return float(value) if value is not None else None
+    except (TypeError, ValueError):
+        return None
+
+
+def _search_cache_key(query: str, mode: AnimeMode) -> str:
+    return f"{mode}:{query.strip().casefold()}"
+
+
+def _episodes_cache_key(show_id: str, mode: AnimeMode) -> str:
+    return f"{mode}:{show_id}"
+
+
+def _streams_cache_key(show_id: str, mode: AnimeMode, episode: str) -> str:
+    return f"{mode}:{show_id}:{episode}"
+
+
+def _search_result_from_dict(data: dict[str, Any]) -> AnimeSearchResult | None:
+    show_id = data.get("show_id")
+    title = data.get("title")
+    if not isinstance(show_id, str) or not isinstance(title, str):
+        return None
+    return AnimeSearchResult(show_id=show_id, title=title, episode_count=_optional_int(data.get("episode_count")))
+
+
+def _episode_from_dict(data: dict[str, Any]) -> AnimeEpisode | None:
+    show_id = data.get("show_id")
+    title = data.get("title")
+    number = data.get("number")
+    mode = data.get("mode", "sub")
+    if not isinstance(show_id, str) or not isinstance(title, str) or not isinstance(number, str) or mode not in ("sub", "dub"):
+        return None
+    return AnimeEpisode(show_id=show_id, title=title, number=number, mode=mode)
+
+
+def _stream_from_dict(data: dict[str, Any]) -> AnimeStream | None:
+    url = data.get("url")
+    quality = data.get("quality")
+    title = data.get("title")
+    episode = data.get("episode")
+    show_id = data.get("show_id")
+    mode = data.get("mode", "sub")
+    referrer = data.get("referrer")
+    subtitle_url = data.get("subtitle_url")
+    if not isinstance(url, str) or not isinstance(quality, str) or not isinstance(title, str) or not isinstance(episode, str) or mode not in ("sub", "dub"):
+        return None
+    return AnimeStream(
+        url=url,
+        quality=quality,
+        title=title,
+        episode=episode,
+        show_id=show_id if isinstance(show_id, str) else None,
+        mode=mode,
+        referrer=referrer if isinstance(referrer, str) else None,
+        subtitle_url=subtitle_url if isinstance(subtitle_url, str) else None,
+    )
+
+
+def _stage_summary(stage: AnimeProviderStage) -> str:
+    return {
+        AnimeProviderStage.SEARCH: "Could not search anime",
+        AnimeProviderStage.EPISODES: "Could not load episodes",
+        AnimeProviderStage.EPISODE_SOURCES: "Could not load episode sources",
+        AnimeProviderStage.FAST_PROVIDER: "Could not use the fast stream source",
+        AnimeProviderStage.SLOW_PROVIDER: "Could not use fallback stream sources",
+        AnimeProviderStage.M3U8_PARSE: "Could not parse the stream playlist",
+        AnimeProviderStage.PLAYBACK_LOAD: "Could not load playback",
+    }[stage]
+
+
+def _stage_retry_hint(stage: AnimeProviderStage) -> str:
+    if stage in {AnimeProviderStage.SEARCH, AnimeProviderStage.EPISODES, AnimeProviderStage.EPISODE_SOURCES}:
+        return "Try again or choose another episode."
+    if stage in {AnimeProviderStage.FAST_PROVIDER, AnimeProviderStage.SLOW_PROVIDER, AnimeProviderStage.M3U8_PARSE}:
+        return "Try again or use another source."
+    return "Try again or choose another stream."
 
 
 def _first_match(text: str, pattern: str) -> str | None:
