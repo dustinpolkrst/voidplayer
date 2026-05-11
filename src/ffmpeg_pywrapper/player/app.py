@@ -16,11 +16,13 @@ from ffmpeg_pywrapper.playback import DecodeLoopPlayer, PlaybackState, VideoFram
 from ffmpeg_pywrapper.player.config_store import (
     AnimeHistoryItem,
     anime_history_from_config,
+    anime_history_progress,
     load_config,
     remove_anime_history_item,
     resumable_position,
     save_config,
     set_anime_history_item,
+    sorted_anime_history,
 )
 
 from .theme import DEFAULT_THEME, PACKAGED_THEMES, ThemeError, load_theme, render_stylesheet
@@ -624,11 +626,24 @@ class PlayerWindow(QMainWindow):
             self.anime_continue_list.addItem(item)
             self._update_continue_action_buttons()
             return
-        for history_item in self.anime_history[:10]:
-            item = QListWidgetItem(f"{history_item.display_name}    Resume {format_timestamp(history_item.position)}")
-            item.setToolTip(history_item.stream_url)
-            item.setData(Qt.ItemDataRole.UserRole, history_item)
-            self.anime_continue_list.addItem(item)
+        grouped_history: dict[str, list[AnimeHistoryItem]] = {}
+        group_titles: dict[str, str] = {}
+        for history_item in sorted_anime_history(self.anime_history)[:20]:
+            grouped_history.setdefault(history_item.show_id, []).append(history_item)
+            group_titles.setdefault(history_item.show_id, history_item.title)
+        for show_id, history_items in grouped_history.items():
+            header = QListWidgetItem(group_titles[show_id])
+            header.setData(Qt.ItemDataRole.UserRole, None)
+            header.setFlags(header.flags() & ~Qt.ItemFlag.ItemIsSelectable & ~Qt.ItemFlag.ItemIsEnabled)
+            self.anime_continue_list.addItem(header)
+            for history_item in history_items:
+                progress = anime_history_progress(history_item)
+                progress_text = f"    {progress}" if progress else ""
+                resume_text = format_timestamp(history_item.position) if history_item.position > 0 else "start"
+                item = QListWidgetItem(f"Episode {history_item.episode}    Resume {resume_text}{progress_text}")
+                item.setToolTip(history_item.stream_url)
+                item.setData(Qt.ItemDataRole.UserRole, history_item)
+                self.anime_continue_list.addItem(item)
         self.anime_continue_list.setCurrentRow(-1)
         self._update_continue_action_buttons()
 
@@ -826,7 +841,7 @@ class PlayerWindow(QMainWindow):
         self.statusBar().showMessage("Home")
 
     def _save_current_anime_position(self) -> None:
-        source = self.player.current_source or self.current_source
+        source = self.current_source
         if source is None:
             return
         metadata = source.metadata or {}

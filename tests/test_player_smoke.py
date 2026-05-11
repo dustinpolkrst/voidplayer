@@ -137,7 +137,7 @@ def test_anime_home_continue_item_plays_single_current_source(monkeypatch, tmp_p
     monkeypatch.setattr(window, "load_and_play", lambda source: loaded.append(source))
 
     try:
-        item = window.anime_continue_list.item(0)
+        item = window.anime_continue_list.item(1)
         window.play_anime_history_item(item)
 
         assert window.current_source is not None
@@ -182,6 +182,12 @@ def test_continue_watching_buttons_enable_for_selected_history(monkeypatch, tmp_
 
         window.anime_continue_list.setCurrentRow(0)
 
+        assert window.continue_resume_button.isEnabled() is False
+        assert window.continue_remove_button.isEnabled() is False
+        assert window.continue_next_button.isEnabled() is False
+
+        window.anime_continue_list.setCurrentRow(1)
+
         assert window.continue_resume_button.isEnabled() is True
         assert window.continue_remove_button.isEnabled() is True
         assert window.continue_next_button.isEnabled() is True
@@ -210,12 +216,52 @@ def test_remove_selected_continue_watching_item_updates_config_and_list(monkeypa
     app_module, window = _window(monkeypatch)
 
     try:
-        window.anime_continue_list.setCurrentRow(0)
+        window.anime_continue_list.setCurrentRow(1)
         window.remove_selected_anime_history_item()
 
         assert app_module.anime_history_from_config(app_module.load_config(config_path)) == []
         assert window.anime_continue_list.item(0).text() == "No anime history yet"
         assert window.continue_resume_button.isEnabled() is False
+    finally:
+        window.close()
+
+
+def test_removed_continue_watching_item_is_not_restored_from_stale_player_source(monkeypatch, tmp_path) -> None:
+    app_module = importlib.import_module("ffmpeg_pywrapper.player.app")
+    config_path = tmp_path / "config.json"
+    old_source = MediaSource(
+        location="https://example.test/episode-3.mp4",
+        title="Example - Episode 3",
+        metadata={"kind": "anime", "show_id": "show-1", "title": "Example", "episode": "3", "mode": "sub"},
+    )
+    config = app_module.set_anime_history_item(
+        {},
+        app_module.AnimeHistoryItem(
+            title="Example",
+            show_id="show-1",
+            episode="3",
+            mode="sub",
+            stream_url=old_source.location,
+            display_name=old_source.display_name,
+            position=40,
+            duration=100,
+        ),
+    )
+    app_module.save_config(config_path, config)
+    monkeypatch.setattr(app_module, "user_config_path", lambda: config_path)
+    app_module, window = _window(monkeypatch)
+    monkeypatch.setattr(window.player, "master_position", lambda: 42.0)
+
+    try:
+        window.player._source = old_source
+        window.current_source = None
+        window.anime_continue_list.setCurrentRow(1)
+        window.remove_selected_anime_history_item()
+
+        window._save_current_anime_position()
+
+        assert app_module.anime_history_from_config(app_module.load_config(config_path)) == []
+        assert window.anime_continue_list.item(0).text() == "No anime history yet"
     finally:
         window.close()
 
@@ -275,7 +321,7 @@ def test_next_selected_continue_watching_item_resolves_and_plays_next_episode(mo
     monkeypatch.setattr(window, "load_and_play", lambda source: loaded.append(source))
 
     try:
-        window.anime_continue_list.setCurrentRow(0)
+        window.anime_continue_list.setCurrentRow(1)
         window.continue_next_button.click()
 
         assert len(client.next_requests) == 1
@@ -286,6 +332,64 @@ def test_next_selected_continue_watching_item_resolves_and_plays_next_episode(mo
         assert window.current_source.metadata["episode"] == "2"
         assert window.current_source.location == "https://example.test/episode-2.mp4"
         assert loaded == [window.current_source]
+    finally:
+        window.close()
+
+
+def test_continue_watching_groups_by_show_and_shows_progress(monkeypatch, tmp_path) -> None:
+    app_module = importlib.import_module("ffmpeg_pywrapper.player.app")
+    config_path = tmp_path / "config.json"
+    config = {}
+    for item in (
+        app_module.AnimeHistoryItem(
+            title="Other",
+            show_id="show-2",
+            episode="1",
+            mode="sub",
+            stream_url="https://example.test/other-1.mp4",
+            display_name="Other - Episode 1",
+            position=20,
+            duration=100,
+            updated_at=20,
+        ),
+        app_module.AnimeHistoryItem(
+            title="Example",
+            show_id="show-1",
+            episode="2",
+            mode="sub",
+            stream_url="https://example.test/example-2.mp4",
+            display_name="Example - Episode 2",
+            position=50,
+            duration=200,
+            updated_at=30,
+        ),
+        app_module.AnimeHistoryItem(
+            title="Example",
+            show_id="show-1",
+            episode="1",
+            mode="sub",
+            stream_url="https://example.test/example-1.mp4",
+            display_name="Example - Episode 1",
+            position=75,
+            duration=100,
+            updated_at=10,
+        ),
+    ):
+        config = app_module.set_anime_history_item(config, item)
+    app_module.save_config(config_path, config)
+    monkeypatch.setattr(app_module, "user_config_path", lambda: config_path)
+    app_module, window = _window(monkeypatch)
+
+    try:
+        texts = [window.anime_continue_list.item(index).text() for index in range(window.anime_continue_list.count())]
+
+        assert texts[0] == "Example"
+        assert "Episode 2" in texts[1]
+        assert "25%" in texts[1]
+        assert "Episode 1" in texts[2]
+        assert "75%" in texts[2]
+        assert texts[3] == "Other"
+        assert "20%" in texts[4]
     finally:
         window.close()
 
@@ -331,7 +435,8 @@ def test_anime_source_load_updates_continue_watching(monkeypatch, tmp_path) -> N
         assert len(history) == 1
         assert history[0].display_name == "Example - Episode 4"
         assert history[0].mode == "dub"
-        assert window.anime_continue_list.item(0).text().startswith("Example - Episode 4")
+        assert window.anime_continue_list.item(0).text() == "Example"
+        assert window.anime_continue_list.item(1).text().startswith("Episode 4")
         assert window.now_playing_label.text() == "Now playing: Example - Episode 4 (DUB)"
     finally:
         window.close()
