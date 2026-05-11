@@ -147,6 +147,116 @@ The current checkout had pre-existing uncommitted changes when this spec was wri
 
 ## High-Impact Next Steps
 
+## Roadmap To Preserve
+
+This is the working product roadmap as of 2026-05-11. Phase 1 is the next development target. Later phases should stay visible so the project does not lose the broader direction while reliability work is underway.
+
+### Phase 1: Provider Resilience And Stream Cache
+
+Goal: make the core loop reliable enough that a user can trust Search, Play, Continue Watching, and Next Episode.
+
+Build this first:
+
+- Provider diagnostics that distinguish search failure, episode lookup failure, source-link failure, fast-provider failure, slow-provider failure, m3u8 parsing failure, and playback-load failure.
+- User-facing retry and fallback messages that explain what happened without exposing raw provider internals by default.
+- Structured debug detail that can be copied or inspected during development.
+- A small persistent cache for anime search/episode metadata and resolved streams.
+- Expiry rules that treat final stream URLs as short-lived while preserving slower-to-change episode metadata longer.
+- Cache integration for Continue Watching and Next Episode so known shows resume faster and repeat fewer provider calls.
+
+Success criteria:
+
+- A failed provider path produces an actionable app message instead of a vague error.
+- Continue Watching can re-resolve or reuse enough metadata to recover from stale stream URLs.
+- Next Episode prefers fast cached metadata, then provider lookup, then a clear failure state.
+- Focused anime/player tests cover success, fallback, stale cache, and provider failure cases.
+
+### Phase 2: Rich Continue Watching
+
+Goal: turn the home screen into the daily-use surface.
+
+Build after Phase 1:
+
+- Resume action for the highlighted history item.
+- Remove-from-history action.
+- Last-watched sorting that is obvious and stable.
+- Grouping or visual clustering by show.
+- Progress percentage when duration is known.
+- Near-end handling that suggests the next episode instead of resuming the final seconds of the previous one.
+
+Success criteria:
+
+- A returning user can open the app and continue a show without re-searching.
+- History stays editable and does not become stale clutter.
+- Smaller screens still keep Continue Watching visible and useful.
+
+### Phase 3: Show Detail And Episode Browser
+
+Goal: replace the search-dialog feel with a real anime client workflow.
+
+Build after the Continue Watching surface is stronger:
+
+- Show detail screen with title, mode, episodes, watched state, and direct Play/Resume.
+- Sub/dub availability display where provider data allows it.
+- Episode list with clear loading and retry states.
+- A path from search results into the show detail screen instead of straight into a modal-only flow.
+
+Success criteria:
+
+- Users can browse episodes before choosing one.
+- Watched state makes sense across Continue Watching, search, and show detail.
+- The app still gets to first playback quickly.
+
+### Phase 4: Subtitle And Audio Controls
+
+Goal: make anime playback quality controllable from the UI.
+
+Build after the show/episode workflow exists:
+
+- Subtitle track picker.
+- External subtitle metadata display where provider data provides it.
+- Audio stream picker for multi-audio sources.
+- Per-show or per-mode subtitle/audio preference if the storage model is already stable enough.
+
+Success criteria:
+
+- Users can inspect and change subtitle/audio choices without opening the lower-level inspector.
+- Preferences do not break fast playback or continue-watching resume.
+
+### Phase 5: Theme Validation And Gallery
+
+Goal: make the hackable theme system safe and inviting.
+
+Build after the daily-use playback loop is stable:
+
+- Theme validator for missing tokens, malformed colors, unsupported asset references, and common QSS mistakes.
+- Theme preview/gallery that lets users inspect bundled and custom themes without restarting.
+- Clear fallback behavior when a custom theme fails validation.
+
+Success criteria:
+
+- Theme authors get fast, concrete feedback.
+- Broken custom themes do not leave the app unusable.
+
+### Phase 6: Release Automation
+
+Goal: make releases routine and repeatable.
+
+Build once the app is reliable enough for regular prereleases:
+
+- Release checklist script or documented command sequence.
+- Full test run.
+- Windows portable package build.
+- Smoke launch of `dist\VoidPlayer\VoidPlayer.exe`.
+- Audit for secrets, caches, logs, bytecode, and generated artifacts.
+- Graphify rebuild.
+- Tag and artifact attachment flow.
+
+Success criteria:
+
+- A future release can be cut without rediscovering packaging steps.
+- Failed release checks clearly identify whether the blocker is tests, packaging, environment, or repo hygiene.
+
 ### 1. Provider Resilience And Diagnostics
 
 Make anime search/play failures understandable and recoverable. Add a provider health layer that records which step failed: search, episodes, source links, fast provider, slow provider, m3u8 parse, or playback load. Surface a concise in-app error with a retry path and keep structured debug details available for development.
