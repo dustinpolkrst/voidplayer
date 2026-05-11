@@ -35,6 +35,17 @@ def test_packaged_dark_catppuccin_themes_render() -> None:
         assert "{{" not in stylesheet
 
 
+def test_continue_watching_action_button_is_styled_in_all_packaged_themes() -> None:
+    for theme_name in theme_module.PACKAGED_THEMES:
+        stylesheet = theme_module.render_stylesheet(theme_module.load_theme(theme_name))
+
+        assert "QPushButton#animeContinueActionButton {" in stylesheet
+        assert "QPushButton#animeContinueActionButton:hover" in stylesheet
+        assert "QPushButton#animeContinueActionButton:disabled" in stylesheet
+        assert "QListWidget#animeContinueList::item" in stylesheet
+        assert "{{" not in stylesheet
+
+
 def test_packaged_resources_are_available() -> None:
     assert player_app.resource_path("assets", "app-icon.svg").name == "app-icon.svg"
     theme = theme_module.load_theme()

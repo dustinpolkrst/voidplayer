@@ -119,6 +119,22 @@ QListWidget#animeContinueList::item:selected {
     background: {{ color.accent }};
     color: {{ color.text_button }};
 }
+QPushButton#animeContinueActionButton {
+    background: {{ color.button_background }};
+    color: {{ color.text_button }};
+    border: 1px solid {{ color.border_button }};
+    border-radius: {{ size.button_radius }};
+    padding: 7px 12px;
+    min-height: 26px;
+}
+QPushButton#animeContinueActionButton:hover {
+    background: {{ color.button_hover_background }};
+    border-color: {{ color.border_button_hover }};
+}
+QPushButton#animeContinueActionButton:disabled {
+    color: {{ color.text_muted }};
+    background: {{ color.control_background }};
+}
 QFrame#controlBar {
     background: {{ color.control_background }};
     border: 1px solid {{ color.border_control }};
