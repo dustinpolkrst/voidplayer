@@ -37,6 +37,17 @@ def test_packaged_themes_render_cinematic_panel_tokens() -> None:
         assert "{{" not in stylesheet
 
 
+def test_packaged_themes_render_typography_tokens() -> None:
+    for theme_name in theme_module.PACKAGED_THEMES:
+        stylesheet = theme_module.render_stylesheet(theme_module.load_theme(theme_name))
+
+        assert "font-family:" in stylesheet
+        assert '"Segoe UI"' in stylesheet
+        assert "letter-spacing: 0px" in stylesheet
+        assert "letter-spacing: -" not in stylesheet
+        assert "{{ font." not in stylesheet
+
+
 def test_packaged_dark_catppuccin_themes_render() -> None:
     for theme_name in ("catppuccin-frappe", "catppuccin-macchiato", "catppuccin-mocha"):
         theme = theme_module.load_theme(theme_name)
