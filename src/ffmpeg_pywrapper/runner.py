@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import subprocess
+import types
 import threading
 import time
 from collections.abc import Sequence
@@ -8,6 +9,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable
 
+from ._core import rust_core
 from .errors import FFmpegCancelledError, FFmpegTimeoutError, classify_process_error
 from .progress import Progress, parse_progress_blocks, progress_from_mapping
 
@@ -38,6 +40,40 @@ def run_ffmpeg(
     """Run an FFmpeg-family command safely with shell=False."""
 
     argv = [str(arg) for arg in args]
+    if (
+        rust_core is not None
+        and input_data is None
+        and not stream_output
+        and on_progress is None
+        and cancellation_event is None
+        and isinstance(subprocess.run, types.FunctionType)
+        and subprocess.run.__module__ == "subprocess"
+    ):
+        try:
+            result = rust_core.run_ffmpeg_full_py(
+                argv,
+                timeout=timeout,
+                cwd=str(cwd) if cwd is not None else None,
+                env=env,
+                max_output_bytes=max_output_bytes,
+            )
+        except RuntimeError as exc:
+            if str(exc).startswith("timeout:"):
+                raise FFmpegTimeoutError(f"Process timed out after {timeout} seconds: {argv}") from exc
+            raise
+        stdout = str(result.stdout)
+        stderr = str(result.stderr)
+        returncode = int(result.returncode)
+        if returncode != 0:
+            raise classify_process_error(argv, returncode, stdout, stderr)
+        return FFmpegResult(
+            args=list(result.args),
+            returncode=returncode,
+            stdout=stdout,
+            stderr=stderr,
+            progress=[progress_from_mapping(dict(block)) for block in result.progress],
+        )
+
     if max_output_bytes is not None or stream_output or on_progress is not None or cancellation_event is not None:
         return _run_ffmpeg_popen(
             argv,

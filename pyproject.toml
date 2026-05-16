@@ -36,6 +36,7 @@ voidplayer = "ffmpeg_pywrapper.player.app:main"
 
 [dependency-groups]
 dev = [
+    "maturin>=1.7",
     "pytest>=8.0",
 ]
 player = [

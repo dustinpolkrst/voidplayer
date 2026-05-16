@@ -3,6 +3,8 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
+from ._core import rust_core
+
 
 class FFmpegError(Exception):
     """Base exception for wrapper errors."""
@@ -60,6 +62,14 @@ class FFmpegProcessError(FFmpegError):
 
 def classify_process_error(arguments: list[str], returncode: int, stdout: str, stderr: str) -> FFmpegError:
     message = _last_relevant_line(stderr) or f"FFmpeg exited with status {returncode}"
+    if rust_core is not None:
+        kind = str(rust_core.classify_process_error_kind(arguments, returncode, stdout, stderr))
+        if kind == "unsupported_codec":
+            return FFmpegUnsupportedCodec(message)
+        if kind == "invalid_command":
+            return FFmpegInvalidCommand(message)
+        return FFmpegProcessError(message, arguments, returncode, stdout, stderr)
+
     lower = message.lower()
     if _matches(lower, ["unknown encoder", "encoder not found", "unknown decoder", "decoder not found"]):
         return FFmpegUnsupportedCodec(message)

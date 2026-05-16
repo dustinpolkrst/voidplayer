@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from ._core import rust_core
 from .commands import thumbnail
 from .media import format_timestamp
 
@@ -35,6 +36,8 @@ def parse_chapters(data: dict[str, Any]) -> tuple[Chapter, ...]:
 
 
 def preview_timestamps(duration: float | None, *, interval: float = 30.0, max_count: int = 20) -> tuple[float, ...]:
+    if rust_core is not None:
+        return tuple(float(value) for value in rust_core.preview_timestamps(duration, interval=interval, max_count=max_count))
     if duration is None or duration <= 0:
         return ()
     step = max(interval, duration / max_count)
@@ -54,7 +57,12 @@ def thumbnail_cache_dir(base_dir: Path, media_path: str | Path) -> Path:
         modified = str(path.stat().st_mtime_ns)
     except OSError:
         modified = "missing"
-    key = hashlib.sha1(f"{path.resolve() if path.exists() else path}:{modified}".encode("utf-8")).hexdigest()[:16]
+    cache_input = str(path.resolve() if path.exists() else path)
+    key = (
+        str(rust_core.thumbnail_cache_key(cache_input, modified))
+        if rust_core is not None
+        else hashlib.sha1(f"{cache_input}:{modified}".encode("utf-8")).hexdigest()[:16]
+    )
     return base_dir / "timeline-previews" / key
 
 

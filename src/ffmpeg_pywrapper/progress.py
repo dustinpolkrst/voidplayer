@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import timedelta
 
+from ._core import rust_core
+
 
 @dataclass(frozen=True, slots=True)
 class Progress:
@@ -16,6 +18,8 @@ class Progress:
 
 
 def parse_progress_blocks(stdout: str) -> list[Progress]:
+    if rust_core is not None:
+        return [progress_from_mapping(dict(block)) for block in rust_core.parse_progress_blocks_py(stdout)]
     blocks: list[Progress] = []
     current: dict[str, str] = {}
 

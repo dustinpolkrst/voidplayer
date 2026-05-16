@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from pathlib import Path
 
+from ._core import rust_core
 from .config import FFmpegConfig
 from .options import Options, normalize_options
 from .runner import FFmpegResult, run_ffmpeg
@@ -22,6 +23,20 @@ def build_command(
     """Build a plain argv list for a single-output FFmpeg command."""
 
     cfg = config or FFmpegConfig()
+    if rust_core is not None:
+        return list(
+            rust_core.build_command(
+                [str(input_path) for input_path in inputs],
+                str(output),
+                ffmpeg=str(cfg.ffmpeg),
+                global_options=global_options,
+                input_options=input_options,
+                output_options=output_options,
+                overwrite=overwrite,
+                progress=progress,
+            )
+        )
+
     args = [cfg.resolve_ffmpeg()]
     args.extend(normalize_options(global_options))
     args.append("-y" if overwrite else "-n")

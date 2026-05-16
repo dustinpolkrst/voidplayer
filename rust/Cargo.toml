@@ -1,0 +1,17 @@
+[package]
+name = "voidplayer_core"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "voidplayer_core"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.22", features = ["extension-module"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "1"
+tokio = { version = "1", features = ["process", "rt-multi-thread", "time", "io-util", "macros"] }
+which = "6"
+sha1 = "0.10"

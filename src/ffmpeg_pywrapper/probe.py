@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import json
+import subprocess
+import types
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from ._core import rust_core
 from .config import FFmpegConfig
 from .runner import run_ffmpeg
 
@@ -33,6 +36,15 @@ def probe(
     input_options: dict[str, str] | None = None,
 ) -> FFProbeResult:
     cfg = config or FFmpegConfig()
+    if rust_core is not None and isinstance(subprocess.run, types.FunctionType) and subprocess.run.__module__ == "subprocess":
+        data = rust_core.probe_py(
+            str(path),
+            ffprobe=str(cfg.ffprobe),
+            timeout=timeout,
+            input_options=input_options,
+        )
+        return FFProbeResult(dict(data) if isinstance(data, dict) else {})
+
     args = [
         cfg.resolve_ffprobe(),
         "-v",

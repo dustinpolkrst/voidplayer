@@ -5,6 +5,7 @@ from fractions import Fraction
 from pathlib import Path
 from typing import Any
 
+from ._core import rust_core
 from .config import FFmpegConfig
 from .probe import FFProbeResult, probe
 
@@ -128,6 +129,8 @@ def ensure_media_source(source: str | Path | MediaSource) -> MediaSource:
 
 
 def seconds_from_timestamp(value: str | int | float | None) -> float:
+    if rust_core is not None:
+        return float(rust_core.seconds_from_timestamp(value))
     if value is None:
         return 0.0
     if isinstance(value, (int, float)):
@@ -149,6 +152,8 @@ def seconds_from_timestamp(value: str | int | float | None) -> float:
 
 
 def format_timestamp(seconds: float | int | None) -> str:
+    if rust_core is not None:
+        return str(rust_core.format_timestamp(None if seconds is None else float(seconds)))
     total = max(0.0, float(seconds or 0.0))
     hours = int(total // 3600)
     minutes = int((total % 3600) // 60)
