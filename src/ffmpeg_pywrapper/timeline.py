@@ -67,6 +67,9 @@ def thumbnail_cache_dir(base_dir: Path, media_path: str | Path) -> Path:
 
 
 def generate_timeline_thumbnails(media_path: str | Path, duration: float | None, output_dir: Path) -> dict[float, Path]:
+    if rust_core is not None and hasattr(rust_core, "generate_timeline_thumbnails_py") and getattr(thumbnail, "__module__", "") == "ffmpeg_pywrapper.commands":
+        items = rust_core.generate_timeline_thumbnails_py(str(media_path), duration, output_dir)
+        return {float(item["timestamp"]): Path(item["path"]) for item in items}
     output_dir.mkdir(parents=True, exist_ok=True)
     generated: dict[float, Path] = {}
     for stamp in preview_timestamps(duration):

@@ -42,7 +42,6 @@ def run_ffmpeg(
     argv = [str(arg) for arg in args]
     if (
         rust_core is not None
-        and input_data is None
         and not stream_output
         and on_progress is None
         and cancellation_event is None
@@ -50,13 +49,25 @@ def run_ffmpeg(
         and subprocess.run.__module__ == "subprocess"
     ):
         try:
-            result = rust_core.run_ffmpeg_full_py(
-                argv,
-                timeout=timeout,
-                cwd=str(cwd) if cwd is not None else None,
-                env=env,
-                max_output_bytes=max_output_bytes,
-            )
+            if hasattr(rust_core, "PlaybackClock"):
+                result = rust_core.run_ffmpeg_full_py(
+                    argv,
+                    input_data=input_data,
+                    timeout=timeout,
+                    cwd=str(cwd) if cwd is not None else None,
+                    env=env,
+                    max_output_bytes=max_output_bytes,
+                )
+            elif input_data is None:
+                result = rust_core.run_ffmpeg_full_py(
+                    argv,
+                    timeout=timeout,
+                    cwd=str(cwd) if cwd is not None else None,
+                    env=env,
+                    max_output_bytes=max_output_bytes,
+                )
+            else:
+                raise TypeError("installed Rust core does not support input_data")
         except RuntimeError as exc:
             if str(exc).startswith("timeout:"):
                 raise FFmpegTimeoutError(f"Process timed out after {timeout} seconds: {argv}") from exc

@@ -1,10 +1,12 @@
 use crate::errors::py_err;
 use crate::progress::parse_progress_blocks_inner;
-use pyo3::exceptions::{PyRuntimeError, PyValueError};
+use pyo3::exceptions::{PyRuntimeError, PyTypeError, PyValueError};
 use pyo3::prelude::*;
+use pyo3::types::{PyBytes, PyString};
 use std::collections::HashMap;
 use std::process::Stdio;
 use std::time::Duration;
+use tokio::io::AsyncWriteExt;
 use tokio::process::Command;
 use tokio::time::timeout as tokio_timeout;
 
@@ -21,6 +23,24 @@ pub struct FFmpegResult {
     pub stderr: String,
     #[pyo3(get)]
     pub progress: Vec<HashMap<String, String>>,
+}
+
+fn extract_input_data(input_data: Option<&Bound<'_, PyAny>>) -> PyResult<Option<Vec<u8>>> {
+    let Some(input) = input_data else {
+        return Ok(None);
+    };
+    if input.is_none() {
+        return Ok(None);
+    }
+    if let Ok(bytes) = input.downcast::<PyBytes>() {
+        return Ok(Some(bytes.as_bytes().to_vec()));
+    }
+    if let Ok(text) = input.downcast::<PyString>() {
+        return Ok(Some(text.to_str()?.as_bytes().to_vec()));
+    }
+    Err(PyTypeError::new_err(
+        "input_data must be bytes, str, or None",
+    ))
 }
 
 pub async fn run_process_async(
@@ -75,14 +95,16 @@ fn run_ffmpeg_py(args: Vec<String>, timeout: Option<f64>) -> PyResult<FFmpegResu
 }
 
 #[pyfunction]
-#[pyo3(signature = (args, timeout=None, cwd=None, env=None, max_output_bytes=None))]
+#[pyo3(signature = (args, input_data=None, timeout=None, cwd=None, env=None, max_output_bytes=None))]
 fn run_ffmpeg_full_py(
     args: Vec<String>,
+    input_data: Option<&Bound<'_, PyAny>>,
     timeout: Option<f64>,
     cwd: Option<String>,
     env: Option<HashMap<String, String>>,
     max_output_bytes: Option<usize>,
 ) -> PyResult<FFmpegResult> {
+    let input = extract_input_data(input_data)?;
     let rt = tokio::runtime::Runtime::new().map_err(py_err)?;
     let result = rt.block_on(async {
         if args.is_empty() {
@@ -90,7 +112,11 @@ fn run_ffmpeg_full_py(
         }
         let mut cmd = Command::new(&args[0]);
         cmd.args(&args[1..])
-            .stdin(Stdio::null())
+            .stdin(if input.is_some() {
+                Stdio::piped()
+            } else {
+                Stdio::null()
+            })
             .stdout(Stdio::piped())
             .stderr(Stdio::piped());
         if let Some(cwd) = &cwd {
@@ -99,7 +125,12 @@ fn run_ffmpeg_full_py(
         if let Some(env) = &env {
             cmd.envs(env);
         }
-        let child = cmd.spawn().map_err(py_err)?;
+        let mut child = cmd.spawn().map_err(py_err)?;
+        if let Some(input) = input {
+            if let Some(mut stdin) = child.stdin.take() {
+                stdin.write_all(&input).await.map_err(py_err)?;
+            }
+        }
         let wait = child.wait_with_output();
         let output = if let Some(seconds) = timeout {
             tokio_timeout(Duration::from_secs_f64(seconds), wait)

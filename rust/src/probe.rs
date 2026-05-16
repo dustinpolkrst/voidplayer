@@ -5,7 +5,7 @@ use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyList};
 
-fn json_to_py(py: Python<'_>, value: &serde_json::Value) -> PyResult<PyObject> {
+pub fn json_to_py(py: Python<'_>, value: &serde_json::Value) -> PyResult<PyObject> {
     Ok(match value {
         serde_json::Value::Null => py.None(),
         serde_json::Value::Bool(v) => v.into_py(py),

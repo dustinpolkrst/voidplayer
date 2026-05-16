@@ -29,3 +29,16 @@ pub fn register(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(parse_progress_blocks_py, m)?)?;
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parses_blocks_and_trailing_block() {
+        let blocks = parse_progress_blocks_inner("ignore\nframe=1\nprogress=continue\nframe=2\n");
+        assert_eq!(blocks.len(), 2);
+        assert_eq!(blocks[0].get("frame").unwrap(), "1");
+        assert_eq!(blocks[1].get("frame").unwrap(), "2");
+    }
+}

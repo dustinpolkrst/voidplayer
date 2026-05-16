@@ -11,6 +11,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Callable
 
+from ._core import rust_core
 from .errors import AudioOutputError, DecodeError, UnsupportedMediaError
 from .media import MediaInfo, MediaSource, describe_media, ensure_media_source, seconds_from_timestamp
 
@@ -146,8 +147,16 @@ class FrameTiming:
 
 
 def frame_timing(frame_timestamp: float, clock_position: float) -> FrameTiming:
+    if rust_core is not None and hasattr(rust_core, "frame_timing_py"):
+        timing = rust_core.frame_timing_py(frame_timestamp, clock_position)
+        return FrameTiming(delay=timing.delay, should_drop=timing.should_drop)
     delta = frame_timestamp - clock_position
     return FrameTiming(delay=max(0.0, delta), should_drop=delta < -DROP_FRAME_AFTER)
+
+
+if rust_core is not None and hasattr(rust_core, "PlaybackClock") and hasattr(rust_core, "AudioClock"):
+    PlaybackClock = rust_core.PlaybackClock
+    AudioClock = rust_core.AudioClock
 
 
 class DecodeLoopPlayer:

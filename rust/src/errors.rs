@@ -71,3 +71,24 @@ pub fn register(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(classify_process_error_kind, m)?)?;
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn classifies_process_errors() {
+        assert_eq!(
+            classify_process_error_kind(vec![], 1, "", "Unknown encoder 'x'"),
+            "unsupported_codec"
+        );
+        assert_eq!(
+            classify_process_error_kind(vec![], 1, "", "Unrecognized option 'x'"),
+            "invalid_command"
+        );
+        assert_eq!(
+            classify_process_error_kind(vec![], 1, "", "Something failed"),
+            "process_error"
+        );
+    }
+}

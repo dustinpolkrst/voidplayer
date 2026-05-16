@@ -6,6 +6,8 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
+from ffmpeg_pywrapper._core import rust_core
+
 
 @dataclass(frozen=True, slots=True)
 class AnimeHistoryItem:
@@ -22,6 +24,9 @@ class AnimeHistoryItem:
 
 
 def load_config(config_path: Path) -> dict[str, Any]:
+    if rust_core is not None and hasattr(rust_core, "load_config_py"):
+        data = rust_core.load_config_py(config_path)
+        return dict(data) if isinstance(data, dict) else {}
     try:
         data = json.loads(config_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
@@ -35,6 +40,8 @@ def save_config(config_path: Path, config: dict[str, Any]) -> None:
 
 
 def anime_history_from_config(config: dict[str, Any]) -> list[AnimeHistoryItem]:
+    if rust_core is not None and hasattr(rust_core, "anime_history_from_config_py"):
+        return [AnimeHistoryItem(**dict(item)) for item in rust_core.anime_history_from_config_py(config)]
     raw_items = config.get("anime_history", [])
     if not isinstance(raw_items, list):
         return []
@@ -68,6 +75,8 @@ def anime_history_from_config(config: dict[str, Any]) -> list[AnimeHistoryItem]:
 
 
 def set_anime_history_item(config: dict[str, Any], item: AnimeHistoryItem, *, limit: int = 20) -> dict[str, Any]:
+    if rust_core is not None and hasattr(rust_core, "set_anime_history_item_py"):
+        return dict(rust_core.set_anime_history_item_py(config, asdict(item), limit=limit))
     updated = dict(config)
     current = anime_history_from_config(config)
     key = (item.show_id, item.episode, item.mode)
@@ -89,6 +98,8 @@ def set_anime_history_item(config: dict[str, Any], item: AnimeHistoryItem, *, li
 
 
 def remove_anime_history_item(config: dict[str, Any], *, show_id: str, episode: str, mode: str) -> dict[str, Any]:
+    if rust_core is not None and hasattr(rust_core, "remove_anime_history_item_py"):
+        return dict(rust_core.remove_anime_history_item_py(config, show_id, episode, mode))
     updated = dict(config)
     key = (show_id, episode, mode)
     kept = [item for item in anime_history_from_config(config) if (item.show_id, item.episode, item.mode) != key]

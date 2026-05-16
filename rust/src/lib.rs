@@ -1,7 +1,10 @@
 use pyo3::prelude::*;
 
+mod config_store;
+mod core_error;
 mod errors;
 mod options;
+mod playback_state;
 mod probe;
 mod process;
 mod progress;
@@ -17,5 +20,7 @@ fn voidplayer_core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     probe::register(m)?;
     timestamp::register(m)?;
     thumbnail::register(m)?;
+    config_store::register(m)?;
+    playback_state::register(m)?;
     Ok(())
 }
