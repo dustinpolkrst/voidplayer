@@ -969,3 +969,69 @@ def test_show_detail_placeholders_are_stub_safe(monkeypatch, tmp_path) -> None:
         assert window.current_show_mode == "dub"
     finally:
         window.close()
+
+
+def test_show_detail_loads_episodes_and_history_state(monkeypatch, tmp_path) -> None:
+    app_module = importlib.import_module("ffmpeg_pywrapper.player.app")
+    config_path = tmp_path / "config.json"
+    config = app_module.set_anime_history_item(
+        {},
+        app_module.AnimeHistoryItem(
+            title="Example",
+            show_id="show-1",
+            episode="2",
+            mode="sub",
+            stream_url="https://example.test/episode-2.mp4",
+            display_name="Example - Episode 2",
+            position=50,
+            duration=100,
+        ),
+    )
+    app_module.save_config(config_path, config)
+
+    class ImmediateThread:
+        def __init__(self, target, daemon=False):  # noqa: ANN001, FBT002
+            self.target = target
+
+        def start(self) -> None:
+            self.target()
+
+    class FakeAnimeClient:
+        def episodes(self, show, *, mode="sub"):  # noqa: ANN001
+            return [
+                app_module.AnimeEpisode(show_id=show.show_id, title=show.title, number="1", mode=mode),
+                app_module.AnimeEpisode(show_id=show.show_id, title=show.title, number="2", mode=mode),
+            ]
+
+    monkeypatch.setattr(app_module.threading, "Thread", ImmediateThread)
+    monkeypatch.setattr(app_module, "user_config_path", lambda: config_path)
+    app_module, window = _window(monkeypatch)
+    window.anime_client = FakeAnimeClient()
+
+    try:
+        window.show_anime_detail(app_module.AnimeSearchResult(show_id="show-1", title="Example"), mode="sub")
+
+        assert window.anime_home.isHidden() is True
+        assert window.show_detail.isHidden() is False
+        assert window.show_detail_title.text() == "Example"
+        assert window.show_detail_episodes.count() == 2
+        assert window.show_detail_episodes.item(0).text() == "Episode 1    Not watched"
+        assert window.show_detail_episodes.item(1).text() == "Episode 2    Resume 00:00:50.00    50%"
+        assert "2 episodes" in window.show_detail_status.text()
+    finally:
+        window.close()
+
+
+def test_show_detail_episode_load_failure_keeps_refresh_enabled(monkeypatch, tmp_path) -> None:
+    app_module, window = _window(monkeypatch, tmp_path)
+
+    try:
+        window.show_detail_refresh_button.setEnabled(False)
+        request_id = "episodes:1"
+        window._show_detail_request_id = request_id
+        window._handle_show_detail_episodes(request_id, None, RuntimeError("episode lookup failed"))
+
+        assert window.show_detail_refresh_button.isEnabled() is True
+        assert "episode lookup failed" in window.show_detail_status.text()
+    finally:
+        window.close()

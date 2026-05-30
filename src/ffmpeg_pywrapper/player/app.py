@@ -27,6 +27,7 @@ from ffmpeg_pywrapper.player.config_store import (
 )
 from ffmpeg_pywrapper.player.show_detail import (
     episode_history_map,
+    episode_row_text,
     selected_episode_history,
 )
 
@@ -720,28 +721,40 @@ class PlayerWindow(QMainWindow):
             self.show_anime_detail(self.current_show, mode=self.current_show_mode)
 
     def show_anime_detail(self, show: AnimeSearchResult, *, mode: AnimeMode = "sub") -> None:
-        if mode not in {"sub", "dub"}:
-            mode = "sub"
         self.current_show = show
-        self.current_show_mode = mode
+        self.current_show_mode = mode if mode in {"sub", "dub"} else "sub"
+        mode_index = self.show_detail_mode_combo.findData(self.current_show_mode)
+        if mode_index >= 0 and self.show_detail_mode_combo.currentIndex() != mode_index:
+            self.show_detail_mode_combo.blockSignals(True)
+            self.show_detail_mode_combo.setCurrentIndex(mode_index)
+            self.show_detail_mode_combo.blockSignals(False)
+        self.show_detail_title.setText(show.title)
+        self.show_detail_status.setText("Loading episodes")
+        self.show_detail_refresh_button.setEnabled(False)
+        self.show_detail_episodes.clear()
         self.current_show_episodes = []
-        if hasattr(self, "show_detail_mode_combo"):
-            mode_index = self.show_detail_mode_combo.findData(mode)
-            if mode_index >= 0:
-                previous = self.show_detail_mode_combo.blockSignals(True)
-                self.show_detail_mode_combo.setCurrentIndex(mode_index)
-                self.show_detail_mode_combo.blockSignals(previous)
-        if hasattr(self, "show_detail_title"):
-            self.show_detail_title.setText(show.title)
-        if hasattr(self, "show_detail_status"):
-            self.show_detail_status.setText("Episode loading is not available yet.")
-        if hasattr(self, "show_detail_episodes"):
-            self.show_detail_episodes.clear()
         self._update_show_detail_buttons()
-        if hasattr(self, "anime_home"):
-            self.anime_home.hide()
-        if hasattr(self, "show_detail"):
-            self.show_detail.show()
+        self.anime_home.hide()
+        self.show_detail.show()
+        self._load_show_detail_episodes()
+
+    def _load_show_detail_episodes(self) -> None:
+        if self.current_show is None:
+            return
+        self._request_counter = getattr(self, "_request_counter", 0) + 1
+        request_id = f"episodes:{self._request_counter}"
+        self._show_detail_request_id = request_id
+        show = self.current_show
+        mode = self.current_show_mode
+
+        def worker() -> None:
+            try:
+                episodes = self._anime_client().episodes(show, mode=mode)
+                self.signals.show_detail_episodes_ready.emit(request_id, episodes, None)
+            except Exception as exc:  # pragma: no cover - UI/manual path
+                self.signals.show_detail_episodes_ready.emit(request_id, None, exc)
+
+        threading.Thread(target=worker, daemon=True).start()
 
     def _update_show_detail_buttons(self) -> None:
         episode = self._selected_show_detail_episode()
@@ -762,7 +775,36 @@ class PlayerWindow(QMainWindow):
         return selected_episode_history(episode, episode_history_map(self.anime_history))
 
     def _handle_show_detail_episodes(self, request_id: str, result: object, error: object) -> None:
-        return
+        if request_id != self._show_detail_request_id:
+            return
+        self.show_detail_refresh_button.setEnabled(True)
+        if isinstance(error, Exception):
+            self.current_show_episodes = []
+            self.show_detail_episodes.clear()
+            self.show_detail_status.setText(str(error))
+            self._update_show_detail_buttons()
+            return
+        episodes = result if isinstance(result, list) else []
+        self.current_show_episodes = [episode for episode in episodes if isinstance(episode, AnimeEpisode)]
+        self._render_show_detail_episodes()
+
+    def _render_show_detail_episodes(self) -> None:
+        self.anime_history = anime_history_from_config(self.config)
+        history = episode_history_map(self.anime_history)
+        self.show_detail_episodes.clear()
+        if not self.current_show_episodes:
+            self.show_detail_status.setText("No episodes found for this mode.")
+            self._update_show_detail_buttons()
+            return
+        for episode in self.current_show_episodes:
+            history_item = selected_episode_history(episode, history)
+            item = QListWidgetItem(episode_row_text(episode, history_item))
+            item.setData(Qt.ItemDataRole.UserRole, episode)
+            self.show_detail_episodes.addItem(item)
+        count = len(self.current_show_episodes)
+        self.show_detail_status.setText(f"{count} episode{'s' if count != 1 else ''} loaded.")
+        self.show_detail_episodes.setCurrentRow(-1)
+        self._update_show_detail_buttons()
 
     def _handle_show_detail_stream(self, request_id: str, result: object, error: object) -> None:
         return
