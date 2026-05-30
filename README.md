@@ -26,6 +26,8 @@ now the anime player.
 - Saves anime watch history for continue watching.
 - Shows continue-watching entries with saved resume timestamps.
 - Resumes anime episodes from the last known position.
+- Opens search results into a show detail and episode browser workflow.
+- Shows watched/resume state before playing an episode.
 - Resolves and plays the next episode from the current anime metadata.
 - Keeps a simple playback surface: Home, play/pause, stop, next episode, seek,
   volume, fullscreen, and mute.
@@ -126,9 +128,10 @@ Use `uv tool upgrade voidplayer` after pulling or publishing a newer version.
 2. Accept the anime source disclaimer.
 3. Search for a show from the home screen.
 4. Choose `Sub` or `Dub`.
-5. Select an episode in the anime search dialog.
-6. Use `Next Episode` when you want to continue the show.
-7. Press `Home` at any time to return to the home screen; your anime timestamp
+5. Open the show detail view.
+6. Select an episode and choose Play or Resume.
+7. Use `Next Episode` when you want to continue the show.
+8. Press `Home` at any time to return to the home screen; your anime timestamp
    is saved for Continue Watching.
 
 Use `View > Theme` to switch themes. The selected theme is saved in the user

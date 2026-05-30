@@ -141,6 +141,25 @@ QPushButton#animeContinueActionButton:disabled {
     color: {{ color.text_muted }};
     background: {{ color.control_background }};
 }
+QFrame#animeShowDetail {
+    background: {{ color.window_background }};
+    color: {{ color.text_primary }};
+}
+QListWidget#animeShowEpisodeList {
+    background: {{ color.control_background }};
+    color: {{ color.text_primary }};
+    border: 1px solid {{ color.border_control }};
+    border-radius: {{ size.control_radius }};
+    padding: 8px;
+}
+QListWidget#animeShowEpisodeList::item {
+    padding: 10px 12px;
+    border-radius: {{ size.button_radius }};
+}
+QListWidget#animeShowEpisodeList::item:selected {
+    background: {{ color.button_background }};
+    color: {{ color.text_button }};
+}
 QFrame#controlBar {
     background: {{ color.panel_glass }};
     border: 1px solid {{ color.border_control }};

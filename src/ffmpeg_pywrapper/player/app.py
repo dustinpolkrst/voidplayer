@@ -25,6 +25,12 @@ from ffmpeg_pywrapper.player.config_store import (
     should_continue_with_next_episode,
     sorted_anime_history,
 )
+from ffmpeg_pywrapper.player.show_detail import (
+    episode_source_with_resume,
+    episode_history_map,
+    episode_row_text,
+    selected_episode_history,
+)
 
 from .theme import DEFAULT_THEME, PACKAGED_THEMES, ThemeError, load_theme, render_stylesheet
 
@@ -80,6 +86,8 @@ class PlayerSignals(QObject):
     error = Signal(object)
     warning = Signal(object)
     anime_next_ready = Signal(object, object)
+    show_detail_episodes_ready = Signal(str, object, object)
+    show_detail_stream_ready = Signal(str, object, object)
 
 
 class AnimeWorkerSignals(QObject):
@@ -110,6 +118,13 @@ class PlayerWindow(QMainWindow):
         self.signals.error.connect(self.on_error)
         self.signals.warning.connect(self.on_warning)
         self.signals.anime_next_ready.connect(self._handle_next_anime_source)
+        self.signals.show_detail_episodes_ready.connect(self._handle_show_detail_episodes)
+        self.signals.show_detail_stream_ready.connect(self._handle_show_detail_stream)
+        self.current_show: AnimeSearchResult | None = None
+        self.current_show_mode: AnimeMode = "sub"
+        self.current_show_episodes: list[AnimeEpisode] = []
+        self._show_detail_request_id = ""
+        self._show_detail_stream_request_id = ""
         self.player = DecodeLoopPlayer(
             on_frame=self.signals.frame_ready.emit,
             on_state=self.signals.state_changed.emit,
@@ -176,6 +191,9 @@ class PlayerWindow(QMainWindow):
         video_layout.addWidget(self.video_label, 0, 0)
         self.anime_home = self._build_anime_home()
         video_layout.addWidget(self.anime_home, 0, 0)
+        self.show_detail = self._build_show_detail()
+        self.show_detail.hide()
+        video_layout.addWidget(self.show_detail, 0, 0)
         video_layout.addWidget(self.subtitle_label, 0, 0, Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignBottom)
         self.video_frame = QFrame()
         self.video_frame.setObjectName("videoFrame")
@@ -363,6 +381,70 @@ class PlayerWindow(QMainWindow):
         frame.setLayout(self.anime_home_layout)
         return frame
 
+    def _build_show_detail(self) -> QFrame:
+        self.show_detail_back_button = QPushButton("Home")
+        self.show_detail_back_button.setObjectName("animeContinueActionButton")
+        self.show_detail_back_button.clicked.connect(self.show_anime_home)
+
+        self.show_detail_title = QLabel("")
+        self.show_detail_title.setObjectName("animeHomeTitle")
+        self.show_detail_status = QLabel("Choose a show to browse episodes.")
+        self.show_detail_status.setObjectName("animeHomeSubtitle")
+        self.show_detail_status.setWordWrap(True)
+
+        self.show_detail_mode_combo = QComboBox()
+        self.show_detail_mode_combo.setObjectName("animeHomeModeCombo")
+        self.show_detail_mode_combo.addItem("Sub", "sub")
+        self.show_detail_mode_combo.addItem("Dub", "dub")
+        self.show_detail_mode_combo.currentIndexChanged.connect(lambda _index: self.reload_show_detail_for_mode())
+
+        self.show_detail_refresh_button = QPushButton("Refresh Episodes")
+        self.show_detail_refresh_button.setObjectName("animeContinueActionButton")
+        self.show_detail_refresh_button.clicked.connect(self.refresh_show_detail_episodes)
+
+        header_row = QHBoxLayout()
+        header_row.setContentsMargins(0, 0, 0, 0)
+        header_row.setSpacing(10)
+        header_row.addWidget(self.show_detail_back_button)
+        header_row.addWidget(self.show_detail_title, 1)
+        header_row.addWidget(self.show_detail_mode_combo)
+        header_row.addWidget(self.show_detail_refresh_button)
+
+        self.show_detail_episodes = QListWidget()
+        self.show_detail_episodes.setObjectName("animeShowEpisodeList")
+        self.show_detail_episodes.currentItemChanged.connect(lambda _current, _previous: self._update_show_detail_buttons())
+        self.show_detail_episodes.itemDoubleClicked.connect(lambda _item: self.play_selected_show_detail_episode())
+
+        self.show_detail_play_button = QPushButton("Play")
+        self.show_detail_play_button.setObjectName("animePrimaryButton")
+        self.show_detail_play_button.clicked.connect(self.play_selected_show_detail_episode)
+        self.show_detail_resume_button = QPushButton("Resume")
+        self.show_detail_resume_button.setObjectName("animeContinueActionButton")
+        self.show_detail_resume_button.clicked.connect(self.resume_selected_show_detail_episode)
+
+        actions = QHBoxLayout()
+        actions.setContentsMargins(0, 0, 0, 0)
+        actions.setSpacing(8)
+        actions.addWidget(self.show_detail_play_button)
+        actions.addWidget(self.show_detail_resume_button)
+        actions.addStretch(1)
+
+        layout = QVBoxLayout()
+        layout.setContentsMargins(50, 38, 50, 36)
+        layout.setSpacing(14)
+        layout.addLayout(header_row)
+        layout.addWidget(self.show_detail_status)
+        layout.addWidget(self.show_detail_episodes, 1)
+        layout.addLayout(actions)
+
+        self.show_detail_play_button.setEnabled(False)
+        self.show_detail_resume_button.setEnabled(False)
+
+        frame = QFrame()
+        frame.setObjectName("animeShowDetail")
+        frame.setLayout(layout)
+        return frame
+
     def _build_actions(self) -> None:
         self.fullscreen_action = QAction("Fullscreen", self)
         self.fullscreen_action.setShortcut(QKeySequence("F"))
@@ -508,8 +590,8 @@ class PlayerWindow(QMainWindow):
         if not self._confirm_anime_disclaimer():
             return
         dialog = AnimeBrowserDialog(self, client=self._anime_client())
-        if dialog.exec() == QDialog.DialogCode.Accepted and dialog.selected_stream is not None:
-            self.play_source(dialog.selected_stream.to_media_source())
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            self._handle_anime_browser_result(dialog)
 
     def open_anime_home_search(self) -> None:
         query = self.anime_home_search_input.text().strip()
@@ -521,7 +603,13 @@ class PlayerWindow(QMainWindow):
         if mode_index >= 0:
             dialog.mode_combo.setCurrentIndex(mode_index)
         dialog.search()
-        if dialog.exec() == QDialog.DialogCode.Accepted and dialog.selected_stream is not None:
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            self._handle_anime_browser_result(dialog)
+
+    def _handle_anime_browser_result(self, dialog: AnimeBrowserDialog) -> None:
+        if dialog.selected_show is not None:
+            self.show_anime_detail(dialog.selected_show, mode=dialog.mode)
+        elif dialog.selected_stream is not None:
             self.play_source(dialog.selected_stream.to_media_source())
 
     def play_anime_history_item(self, item: QListWidgetItem) -> None:
@@ -622,6 +710,159 @@ class PlayerWindow(QMainWindow):
                 self.signals.anime_next_ready.emit(stream.to_media_source(), None)
             except Exception as exc:  # pragma: no cover - UI/manual path
                 self.signals.anime_next_ready.emit(None, exc)
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    def reload_show_detail_for_mode(self) -> None:
+        if self.current_show is None:
+            return
+        mode = self.show_detail_mode_combo.currentData() or "sub"
+        if mode not in {"sub", "dub"}:
+            mode = "sub"
+        if mode == self.current_show_mode:
+            return
+        self.show_anime_detail(self.current_show, mode=mode)
+
+    def refresh_show_detail_episodes(self) -> None:
+        if self.current_show is not None:
+            self.show_anime_detail(self.current_show, mode=self.current_show_mode)
+
+    def _cancel_show_detail_episode_request(self) -> None:
+        self._show_detail_request_id = ""
+
+    def _cancel_show_detail_stream_request(self) -> None:
+        self._show_detail_stream_request_id = ""
+
+    def show_anime_detail(self, show: AnimeSearchResult, *, mode: AnimeMode = "sub") -> None:
+        self._cancel_show_detail_stream_request()
+        self.current_show = show
+        self.current_show_mode = mode if mode in {"sub", "dub"} else "sub"
+        mode_index = self.show_detail_mode_combo.findData(self.current_show_mode)
+        if mode_index >= 0 and self.show_detail_mode_combo.currentIndex() != mode_index:
+            previous = self.show_detail_mode_combo.blockSignals(True)
+            self.show_detail_mode_combo.setCurrentIndex(mode_index)
+            self.show_detail_mode_combo.blockSignals(previous)
+        self.show_detail_title.setText(show.title)
+        self.show_detail_status.setText("Loading episodes")
+        self.show_detail_refresh_button.setEnabled(False)
+        self.show_detail_episodes.clear()
+        self.current_show_episodes = []
+        self._update_show_detail_buttons()
+        self.anime_home.hide()
+        self.show_detail.show()
+        self._load_show_detail_episodes()
+
+    def _load_show_detail_episodes(self) -> None:
+        if self.current_show is None:
+            return
+        self._request_counter = getattr(self, "_request_counter", 0) + 1
+        request_id = f"episodes:{self._request_counter}"
+        self._show_detail_request_id = request_id
+        show = self.current_show
+        mode = self.current_show_mode
+
+        def worker() -> None:
+            try:
+                episodes = self._anime_client().episodes(show, mode=mode)
+                self.signals.show_detail_episodes_ready.emit(request_id, episodes, None)
+            except Exception as exc:  # pragma: no cover - UI/manual path
+                self.signals.show_detail_episodes_ready.emit(request_id, None, exc)
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    def _update_show_detail_buttons(self) -> None:
+        episode = self._selected_show_detail_episode()
+        enabled = episode is not None
+        self.show_detail_play_button.setEnabled(enabled)
+        history_item = self._selected_show_detail_history()
+        self.show_detail_resume_button.setEnabled(history_item is not None and history_item.position > 0)
+
+    def _selected_show_detail_episode(self) -> AnimeEpisode | None:
+        item = self.show_detail_episodes.currentItem() if hasattr(self, "show_detail_episodes") else None
+        episode = item.data(Qt.ItemDataRole.UserRole) if item is not None else None
+        return episode if isinstance(episode, AnimeEpisode) else None
+
+    def _selected_show_detail_history(self) -> AnimeHistoryItem | None:
+        episode = self._selected_show_detail_episode()
+        if episode is None:
+            return None
+        return selected_episode_history(episode, episode_history_map(self.anime_history))
+
+    def _handle_show_detail_episodes(self, request_id: str, result: object, error: object) -> None:
+        if request_id != self._show_detail_request_id:
+            return
+        self.show_detail_refresh_button.setEnabled(True)
+        if isinstance(error, Exception):
+            self.current_show_episodes = []
+            self.show_detail_episodes.clear()
+            self.show_detail_status.setText(str(error))
+            self._update_show_detail_buttons()
+            return
+        episodes = result if isinstance(result, list) else []
+        self.current_show_episodes = [episode for episode in episodes if isinstance(episode, AnimeEpisode)]
+        self._render_show_detail_episodes()
+
+    def _render_show_detail_episodes(self) -> None:
+        self.anime_history = anime_history_from_config(self.config)
+        history = episode_history_map(self.anime_history)
+        self.show_detail_episodes.clear()
+        if not self.current_show_episodes:
+            self.show_detail_status.setText("No episodes found for this mode.")
+            self._update_show_detail_buttons()
+            return
+        for episode in self.current_show_episodes:
+            history_item = selected_episode_history(episode, history)
+            item = QListWidgetItem(episode_row_text(episode, history_item))
+            item.setData(Qt.ItemDataRole.UserRole, episode)
+            self.show_detail_episodes.addItem(item)
+        count = len(self.current_show_episodes)
+        self.show_detail_status.setText(f"{count} episode{'s' if count != 1 else ''} loaded.")
+        self.show_detail_episodes.setCurrentRow(-1)
+        self._update_show_detail_buttons()
+
+    def _handle_show_detail_stream(self, request_id: str, result: object, error: object) -> None:
+        if request_id != self._show_detail_stream_request_id:
+            return
+        if isinstance(error, Exception):
+            self.show_detail_status.setText(str(error))
+            self._update_show_detail_buttons()
+            return
+        if isinstance(result, MediaSource):
+            self._cancel_show_detail_stream_request()
+            self._update_show_detail_buttons()
+            self.play_source(result)
+            self.show_detail.hide()
+            return
+        self.show_detail_status.setText("No playable stream returned.")
+        self._update_show_detail_buttons()
+
+    def play_selected_show_detail_episode(self) -> None:
+        self._resolve_selected_show_detail_episode(resume=False)
+
+    def resume_selected_show_detail_episode(self) -> None:
+        self._resolve_selected_show_detail_episode(resume=True)
+
+    def _resolve_selected_show_detail_episode(self, *, resume: bool) -> None:
+        episode = self._selected_show_detail_episode()
+        if episode is None:
+            return
+        history_item = self._selected_show_detail_history() if resume else None
+        self._request_counter = getattr(self, "_request_counter", 0) + 1
+        request_id = f"stream:{self._request_counter}"
+        self._show_detail_stream_request_id = request_id
+        self.show_detail_play_button.setEnabled(False)
+        self.show_detail_resume_button.setEnabled(False)
+        self.show_detail_status.setText(f"Resolving Episode {episode.number}")
+
+        def worker() -> None:
+            try:
+                stream = self._anime_client().fast_stream_for_episode(episode)
+                if stream is None:
+                    raise RuntimeError(f"No playable fast stream found for Episode {episode.number}.")
+                source = episode_source_with_resume(stream.to_media_source(), history_item)
+                self.signals.show_detail_stream_ready.emit(request_id, source, None)
+            except Exception as exc:  # pragma: no cover - UI/manual path
+                self.signals.show_detail_stream_ready.emit(request_id, None, exc)
 
         threading.Thread(target=worker, daemon=True).start()
 
@@ -837,6 +1078,8 @@ class PlayerWindow(QMainWindow):
         self._seeking = False
 
     def show_anime_home(self) -> None:
+        self._cancel_show_detail_episode_request()
+        self._cancel_show_detail_stream_request()
         self._save_current_anime_position()
         self.player.stop()
         self.current_source = None
@@ -850,6 +1093,8 @@ class PlayerWindow(QMainWindow):
         self.anime_history = anime_history_from_config(self.config)
         self._refresh_anime_home()
         self._update_now_playing()
+        if hasattr(self, "show_detail"):
+            self.show_detail.hide()
         self.anime_home.show()
         self.statusBar().showMessage("Home")
 
@@ -981,6 +1226,7 @@ class AnimeBrowserDialog(QDialog):
         self.setMinimumSize(820, 600)
         self.client: AnimeClient | None = client
         self.selected_stream: AnimeStream | None = None
+        self.selected_show: AnimeSearchResult | None = None
         self._current_streams: list[AnimeStream] = []
         self._request_counter = 0
         self._active_search_request = ""
@@ -998,6 +1244,9 @@ class AnimeBrowserDialog(QDialog):
         self.mode_combo.addItem("Dub", "dub")
         self.search_button = QPushButton("Search")
         self.search_button.setObjectName("animePrimaryButton")
+        self.open_show_button = QPushButton("Open Show")
+        self.open_show_button.setObjectName("animeContinueActionButton")
+        self.open_show_button.setEnabled(False)
         self.results_list = QListWidget()
         self.results_list.setObjectName("animeResultsList")
         self.episodes_list = QListWidget()
@@ -1051,6 +1300,7 @@ class AnimeBrowserDialog(QDialog):
         bottom_row.setSpacing(10)
         bottom_row.addWidget(QLabel("Quality"))
         bottom_row.addWidget(self.quality_combo, 1)
+        bottom_row.addWidget(self.open_show_button)
         bottom_row.addWidget(self.play_button)
 
         bottom_frame = QFrame()
@@ -1073,8 +1323,10 @@ class AnimeBrowserDialog(QDialog):
         self.search_button.clicked.connect(self.search)
         self.search_input.returnPressed.connect(self.search)
         self.results_list.itemSelectionChanged.connect(self.load_episodes)
+        self.results_list.itemSelectionChanged.connect(self._update_open_show_button)
         self.episodes_list.itemSelectionChanged.connect(self.load_streams)
         self.quality_combo.currentIndexChanged.connect(lambda _index: self.play_button.setEnabled(self.quality_combo.currentData() is not None))
+        self.open_show_button.clicked.connect(self.accept_selected_show)
         self.play_button.clicked.connect(self.accept_selected_stream)
 
     @property
@@ -1087,6 +1339,16 @@ class AnimeBrowserDialog(QDialog):
             return
         request_id = self._next_request_id("search")
         self._active_search_request = request_id
+        self._active_episodes_request = ""
+        self._active_streams_request = ""
+        self.results_list.clear()
+        self.episodes_list.clear()
+        self.quality_combo.clear()
+        self._current_streams = []
+        self.selected_show = None
+        self.selected_stream = None
+        self.play_button.setEnabled(False)
+        self._update_open_show_button()
         self.search_button.setEnabled(False)
         self._set_status("Searching...")
         self._run_worker(request_id, lambda: self._client().search(query, mode=self.mode))
@@ -1097,6 +1359,7 @@ class AnimeBrowserDialog(QDialog):
         self.quality_combo.clear()
         self.play_button.setEnabled(False)
         if not results:
+            self._update_open_show_button()
             self._set_status("No results found.")
             return
         for result in results:
@@ -1105,6 +1368,7 @@ class AnimeBrowserDialog(QDialog):
             item.setData(Qt.ItemDataRole.UserRole, result)
             self.results_list.addItem(item)
         self._set_status(f"{len(results)} result{'s' if len(results) != 1 else ''}")
+        self._update_open_show_button()
 
     def load_episodes(self) -> None:
         item = self.results_list.currentItem()
@@ -1113,9 +1377,12 @@ class AnimeBrowserDialog(QDialog):
             return
         request_id = self._next_request_id("episodes")
         self._active_episodes_request = request_id
+        self._active_streams_request = ""
+        self._current_streams = []
         self.episodes_list.clear()
         self.quality_combo.clear()
         self.play_button.setEnabled(False)
+        self._update_open_show_button()
         self._set_status("Loading episodes...")
         self._run_worker(request_id, lambda: self._client().episodes(result, mode=self.mode))
 
@@ -1163,7 +1430,24 @@ class AnimeBrowserDialog(QDialog):
         else:
             self.selected_stream = select_quality(self._current_streams)
         if self.selected_stream is not None:
+            self.selected_show = None
             self.accept()
+
+    def _selected_search_result(self) -> AnimeSearchResult | None:
+        item = self.results_list.currentItem()
+        result = item.data(Qt.ItemDataRole.UserRole) if item is not None else None
+        return result if isinstance(result, AnimeSearchResult) else None
+
+    def _update_open_show_button(self) -> None:
+        self.open_show_button.setEnabled(self._selected_search_result() is not None)
+
+    def accept_selected_show(self) -> None:
+        result = self._selected_search_result()
+        if result is None:
+            return
+        self.selected_show = result
+        self.selected_stream = None
+        self.accept()
 
     def _client(self) -> AnimeClient:
         if self.client is None:

@@ -692,6 +692,22 @@ def test_show_anime_home_saves_and_clears_current_source(monkeypatch, tmp_path) 
         window.close()
 
 
+def test_show_anime_home_hides_show_detail(monkeypatch, tmp_path) -> None:
+    app_module, window = _window(monkeypatch, tmp_path)
+
+    try:
+        window.show_anime_detail(app_module.AnimeSearchResult(show_id="show-1", title="Example"), mode="sub")
+
+        assert window.show_detail.isHidden() is False
+
+        window.show_anime_home()
+
+        assert window.anime_home.isHidden() is False
+        assert window.show_detail.isHidden() is True
+    finally:
+        window.close()
+
+
 def test_video_click_toggles_playback_when_media_loaded(monkeypatch, tmp_path) -> None:
     app_module, window = _window(monkeypatch, tmp_path)
     qt_core = pytest.importorskip("PySide6.QtCore")
@@ -918,3 +934,537 @@ def test_anime_browser_ignores_stale_search_results(monkeypatch) -> None:
         assert dialog.search_button.isEnabled() is True
     finally:
         dialog.close()
+
+
+def test_show_detail_surface_constructs_offscreen(monkeypatch, tmp_path) -> None:
+    app_module, window = _window(monkeypatch, tmp_path)
+
+    try:
+        assert window.show_detail.objectName() == "animeShowDetail"
+        assert window.show_detail.isHidden() is True
+        assert window.show_detail_title.text() == ""
+        assert window.show_detail_mode_combo.currentData() == "sub"
+        assert window.show_detail_episodes.objectName() == "animeShowEpisodeList"
+        assert window.show_detail_play_button.isEnabled() is False
+        assert window.show_detail_resume_button.isEnabled() is False
+    finally:
+        window.close()
+
+
+def test_show_detail_placeholders_are_stub_safe(monkeypatch, tmp_path) -> None:
+    app_module, window = _window(monkeypatch, tmp_path)
+    show = app_module.AnimeSearchResult(show_id="show-1", title="Example", episode_count=12)
+
+    try:
+        window.current_show = show
+        dub_index = window.show_detail_mode_combo.findData("dub")
+        window.show_detail_mode_combo.setCurrentIndex(dub_index)
+
+        window.reload_show_detail_for_mode()
+        assert window.current_show == show
+        assert window.current_show_mode == "dub"
+
+        window.refresh_show_detail_episodes()
+        assert window.current_show == show
+        assert window.current_show_mode == "dub"
+    finally:
+        window.close()
+
+
+def test_show_detail_loads_episodes_and_history_state(monkeypatch, tmp_path) -> None:
+    app_module = importlib.import_module("ffmpeg_pywrapper.player.app")
+    config_path = tmp_path / "config.json"
+    config = app_module.set_anime_history_item(
+        {},
+        app_module.AnimeHistoryItem(
+            title="Example",
+            show_id="show-1",
+            episode="2",
+            mode="sub",
+            stream_url="https://example.test/episode-2.mp4",
+            display_name="Example - Episode 2",
+            position=50,
+            duration=100,
+        ),
+    )
+    app_module.save_config(config_path, config)
+
+    class ImmediateThread:
+        def __init__(self, target, daemon=False):  # noqa: ANN001, FBT002
+            self.target = target
+
+        def start(self) -> None:
+            self.target()
+
+    class FakeAnimeClient:
+        def episodes(self, show, *, mode="sub"):  # noqa: ANN001
+            return [
+                app_module.AnimeEpisode(show_id=show.show_id, title=show.title, number="1", mode=mode),
+                app_module.AnimeEpisode(show_id=show.show_id, title=show.title, number="2", mode=mode),
+            ]
+
+    monkeypatch.setattr(app_module.threading, "Thread", ImmediateThread)
+    monkeypatch.setattr(app_module, "user_config_path", lambda: config_path)
+    app_module, window = _window(monkeypatch)
+    window.anime_client = FakeAnimeClient()
+
+    try:
+        window.show_anime_detail(app_module.AnimeSearchResult(show_id="show-1", title="Example"), mode="sub")
+
+        assert window.anime_home.isHidden() is True
+        assert window.show_detail.isHidden() is False
+        assert window.show_detail_title.text() == "Example"
+        assert window.show_detail_episodes.count() == 2
+        assert window.show_detail_episodes.item(0).text() == "Episode 1    Not watched"
+        assert window.show_detail_episodes.item(1).text() == "Episode 2    Resume 00:00:50.00    50%"
+        assert "2 episodes" in window.show_detail_status.text()
+    finally:
+        window.close()
+
+
+def test_show_detail_episode_load_failure_keeps_refresh_enabled(monkeypatch, tmp_path) -> None:
+    app_module, window = _window(monkeypatch, tmp_path)
+
+    try:
+        window.show_detail_refresh_button.setEnabled(False)
+        request_id = "episodes:1"
+        window._show_detail_request_id = request_id
+        window._handle_show_detail_episodes(request_id, None, RuntimeError("episode lookup failed"))
+
+        assert window.show_detail_refresh_button.isEnabled() is True
+        assert "episode lookup failed" in window.show_detail_status.text()
+    finally:
+        window.close()
+
+
+def test_show_detail_ignores_stale_episode_response(monkeypatch, tmp_path) -> None:
+    app_module, window = _window(monkeypatch, tmp_path)
+    episode = app_module.AnimeEpisode(show_id="show-1", title="Example", number="1", mode="sub")
+
+    try:
+        window.show_detail_episodes.addItem("Existing episode")
+        window.show_detail_status.setText("Existing status")
+        window._show_detail_request_id = "episodes:2"
+
+        window._handle_show_detail_episodes("episodes:1", [episode], None)
+
+        assert window.show_detail_episodes.count() == 1
+        assert window.show_detail_episodes.item(0).text() == "Existing episode"
+        assert window.show_detail_status.text() == "Existing status"
+    finally:
+        window.close()
+
+
+def test_show_detail_play_selected_episode_resolves_fast_stream(monkeypatch, tmp_path) -> None:
+    app_module, window = _window(monkeypatch, tmp_path)
+
+    class ImmediateThread:
+        def __init__(self, target, daemon=False):  # noqa: ANN001, FBT002
+            self.target = target
+
+        def start(self) -> None:
+            self.target()
+
+    class FakeAnimeClient:
+        def fast_stream_for_episode(self, episode):  # noqa: ANN001
+            return app_module.AnimeStream(
+                url=f"https://example.test/{episode.number}.mp4",
+                quality="direct",
+                title=episode.title,
+                episode=episode.number,
+                show_id=episode.show_id,
+                mode=episode.mode,
+            )
+
+    monkeypatch.setattr(app_module.threading, "Thread", ImmediateThread)
+    window.anime_client = FakeAnimeClient()
+    loaded = []
+    monkeypatch.setattr(window, "play_source", lambda source: loaded.append(source))
+    window.current_show_episodes = [app_module.AnimeEpisode(show_id="show-1", title="Example", number="3", mode="sub")]
+    window._render_show_detail_episodes()
+
+    try:
+        window.show_detail_episodes.setCurrentRow(0)
+        window.play_selected_show_detail_episode()
+
+        assert len(loaded) == 1
+        assert loaded[0].location == "https://example.test/3.mp4"
+        assert loaded[0].metadata["episode"] == "3"
+    finally:
+        window.close()
+
+
+def test_show_detail_resume_selected_episode_attaches_resume_position(monkeypatch, tmp_path) -> None:
+    app_module = importlib.import_module("ffmpeg_pywrapper.player.app")
+    config_path = tmp_path / "config.json"
+    config = app_module.set_anime_history_item(
+        {},
+        app_module.AnimeHistoryItem(
+            title="Example",
+            show_id="show-1",
+            episode="3",
+            mode="sub",
+            stream_url="https://example.test/old-3.mp4",
+            display_name="Example - Episode 3",
+            position=77,
+            duration=100,
+            subtitle_url="https://example.test/3.vtt",
+        ),
+    )
+    app_module.save_config(config_path, config)
+
+    class ImmediateThread:
+        def __init__(self, target, daemon=False):  # noqa: ANN001, FBT002
+            self.target = target
+
+        def start(self) -> None:
+            self.target()
+
+    class FakeAnimeClient:
+        def fast_stream_for_episode(self, episode):  # noqa: ANN001
+            return app_module.AnimeStream(
+                url=f"https://example.test/fresh-{episode.number}.mp4",
+                quality="direct",
+                title=episode.title,
+                episode=episode.number,
+                show_id=episode.show_id,
+                mode=episode.mode,
+            )
+
+    monkeypatch.setattr(app_module.threading, "Thread", ImmediateThread)
+    monkeypatch.setattr(app_module, "user_config_path", lambda: config_path)
+    app_module, window = _window(monkeypatch)
+    window.anime_client = FakeAnimeClient()
+    loaded = []
+    monkeypatch.setattr(window, "play_source", lambda source: loaded.append(source))
+    window.current_show_episodes = [app_module.AnimeEpisode(show_id="show-1", title="Example", number="3", mode="sub")]
+    window._render_show_detail_episodes()
+
+    try:
+        window.show_detail_episodes.setCurrentRow(0)
+        window.resume_selected_show_detail_episode()
+
+        assert len(loaded) == 1
+        assert loaded[0].location == "https://example.test/fresh-3.mp4"
+        assert loaded[0].metadata["resume_position"] == "77.000000"
+        assert loaded[0].subtitle_url == "https://example.test/3.vtt"
+    finally:
+        window.close()
+
+
+def test_show_detail_stream_handoff_hides_show_detail(monkeypatch, tmp_path) -> None:
+    app_module, window = _window(monkeypatch, tmp_path)
+    source = MediaSource(location="https://example.test/episode-1.mp4", title="Episode 1")
+    loaded = []
+
+    monkeypatch.setattr(window, "play_source", lambda media_source: loaded.append(media_source))
+
+    try:
+        window.show_detail.show()
+        window._show_detail_stream_request_id = "stream:1"
+
+        window._handle_show_detail_stream("stream:1", source, None)
+
+        assert loaded == [source]
+        assert window.show_detail.isHidden() is True
+    finally:
+        window.close()
+
+
+def test_show_anime_home_invalidates_pending_show_detail_stream(monkeypatch, tmp_path) -> None:
+    app_module, window = _window(monkeypatch, tmp_path)
+    source = MediaSource(location="https://example.test/episode-1.mp4", title="Episode 1")
+    loaded = []
+
+    monkeypatch.setattr(window, "play_source", lambda media_source: loaded.append(media_source))
+
+    try:
+        window._show_detail_stream_request_id = "stream:1"
+        window.show_anime_home()
+
+        window._handle_show_detail_stream("stream:1", source, None)
+
+        assert loaded == []
+    finally:
+        window.close()
+
+
+def test_show_anime_home_invalidates_pending_show_detail_episode_load(monkeypatch, tmp_path) -> None:
+    app_module, window = _window(monkeypatch, tmp_path)
+    episode = app_module.AnimeEpisode(show_id="show-1", title="Example", number="1", mode="sub")
+
+    try:
+        window.show_detail_episodes.addItem("Existing episode")
+        window.show_detail_status.setText("Existing status")
+        window._show_detail_request_id = "episodes:1"
+
+        window.show_anime_home()
+        window._handle_show_detail_episodes("episodes:1", [episode], None)
+
+        assert window.show_detail_episodes.count() == 1
+        assert window.show_detail_episodes.item(0).text() == "Existing episode"
+        assert window.show_detail_status.text() == "Existing status"
+    finally:
+        window.close()
+
+
+def test_show_anime_detail_invalidates_pending_show_detail_stream(monkeypatch, tmp_path) -> None:
+    app_module, window = _window(monkeypatch, tmp_path)
+    source = MediaSource(location="https://example.test/episode-1.mp4", title="Episode 1")
+    loaded = []
+
+    monkeypatch.setattr(window, "_load_show_detail_episodes", lambda: None)
+    monkeypatch.setattr(window, "play_source", lambda media_source: loaded.append(media_source))
+
+    try:
+        window._show_detail_stream_request_id = "stream:1"
+        window.show_anime_detail(app_module.AnimeSearchResult(show_id="show-2", title="Another Show"), mode="sub")
+
+        window._handle_show_detail_stream("stream:1", source, None)
+
+        assert loaded == []
+    finally:
+        window.close()
+
+
+def test_anime_browser_can_return_selected_show(monkeypatch) -> None:
+    monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
+    qt_widgets = pytest.importorskip("PySide6.QtWidgets")
+    app_module = importlib.import_module("ffmpeg_pywrapper.player.app")
+    app = qt_widgets.QApplication.instance() or qt_widgets.QApplication(["voidplayer-test"])
+    dialog = app_module.AnimeBrowserDialog()
+
+    try:
+        dialog._apply_search_results([app_module.AnimeSearchResult(show_id="show-1", title="Example", episode_count=3)])
+        dialog.results_list.setCurrentRow(0)
+        dialog.accept_selected_show()
+
+        assert dialog.selected_show == app_module.AnimeSearchResult(show_id="show-1", title="Example", episode_count=3)
+        assert dialog.result() == app_module.QDialog.DialogCode.Accepted
+    finally:
+        dialog.close()
+
+
+def test_anime_browser_new_search_clears_stale_selection_state(monkeypatch) -> None:
+    monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
+    qt_widgets = pytest.importorskip("PySide6.QtWidgets")
+    app_module = importlib.import_module("ffmpeg_pywrapper.player.app")
+    app = qt_widgets.QApplication.instance() or qt_widgets.QApplication(["voidplayer-test"])
+    dialog = app_module.AnimeBrowserDialog()
+    stale_stream = app_module.AnimeStream(url="https://example.test/stale.mp4", quality="720p", title="Example", episode="1")
+    started_requests = []
+
+    try:
+        dialog._apply_search_results([app_module.AnimeSearchResult(show_id="show-1", title="Example", episode_count=3)])
+        dialog.results_list.setCurrentRow(0)
+        dialog.episodes_list.addItem("Episode 1")
+        dialog.quality_combo.addItem("720p", stale_stream)
+        dialog._current_streams = [stale_stream]
+        dialog.selected_show = dialog.results_list.currentItem().data(app_module.Qt.ItemDataRole.UserRole)
+        dialog.selected_stream = stale_stream
+        dialog.play_button.setEnabled(True)
+        assert dialog.open_show_button.isEnabled() is True
+
+        monkeypatch.setattr(dialog, "_run_worker", lambda request_id, func: started_requests.append((request_id, func)))
+        dialog.search_input.setText("Another")
+        dialog.search()
+
+        assert started_requests
+        assert dialog.results_list.count() == 0
+        assert dialog.episodes_list.count() == 0
+        assert dialog.quality_combo.count() == 0
+        assert dialog._current_streams == []
+        assert dialog.selected_show is None
+        assert dialog.selected_stream is None
+        assert dialog.open_show_button.isEnabled() is False
+        assert dialog.play_button.isEnabled() is False
+    finally:
+        dialog.close()
+
+
+def test_anime_browser_new_search_ignores_stale_episode_and_stream_results(monkeypatch) -> None:
+    monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
+    qt_widgets = pytest.importorskip("PySide6.QtWidgets")
+    app_module = importlib.import_module("ffmpeg_pywrapper.player.app")
+    app = qt_widgets.QApplication.instance() or qt_widgets.QApplication(["voidplayer-test"])
+    dialog = app_module.AnimeBrowserDialog()
+    stale_stream = app_module.AnimeStream(url="https://example.test/stale.mp4", quality="720p", title="Example", episode="1")
+    started_requests = []
+
+    try:
+        dialog._active_episodes_request = "episodes:1"
+        dialog._active_streams_request = "streams:1"
+        dialog.episodes_list.addItem("Old episode")
+        dialog.quality_combo.addItem("720p", stale_stream)
+        dialog._current_streams = [stale_stream]
+        dialog.play_button.setEnabled(True)
+
+        monkeypatch.setattr(dialog, "_run_worker", lambda request_id, func: started_requests.append((request_id, func)))
+        dialog.search_input.setText("Another")
+        dialog.search()
+
+        dialog._handle_worker_result(
+            "episodes:1",
+            [app_module.AnimeEpisode(show_id="show-1", title="Example", number="1", mode="sub")],
+            None,
+        )
+        dialog._handle_worker_result(
+            "streams:1",
+            [app_module.AnimeStream(url="https://example.test/new.mp4", quality="1080p", title="Example", episode="1")],
+            None,
+        )
+
+        assert started_requests
+        assert dialog.episodes_list.count() == 0
+        assert dialog.quality_combo.count() == 0
+        assert dialog._current_streams == []
+        assert dialog.open_show_button.isEnabled() is False
+        assert dialog.play_button.isEnabled() is False
+    finally:
+        dialog.close()
+
+
+def test_anime_browser_show_change_ignores_stale_stream_result(monkeypatch) -> None:
+    monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
+    qt_widgets = pytest.importorskip("PySide6.QtWidgets")
+    app_module = importlib.import_module("ffmpeg_pywrapper.player.app")
+    app = qt_widgets.QApplication.instance() or qt_widgets.QApplication(["voidplayer-test"])
+    dialog = app_module.AnimeBrowserDialog()
+    stale_stream = app_module.AnimeStream(url="https://example.test/stale.mp4", quality="720p", title="Old", episode="1")
+    late_stream = app_module.AnimeStream(url="https://example.test/late.mp4", quality="1080p", title="Old", episode="1")
+    started_requests = []
+
+    try:
+        dialog._apply_search_results([app_module.AnimeSearchResult(show_id="show-1", title="Example", episode_count=3)])
+        dialog._active_streams_request = "streams:1"
+        dialog._current_streams = [stale_stream]
+        dialog.quality_combo.addItem("720p", stale_stream)
+        dialog.play_button.setEnabled(True)
+
+        monkeypatch.setattr(dialog, "_run_worker", lambda request_id, func: started_requests.append((request_id, func)))
+        dialog.results_list.setCurrentRow(0)
+
+        dialog._handle_worker_result("streams:1", [late_stream], None)
+
+        assert started_requests
+        assert dialog.quality_combo.count() == 0
+        assert dialog._current_streams == []
+        assert dialog.play_button.isEnabled() is False
+    finally:
+        dialog.close()
+
+
+def test_home_search_opens_show_detail_when_dialog_returns_show(monkeypatch, tmp_path) -> None:
+    app_module, window = _window(monkeypatch, tmp_path)
+    selected = app_module.AnimeSearchResult(show_id="show-1", title="Example", episode_count=3)
+
+    class FakeDialog:
+        selected_show = selected
+        selected_stream = None
+
+        def __init__(self, parent=None, *, client=None):  # noqa: ANN001
+            self.search_input = app_module.QLineEdit()
+            self.mode_combo = app_module.QComboBox()
+            self.mode_combo.addItem("Sub", "sub")
+
+        @property
+        def mode(self):  # noqa: ANN201
+            return "sub"
+
+        def search(self) -> None:
+            return None
+
+        def exec(self):  # noqa: ANN201
+            return app_module.QDialog.DialogCode.Accepted
+
+    monkeypatch.setattr(app_module, "AnimeBrowserDialog", FakeDialog)
+    monkeypatch.setattr(window, "_confirm_anime_disclaimer", lambda: True)
+    opened = []
+    monkeypatch.setattr(window, "show_anime_detail", lambda show, *, mode="sub": opened.append((show, mode)))
+    window.anime_home_search_input.setText("Example")
+
+    try:
+        window.open_anime_home_search()
+
+        assert opened == [(selected, "sub")]
+    finally:
+        window.close()
+
+
+def test_open_anime_browser_opens_show_detail_when_dialog_returns_show(monkeypatch, tmp_path) -> None:
+    app_module, window = _window(monkeypatch, tmp_path)
+    selected = app_module.AnimeSearchResult(show_id="show-1", title="Example", episode_count=3)
+
+    class FakeDialog:
+        selected_show = selected
+        selected_stream = None
+
+        def __init__(self, parent=None, *, client=None):  # noqa: ANN001
+            pass
+
+        @property
+        def mode(self):  # noqa: ANN201
+            return "dub"
+
+        def exec(self):  # noqa: ANN201
+            return app_module.QDialog.DialogCode.Accepted
+
+    monkeypatch.setattr(app_module, "AnimeBrowserDialog", FakeDialog)
+    monkeypatch.setattr(window, "_confirm_anime_disclaimer", lambda: True)
+    opened = []
+    monkeypatch.setattr(window, "show_anime_detail", lambda show, *, mode="sub": opened.append((show, mode)))
+
+    try:
+        window.open_anime_browser()
+
+        assert opened == [(selected, "dub")]
+    finally:
+        window.close()
+
+
+def test_open_anime_browser_accepts_selected_stream_without_selected_show(monkeypatch, tmp_path) -> None:
+    app_module, window = _window(monkeypatch, tmp_path)
+    stream = app_module.AnimeStream(url="https://example.test/episode.mp4", quality="720p", title="Example", episode="1")
+
+    class FakeDialog:
+        selected_show = None
+        selected_stream = stream
+
+        def __init__(self, parent=None, *, client=None):  # noqa: ANN001
+            pass
+
+        @property
+        def mode(self):  # noqa: ANN201
+            return "sub"
+
+        def exec(self):  # noqa: ANN201
+            return app_module.QDialog.DialogCode.Accepted
+
+    monkeypatch.setattr(app_module, "AnimeBrowserDialog", FakeDialog)
+    monkeypatch.setattr(window, "_confirm_anime_disclaimer", lambda: True)
+    loaded = []
+    monkeypatch.setattr(window, "play_source", lambda media_source: loaded.append(media_source))
+
+    try:
+        window.open_anime_browser()
+
+        assert len(loaded) == 1
+        assert loaded[0].location == "https://example.test/episode.mp4"
+    finally:
+        window.close()
+
+
+def test_show_detail_mode_switch_reloads_same_show(monkeypatch, tmp_path) -> None:
+    app_module, window = _window(monkeypatch, tmp_path)
+    show = app_module.AnimeSearchResult(show_id="show-1", title="Example")
+    calls = []
+    window.current_show = show
+    window.current_show_mode = "sub"
+    monkeypatch.setattr(window, "show_anime_detail", lambda selected, *, mode="sub": calls.append((selected, mode)))
+
+    try:
+        window.show_detail_mode_combo.setCurrentIndex(window.show_detail_mode_combo.findData("dub"))
+
+        assert calls == [(show, "dub")]
+    finally:
+        window.close()
