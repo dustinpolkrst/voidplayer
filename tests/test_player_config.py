@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from ffmpeg_pywrapper.anime import AnimeEpisode
+from ffmpeg_pywrapper.media import MediaSource
 from ffmpeg_pywrapper.player.config_store import (
     AnimeHistoryItem,
     anime_history_from_config,
@@ -11,6 +13,13 @@ from ffmpeg_pywrapper.player.config_store import (
     set_anime_history_item,
     should_continue_with_next_episode,
     sorted_anime_history,
+)
+from ffmpeg_pywrapper.player.show_detail import (
+    anime_history_key,
+    episode_history_map,
+    episode_row_text,
+    episode_source_with_resume,
+    selected_episode_history,
 )
 
 
@@ -197,3 +206,76 @@ def test_corrupt_config_returns_empty(tmp_path) -> None:  # noqa: ANN001
     config.write_text("{not json", encoding="utf-8")
 
     assert load_config(config) == {}
+
+
+def test_show_detail_matches_history_by_show_episode_and_mode() -> None:
+    sub_history = AnimeHistoryItem(
+        title="Example",
+        show_id="show-1",
+        episode="2",
+        mode="sub",
+        stream_url="https://example.test/sub-2.mp4",
+        display_name="Example - Episode 2",
+        position=42,
+        duration=100,
+    )
+    dub_history = AnimeHistoryItem(
+        title="Example",
+        show_id="show-1",
+        episode="2",
+        mode="dub",
+        stream_url="https://example.test/dub-2.mp4",
+        display_name="Example - Episode 2",
+        position=10,
+        duration=100,
+    )
+    episode = AnimeEpisode(show_id="show-1", title="Example", number="2", mode="sub")
+
+    history = episode_history_map([dub_history, sub_history])
+
+    assert anime_history_key(episode) == ("show-1", "2", "sub")
+    assert selected_episode_history(episode, history) == sub_history
+
+
+def test_show_detail_episode_row_text_includes_resume_and_progress() -> None:
+    episode = AnimeEpisode(show_id="show-1", title="Example", number="2", mode="sub")
+    history_item = AnimeHistoryItem(
+        title="Example",
+        show_id="show-1",
+        episode="2",
+        mode="sub",
+        stream_url="https://example.test/sub-2.mp4",
+        display_name="Example - Episode 2",
+        position=42,
+        duration=100,
+    )
+
+    assert episode_row_text(episode, history_item) == "Episode 2    Resume 00:00:42.00    42%"
+    assert episode_row_text(episode, None) == "Episode 2    Not watched"
+
+
+def test_show_detail_source_with_resume_attaches_position_metadata() -> None:
+    source = MediaSource(
+        location="https://example.test/sub-2.mp4",
+        title="Example - Episode 2",
+        headers={"User-Agent": "test"},
+        metadata={"kind": "anime", "show_id": "show-1", "title": "Example", "episode": "2", "mode": "sub"},
+    )
+    history_item = AnimeHistoryItem(
+        title="Example",
+        show_id="show-1",
+        episode="2",
+        mode="sub",
+        stream_url="https://example.test/sub-2.mp4",
+        display_name="Example - Episode 2",
+        position=42,
+        duration=100,
+        subtitle_url="https://example.test/sub-2.vtt",
+    )
+
+    updated = episode_source_with_resume(source, history_item)
+
+    assert updated.location == source.location
+    assert updated.headers == source.headers
+    assert updated.subtitle_url == "https://example.test/sub-2.vtt"
+    assert updated.metadata["resume_position"] == "42.000000"
