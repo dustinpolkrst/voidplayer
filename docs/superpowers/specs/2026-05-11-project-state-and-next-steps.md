@@ -105,6 +105,9 @@ Run that after code or documentation changes and keep generated artifacts under 
 16. Added Windows portable packaging with PyInstaller.
 17. Added a static docs site under `docs/`.
 18. Added Graphify workflow expectations through `AGENTS.md`.
+19. Added provider-stage errors and retry hints.
+20. Added persistent search, episode, and stream cache support.
+21. Upgraded Continue Watching with grouped history, progress, Resume, Next Episode, Remove, and near-end next behavior.
 
 ## Current Verification Anchors
 
@@ -341,14 +344,15 @@ This order improves reliability and the daily-use loop before expanding breadth.
 The best next implementation plan is:
 
 ```text
-Provider resilience and stream resolution cache
+Show detail and episode browser
 ```
 
 Scope it as one vertical slice:
 
-- Add structured provider result/error types.
-- Add tests around failed search, failed stream resolution, and successful fallback.
-- Add a small cache abstraction with expiry.
-- Wire cached stream lookup into Next Episode and Continue Watching.
-- Add clear in-app retry messages.
-- Verify with focused anime/player tests, full tests, packaging if player code changes significantly, and Graphify.
+- Add pure show-detail helper functions for episode/history state.
+- Add an in-app show detail surface.
+- Load episode metadata through the existing cached `AnimeClient`.
+- Open show detail from anime search results.
+- Resolve fast streams from selected episodes.
+- Attach resume metadata when history exists.
+- Verify with focused player/config/theme tests, full tests, Rust tests, and Graphify.
