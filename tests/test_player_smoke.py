@@ -1403,3 +1403,19 @@ def test_open_anime_browser_accepts_selected_stream_without_selected_show(monkey
         assert loaded[0].location == "https://example.test/episode.mp4"
     finally:
         window.close()
+
+
+def test_show_detail_mode_switch_reloads_same_show(monkeypatch, tmp_path) -> None:
+    app_module, window = _window(monkeypatch, tmp_path)
+    show = app_module.AnimeSearchResult(show_id="show-1", title="Example")
+    calls = []
+    window.current_show = show
+    window.current_show_mode = "sub"
+    monkeypatch.setattr(window, "show_anime_detail", lambda selected, *, mode="sub": calls.append((selected, mode)))
+
+    try:
+        window.show_detail_mode_combo.setCurrentIndex(window.show_detail_mode_combo.findData("dub"))
+
+        assert calls == [(show, "dub")]
+    finally:
+        window.close()

@@ -61,6 +61,14 @@ def test_continue_watching_action_button_is_styled_in_all_packaged_themes() -> N
         assert "{{" not in stylesheet
 
 
+def test_show_detail_widgets_are_styled_in_all_packaged_themes() -> None:
+    for theme_name in theme_module.PACKAGED_THEMES:
+        stylesheet = theme_module.render_stylesheet(theme_module.load_theme(theme_name))
+
+        assert "QFrame#animeShowDetail" in stylesheet
+        assert "QListWidget#animeShowEpisodeList" in stylesheet
+
+
 def test_packaged_resources_are_available() -> None:
     assert player_app.resource_path("assets", "app-icon.svg").name == "app-icon.svg"
     theme = theme_module.load_theme()
