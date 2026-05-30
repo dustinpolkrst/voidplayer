@@ -26,6 +26,7 @@ from ffmpeg_pywrapper.player.config_store import (
     sorted_anime_history,
 )
 from ffmpeg_pywrapper.player.show_detail import (
+    episode_source_with_resume,
     episode_history_map,
     episode_row_text,
     selected_episode_history,
@@ -807,13 +808,47 @@ class PlayerWindow(QMainWindow):
         self._update_show_detail_buttons()
 
     def _handle_show_detail_stream(self, request_id: str, result: object, error: object) -> None:
-        return
+        if request_id != self._show_detail_stream_request_id:
+            return
+        if isinstance(error, Exception):
+            self.show_detail_status.setText(str(error))
+            self._update_show_detail_buttons()
+            return
+        if isinstance(result, MediaSource):
+            self.play_source(result)
+            return
+        self.show_detail_status.setText("No playable stream returned.")
+        self._update_show_detail_buttons()
 
     def play_selected_show_detail_episode(self) -> None:
-        return
+        self._resolve_selected_show_detail_episode(resume=False)
 
     def resume_selected_show_detail_episode(self) -> None:
-        return
+        self._resolve_selected_show_detail_episode(resume=True)
+
+    def _resolve_selected_show_detail_episode(self, *, resume: bool) -> None:
+        episode = self._selected_show_detail_episode()
+        if episode is None:
+            return
+        history_item = self._selected_show_detail_history() if resume else None
+        self._request_counter = getattr(self, "_request_counter", 0) + 1
+        request_id = f"stream:{self._request_counter}"
+        self._show_detail_stream_request_id = request_id
+        self.show_detail_play_button.setEnabled(False)
+        self.show_detail_resume_button.setEnabled(False)
+        self.show_detail_status.setText(f"Resolving Episode {episode.number}")
+
+        def worker() -> None:
+            try:
+                stream = self._anime_client().fast_stream_for_episode(episode)
+                if stream is None:
+                    raise RuntimeError(f"No playable fast stream found for Episode {episode.number}.")
+                source = episode_source_with_resume(stream.to_media_source(), history_item)
+                self.signals.show_detail_stream_ready.emit(request_id, source, None)
+            except Exception as exc:  # pragma: no cover - UI/manual path
+                self.signals.show_detail_stream_ready.emit(request_id, None, exc)
+
+        threading.Thread(target=worker, daemon=True).start()
 
     def _refresh_anime_home(self) -> None:
         if not hasattr(self, "anime_continue_list"):

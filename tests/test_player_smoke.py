@@ -1053,3 +1053,100 @@ def test_show_detail_ignores_stale_episode_response(monkeypatch, tmp_path) -> No
         assert window.show_detail_status.text() == "Existing status"
     finally:
         window.close()
+
+
+def test_show_detail_play_selected_episode_resolves_fast_stream(monkeypatch, tmp_path) -> None:
+    app_module, window = _window(monkeypatch, tmp_path)
+
+    class ImmediateThread:
+        def __init__(self, target, daemon=False):  # noqa: ANN001, FBT002
+            self.target = target
+
+        def start(self) -> None:
+            self.target()
+
+    class FakeAnimeClient:
+        def fast_stream_for_episode(self, episode):  # noqa: ANN001
+            return app_module.AnimeStream(
+                url=f"https://example.test/{episode.number}.mp4",
+                quality="direct",
+                title=episode.title,
+                episode=episode.number,
+                show_id=episode.show_id,
+                mode=episode.mode,
+            )
+
+    monkeypatch.setattr(app_module.threading, "Thread", ImmediateThread)
+    window.anime_client = FakeAnimeClient()
+    loaded = []
+    monkeypatch.setattr(window, "play_source", lambda source: loaded.append(source))
+    window.current_show_episodes = [app_module.AnimeEpisode(show_id="show-1", title="Example", number="3", mode="sub")]
+    window._render_show_detail_episodes()
+
+    try:
+        window.show_detail_episodes.setCurrentRow(0)
+        window.play_selected_show_detail_episode()
+
+        assert len(loaded) == 1
+        assert loaded[0].location == "https://example.test/3.mp4"
+        assert loaded[0].metadata["episode"] == "3"
+    finally:
+        window.close()
+
+
+def test_show_detail_resume_selected_episode_attaches_resume_position(monkeypatch, tmp_path) -> None:
+    app_module = importlib.import_module("ffmpeg_pywrapper.player.app")
+    config_path = tmp_path / "config.json"
+    config = app_module.set_anime_history_item(
+        {},
+        app_module.AnimeHistoryItem(
+            title="Example",
+            show_id="show-1",
+            episode="3",
+            mode="sub",
+            stream_url="https://example.test/old-3.mp4",
+            display_name="Example - Episode 3",
+            position=77,
+            duration=100,
+            subtitle_url="https://example.test/3.vtt",
+        ),
+    )
+    app_module.save_config(config_path, config)
+
+    class ImmediateThread:
+        def __init__(self, target, daemon=False):  # noqa: ANN001, FBT002
+            self.target = target
+
+        def start(self) -> None:
+            self.target()
+
+    class FakeAnimeClient:
+        def fast_stream_for_episode(self, episode):  # noqa: ANN001
+            return app_module.AnimeStream(
+                url=f"https://example.test/fresh-{episode.number}.mp4",
+                quality="direct",
+                title=episode.title,
+                episode=episode.number,
+                show_id=episode.show_id,
+                mode=episode.mode,
+            )
+
+    monkeypatch.setattr(app_module.threading, "Thread", ImmediateThread)
+    monkeypatch.setattr(app_module, "user_config_path", lambda: config_path)
+    app_module, window = _window(monkeypatch)
+    window.anime_client = FakeAnimeClient()
+    loaded = []
+    monkeypatch.setattr(window, "play_source", lambda source: loaded.append(source))
+    window.current_show_episodes = [app_module.AnimeEpisode(show_id="show-1", title="Example", number="3", mode="sub")]
+    window._render_show_detail_episodes()
+
+    try:
+        window.show_detail_episodes.setCurrentRow(0)
+        window.resume_selected_show_detail_episode()
+
+        assert len(loaded) == 1
+        assert loaded[0].location == "https://example.test/fresh-3.mp4"
+        assert loaded[0].metadata["resume_position"] == "77.000000"
+        assert loaded[0].subtitle_url == "https://example.test/3.vtt"
+    finally:
+        window.close()
