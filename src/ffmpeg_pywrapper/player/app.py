@@ -1335,6 +1335,8 @@ class AnimeBrowserDialog(QDialog):
             return
         request_id = self._next_request_id("search")
         self._active_search_request = request_id
+        self._active_episodes_request = ""
+        self._active_streams_request = ""
         self.results_list.clear()
         self.episodes_list.clear()
         self.quality_combo.clear()

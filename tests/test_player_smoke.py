@@ -1263,6 +1263,48 @@ def test_anime_browser_new_search_clears_stale_selection_state(monkeypatch) -> N
         dialog.close()
 
 
+def test_anime_browser_new_search_ignores_stale_episode_and_stream_results(monkeypatch) -> None:
+    monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
+    qt_widgets = pytest.importorskip("PySide6.QtWidgets")
+    app_module = importlib.import_module("ffmpeg_pywrapper.player.app")
+    app = qt_widgets.QApplication.instance() or qt_widgets.QApplication(["voidplayer-test"])
+    dialog = app_module.AnimeBrowserDialog()
+    stale_stream = app_module.AnimeStream(url="https://example.test/stale.mp4", quality="720p", title="Example", episode="1")
+    started_requests = []
+
+    try:
+        dialog._active_episodes_request = "episodes:1"
+        dialog._active_streams_request = "streams:1"
+        dialog.episodes_list.addItem("Old episode")
+        dialog.quality_combo.addItem("720p", stale_stream)
+        dialog._current_streams = [stale_stream]
+        dialog.play_button.setEnabled(True)
+
+        monkeypatch.setattr(dialog, "_run_worker", lambda request_id, func: started_requests.append((request_id, func)))
+        dialog.search_input.setText("Another")
+        dialog.search()
+
+        dialog._handle_worker_result(
+            "episodes:1",
+            [app_module.AnimeEpisode(show_id="show-1", title="Example", number="1", mode="sub")],
+            None,
+        )
+        dialog._handle_worker_result(
+            "streams:1",
+            [app_module.AnimeStream(url="https://example.test/new.mp4", quality="1080p", title="Example", episode="1")],
+            None,
+        )
+
+        assert started_requests
+        assert dialog.episodes_list.count() == 0
+        assert dialog.quality_combo.count() == 0
+        assert dialog._current_streams == []
+        assert dialog.open_show_button.isEnabled() is False
+        assert dialog.play_button.isEnabled() is False
+    finally:
+        dialog.close()
+
+
 def test_home_search_opens_show_detail_when_dialog_returns_show(monkeypatch, tmp_path) -> None:
     app_module, window = _window(monkeypatch, tmp_path)
     selected = app_module.AnimeSearchResult(show_id="show-1", title="Example", episode_count=3)
