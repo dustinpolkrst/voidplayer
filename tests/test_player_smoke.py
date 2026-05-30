@@ -1206,3 +1206,58 @@ def test_show_anime_detail_invalidates_pending_show_detail_stream(monkeypatch, t
         assert loaded == []
     finally:
         window.close()
+
+
+def test_anime_browser_can_return_selected_show(monkeypatch) -> None:
+    monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
+    qt_widgets = pytest.importorskip("PySide6.QtWidgets")
+    app_module = importlib.import_module("ffmpeg_pywrapper.player.app")
+    app = qt_widgets.QApplication.instance() or qt_widgets.QApplication(["voidplayer-test"])
+    dialog = app_module.AnimeBrowserDialog()
+
+    try:
+        dialog._apply_search_results([app_module.AnimeSearchResult(show_id="show-1", title="Example", episode_count=3)])
+        dialog.results_list.setCurrentRow(0)
+        dialog.accept_selected_show()
+
+        assert dialog.selected_show == app_module.AnimeSearchResult(show_id="show-1", title="Example", episode_count=3)
+        assert dialog.result() == app_module.QDialog.DialogCode.Accepted
+    finally:
+        dialog.close()
+
+
+def test_home_search_opens_show_detail_when_dialog_returns_show(monkeypatch, tmp_path) -> None:
+    app_module, window = _window(monkeypatch, tmp_path)
+    selected = app_module.AnimeSearchResult(show_id="show-1", title="Example", episode_count=3)
+
+    class FakeDialog:
+        selected_show = selected
+        selected_stream = None
+
+        def __init__(self, parent=None, *, client=None):  # noqa: ANN001
+            self.search_input = app_module.QLineEdit()
+            self.mode_combo = app_module.QComboBox()
+            self.mode_combo.addItem("Sub", "sub")
+
+        @property
+        def mode(self):  # noqa: ANN201
+            return "sub"
+
+        def search(self) -> None:
+            return None
+
+        def exec(self):  # noqa: ANN201
+            return app_module.QDialog.DialogCode.Accepted
+
+    monkeypatch.setattr(app_module, "AnimeBrowserDialog", FakeDialog)
+    monkeypatch.setattr(window, "_confirm_anime_disclaimer", lambda: True)
+    opened = []
+    monkeypatch.setattr(window, "show_anime_detail", lambda show, *, mode="sub": opened.append((show, mode)))
+    window.anime_home_search_input.setText("Example")
+
+    try:
+        window.open_anime_home_search()
+
+        assert opened == [(selected, "sub")]
+    finally:
+        window.close()
