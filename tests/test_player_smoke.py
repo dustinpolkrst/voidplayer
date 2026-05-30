@@ -933,3 +933,23 @@ def test_show_detail_surface_constructs_offscreen(monkeypatch, tmp_path) -> None
         assert window.show_detail_resume_button.isEnabled() is False
     finally:
         window.close()
+
+
+def test_show_detail_placeholders_are_stub_safe(monkeypatch, tmp_path) -> None:
+    app_module, window = _window(monkeypatch, tmp_path)
+    show = app_module.AnimeSearchResult(show_id="show-1", title="Example", episode_count=12)
+
+    try:
+        window.current_show = show
+        dub_index = window.show_detail_mode_combo.findData("dub")
+        window.show_detail_mode_combo.setCurrentIndex(dub_index)
+
+        window.reload_show_detail_for_mode()
+        assert window.current_show == show
+        assert window.current_show_mode == "dub"
+
+        window.refresh_show_detail_episodes()
+        assert window.current_show == show
+        assert window.current_show_mode == "dub"
+    finally:
+        window.close()

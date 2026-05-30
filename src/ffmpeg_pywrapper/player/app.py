@@ -721,6 +721,30 @@ class PlayerWindow(QMainWindow):
         if self.current_show is not None:
             self.show_anime_detail(self.current_show, mode=self.current_show_mode)
 
+    def show_anime_detail(self, show: AnimeSearchResult, *, mode: AnimeMode = "sub") -> None:
+        if mode not in {"sub", "dub"}:
+            mode = "sub"
+        self.current_show = show
+        self.current_show_mode = mode
+        self.current_show_episodes = []
+        if hasattr(self, "show_detail_mode_combo"):
+            mode_index = self.show_detail_mode_combo.findData(mode)
+            if mode_index >= 0:
+                previous = self.show_detail_mode_combo.blockSignals(True)
+                self.show_detail_mode_combo.setCurrentIndex(mode_index)
+                self.show_detail_mode_combo.blockSignals(previous)
+        if hasattr(self, "show_detail_title"):
+            self.show_detail_title.setText(show.title)
+        if hasattr(self, "show_detail_status"):
+            self.show_detail_status.setText("Episode loading is not available yet.")
+        if hasattr(self, "show_detail_episodes"):
+            self.show_detail_episodes.clear()
+        self._update_show_detail_buttons()
+        if hasattr(self, "anime_home"):
+            self.anime_home.hide()
+        if hasattr(self, "show_detail"):
+            self.show_detail.show()
+
     def _update_show_detail_buttons(self) -> None:
         episode = self._selected_show_detail_episode()
         enabled = episode is not None
