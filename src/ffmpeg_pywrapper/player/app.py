@@ -727,6 +727,9 @@ class PlayerWindow(QMainWindow):
         if self.current_show is not None:
             self.show_anime_detail(self.current_show, mode=self.current_show_mode)
 
+    def _cancel_show_detail_episode_request(self) -> None:
+        self._show_detail_request_id = ""
+
     def _cancel_show_detail_stream_request(self) -> None:
         self._show_detail_stream_request_id = ""
 
@@ -1075,6 +1078,7 @@ class PlayerWindow(QMainWindow):
         self._seeking = False
 
     def show_anime_home(self) -> None:
+        self._cancel_show_detail_episode_request()
         self._cancel_show_detail_stream_request()
         self._save_current_anime_position()
         self.player.stop()

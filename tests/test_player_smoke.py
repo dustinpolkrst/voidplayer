@@ -1189,6 +1189,25 @@ def test_show_anime_home_invalidates_pending_show_detail_stream(monkeypatch, tmp
         window.close()
 
 
+def test_show_anime_home_invalidates_pending_show_detail_episode_load(monkeypatch, tmp_path) -> None:
+    app_module, window = _window(monkeypatch, tmp_path)
+    episode = app_module.AnimeEpisode(show_id="show-1", title="Example", number="1", mode="sub")
+
+    try:
+        window.show_detail_episodes.addItem("Existing episode")
+        window.show_detail_status.setText("Existing status")
+        window._show_detail_request_id = "episodes:1"
+
+        window.show_anime_home()
+        window._handle_show_detail_episodes("episodes:1", [episode], None)
+
+        assert window.show_detail_episodes.count() == 1
+        assert window.show_detail_episodes.item(0).text() == "Existing episode"
+        assert window.show_detail_status.text() == "Existing status"
+    finally:
+        window.close()
+
+
 def test_show_anime_detail_invalidates_pending_show_detail_stream(monkeypatch, tmp_path) -> None:
     app_module, window = _window(monkeypatch, tmp_path)
     source = MediaSource(location="https://example.test/episode-1.mp4", title="Episode 1")

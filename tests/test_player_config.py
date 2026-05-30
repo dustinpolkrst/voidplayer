@@ -254,6 +254,22 @@ def test_show_detail_episode_row_text_includes_resume_and_progress() -> None:
     assert episode_row_text(episode, None) == "Episode 2    Not watched"
 
 
+def test_show_detail_episode_row_text_marks_zero_position_history_as_resume_start() -> None:
+    episode = AnimeEpisode(show_id="show-1", title="Example", number="2", mode="sub")
+    history_item = AnimeHistoryItem(
+        title="Example",
+        show_id="show-1",
+        episode="2",
+        mode="sub",
+        stream_url="https://example.test/sub-2.mp4",
+        display_name="Example - Episode 2",
+        position=0,
+        duration=100,
+    )
+
+    assert episode_row_text(episode, history_item) == "Episode 2    Resume start    0%"
+
+
 def test_show_detail_source_with_resume_attaches_position_metadata() -> None:
     source = MediaSource(
         location="https://example.test/sub-2.mp4",

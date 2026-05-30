@@ -30,7 +30,7 @@ def episode_row_text(episode: AnimeEpisode, history_item: AnimeHistoryItem | Non
     progress_text = f"    {progress}" if progress else ""
     if history_item.position > 0:
         return f"Episode {episode.number}    Resume {format_timestamp(history_item.position)}{progress_text}"
-    return f"Episode {episode.number}    Watched{progress_text}"
+    return f"Episode {episode.number}    Resume start{progress_text}"
 
 
 def episode_source_with_resume(source: MediaSource, history_item: AnimeHistoryItem | None) -> MediaSource:
