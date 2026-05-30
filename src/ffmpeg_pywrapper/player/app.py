@@ -725,9 +725,9 @@ class PlayerWindow(QMainWindow):
         self.current_show_mode = mode if mode in {"sub", "dub"} else "sub"
         mode_index = self.show_detail_mode_combo.findData(self.current_show_mode)
         if mode_index >= 0 and self.show_detail_mode_combo.currentIndex() != mode_index:
-            self.show_detail_mode_combo.blockSignals(True)
+            previous = self.show_detail_mode_combo.blockSignals(True)
             self.show_detail_mode_combo.setCurrentIndex(mode_index)
-            self.show_detail_mode_combo.blockSignals(False)
+            self.show_detail_mode_combo.blockSignals(previous)
         self.show_detail_title.setText(show.title)
         self.show_detail_status.setText("Loading episodes")
         self.show_detail_refresh_button.setEnabled(False)
