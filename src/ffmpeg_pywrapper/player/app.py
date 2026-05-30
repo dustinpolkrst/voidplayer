@@ -1373,6 +1373,8 @@ class AnimeBrowserDialog(QDialog):
             return
         request_id = self._next_request_id("episodes")
         self._active_episodes_request = request_id
+        self._active_streams_request = ""
+        self._current_streams = []
         self.episodes_list.clear()
         self.quality_combo.clear()
         self.play_button.setEnabled(False)

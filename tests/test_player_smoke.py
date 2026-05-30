@@ -1305,6 +1305,36 @@ def test_anime_browser_new_search_ignores_stale_episode_and_stream_results(monke
         dialog.close()
 
 
+def test_anime_browser_show_change_ignores_stale_stream_result(monkeypatch) -> None:
+    monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
+    qt_widgets = pytest.importorskip("PySide6.QtWidgets")
+    app_module = importlib.import_module("ffmpeg_pywrapper.player.app")
+    app = qt_widgets.QApplication.instance() or qt_widgets.QApplication(["voidplayer-test"])
+    dialog = app_module.AnimeBrowserDialog()
+    stale_stream = app_module.AnimeStream(url="https://example.test/stale.mp4", quality="720p", title="Old", episode="1")
+    late_stream = app_module.AnimeStream(url="https://example.test/late.mp4", quality="1080p", title="Old", episode="1")
+    started_requests = []
+
+    try:
+        dialog._apply_search_results([app_module.AnimeSearchResult(show_id="show-1", title="Example", episode_count=3)])
+        dialog._active_streams_request = "streams:1"
+        dialog._current_streams = [stale_stream]
+        dialog.quality_combo.addItem("720p", stale_stream)
+        dialog.play_button.setEnabled(True)
+
+        monkeypatch.setattr(dialog, "_run_worker", lambda request_id, func: started_requests.append((request_id, func)))
+        dialog.results_list.setCurrentRow(0)
+
+        dialog._handle_worker_result("streams:1", [late_stream], None)
+
+        assert started_requests
+        assert dialog.quality_combo.count() == 0
+        assert dialog._current_streams == []
+        assert dialog.play_button.isEnabled() is False
+    finally:
+        dialog.close()
+
+
 def test_home_search_opens_show_detail_when_dialog_returns_show(monkeypatch, tmp_path) -> None:
     app_module, window = _window(monkeypatch, tmp_path)
     selected = app_module.AnimeSearchResult(show_id="show-1", title="Example", episode_count=3)
