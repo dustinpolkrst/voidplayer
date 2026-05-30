@@ -918,3 +918,18 @@ def test_anime_browser_ignores_stale_search_results(monkeypatch) -> None:
         assert dialog.search_button.isEnabled() is True
     finally:
         dialog.close()
+
+
+def test_show_detail_surface_constructs_offscreen(monkeypatch, tmp_path) -> None:
+    app_module, window = _window(monkeypatch, tmp_path)
+
+    try:
+        assert window.show_detail.objectName() == "animeShowDetail"
+        assert window.show_detail.isHidden() is True
+        assert window.show_detail_title.text() == ""
+        assert window.show_detail_mode_combo.currentData() == "sub"
+        assert window.show_detail_episodes.objectName() == "animeShowEpisodeList"
+        assert window.show_detail_play_button.isEnabled() is False
+        assert window.show_detail_resume_button.isEnabled() is False
+    finally:
+        window.close()

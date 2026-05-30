@@ -25,6 +25,12 @@ from ffmpeg_pywrapper.player.config_store import (
     should_continue_with_next_episode,
     sorted_anime_history,
 )
+from ffmpeg_pywrapper.player.show_detail import (
+    episode_history_map,
+    episode_row_text,
+    episode_source_with_resume,
+    selected_episode_history,
+)
 
 from .theme import DEFAULT_THEME, PACKAGED_THEMES, ThemeError, load_theme, render_stylesheet
 
@@ -80,6 +86,8 @@ class PlayerSignals(QObject):
     error = Signal(object)
     warning = Signal(object)
     anime_next_ready = Signal(object, object)
+    show_detail_episodes_ready = Signal(str, object, object)
+    show_detail_stream_ready = Signal(str, object, object)
 
 
 class AnimeWorkerSignals(QObject):
@@ -110,6 +118,13 @@ class PlayerWindow(QMainWindow):
         self.signals.error.connect(self.on_error)
         self.signals.warning.connect(self.on_warning)
         self.signals.anime_next_ready.connect(self._handle_next_anime_source)
+        self.signals.show_detail_episodes_ready.connect(self._handle_show_detail_episodes)
+        self.signals.show_detail_stream_ready.connect(self._handle_show_detail_stream)
+        self.current_show: AnimeSearchResult | None = None
+        self.current_show_mode: AnimeMode = "sub"
+        self.current_show_episodes: list[AnimeEpisode] = []
+        self._show_detail_request_id = ""
+        self._show_detail_stream_request_id = ""
         self.player = DecodeLoopPlayer(
             on_frame=self.signals.frame_ready.emit,
             on_state=self.signals.state_changed.emit,
@@ -176,6 +191,9 @@ class PlayerWindow(QMainWindow):
         video_layout.addWidget(self.video_label, 0, 0)
         self.anime_home = self._build_anime_home()
         video_layout.addWidget(self.anime_home, 0, 0)
+        self.show_detail = self._build_show_detail()
+        self.show_detail.hide()
+        video_layout.addWidget(self.show_detail, 0, 0)
         video_layout.addWidget(self.subtitle_label, 0, 0, Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignBottom)
         self.video_frame = QFrame()
         self.video_frame.setObjectName("videoFrame")
@@ -361,6 +379,70 @@ class PlayerWindow(QMainWindow):
         frame = QFrame()
         frame.setObjectName("animeHome")
         frame.setLayout(self.anime_home_layout)
+        return frame
+
+    def _build_show_detail(self) -> QFrame:
+        self.show_detail_back_button = QPushButton("Home")
+        self.show_detail_back_button.setObjectName("animeContinueActionButton")
+        self.show_detail_back_button.clicked.connect(self.show_anime_home)
+
+        self.show_detail_title = QLabel("")
+        self.show_detail_title.setObjectName("animeHomeTitle")
+        self.show_detail_status = QLabel("Choose a show to browse episodes.")
+        self.show_detail_status.setObjectName("animeHomeSubtitle")
+        self.show_detail_status.setWordWrap(True)
+
+        self.show_detail_mode_combo = QComboBox()
+        self.show_detail_mode_combo.setObjectName("animeHomeModeCombo")
+        self.show_detail_mode_combo.addItem("Sub", "sub")
+        self.show_detail_mode_combo.addItem("Dub", "dub")
+        self.show_detail_mode_combo.currentIndexChanged.connect(lambda _index: self.reload_show_detail_for_mode())
+
+        self.show_detail_refresh_button = QPushButton("Refresh Episodes")
+        self.show_detail_refresh_button.setObjectName("animeContinueActionButton")
+        self.show_detail_refresh_button.clicked.connect(self.refresh_show_detail_episodes)
+
+        header_row = QHBoxLayout()
+        header_row.setContentsMargins(0, 0, 0, 0)
+        header_row.setSpacing(10)
+        header_row.addWidget(self.show_detail_back_button)
+        header_row.addWidget(self.show_detail_title, 1)
+        header_row.addWidget(self.show_detail_mode_combo)
+        header_row.addWidget(self.show_detail_refresh_button)
+
+        self.show_detail_episodes = QListWidget()
+        self.show_detail_episodes.setObjectName("animeShowEpisodeList")
+        self.show_detail_episodes.currentItemChanged.connect(lambda _current, _previous: self._update_show_detail_buttons())
+        self.show_detail_episodes.itemDoubleClicked.connect(lambda _item: self.play_selected_show_detail_episode())
+
+        self.show_detail_play_button = QPushButton("Play")
+        self.show_detail_play_button.setObjectName("animePrimaryButton")
+        self.show_detail_play_button.clicked.connect(self.play_selected_show_detail_episode)
+        self.show_detail_resume_button = QPushButton("Resume")
+        self.show_detail_resume_button.setObjectName("animeContinueActionButton")
+        self.show_detail_resume_button.clicked.connect(self.resume_selected_show_detail_episode)
+
+        actions = QHBoxLayout()
+        actions.setContentsMargins(0, 0, 0, 0)
+        actions.setSpacing(8)
+        actions.addWidget(self.show_detail_play_button)
+        actions.addWidget(self.show_detail_resume_button)
+        actions.addStretch(1)
+
+        layout = QVBoxLayout()
+        layout.setContentsMargins(50, 38, 50, 36)
+        layout.setSpacing(14)
+        layout.addLayout(header_row)
+        layout.addWidget(self.show_detail_status)
+        layout.addWidget(self.show_detail_episodes, 1)
+        layout.addLayout(actions)
+
+        self.show_detail_play_button.setEnabled(False)
+        self.show_detail_resume_button.setEnabled(False)
+
+        frame = QFrame()
+        frame.setObjectName("animeShowDetail")
+        frame.setLayout(layout)
         return frame
 
     def _build_actions(self) -> None:
@@ -624,6 +706,50 @@ class PlayerWindow(QMainWindow):
                 self.signals.anime_next_ready.emit(None, exc)
 
         threading.Thread(target=worker, daemon=True).start()
+
+    def reload_show_detail_for_mode(self) -> None:
+        if self.current_show is None:
+            return
+        mode = self.show_detail_mode_combo.currentData() or "sub"
+        if mode not in {"sub", "dub"}:
+            mode = "sub"
+        if mode == self.current_show_mode:
+            return
+        self.show_anime_detail(self.current_show, mode=mode)
+
+    def refresh_show_detail_episodes(self) -> None:
+        if self.current_show is not None:
+            self.show_anime_detail(self.current_show, mode=self.current_show_mode)
+
+    def _update_show_detail_buttons(self) -> None:
+        episode = self._selected_show_detail_episode()
+        enabled = episode is not None
+        self.show_detail_play_button.setEnabled(enabled)
+        history_item = self._selected_show_detail_history()
+        self.show_detail_resume_button.setEnabled(history_item is not None and history_item.position > 0)
+
+    def _selected_show_detail_episode(self) -> AnimeEpisode | None:
+        item = self.show_detail_episodes.currentItem() if hasattr(self, "show_detail_episodes") else None
+        episode = item.data(Qt.ItemDataRole.UserRole) if item is not None else None
+        return episode if isinstance(episode, AnimeEpisode) else None
+
+    def _selected_show_detail_history(self) -> AnimeHistoryItem | None:
+        episode = self._selected_show_detail_episode()
+        if episode is None:
+            return None
+        return selected_episode_history(episode, episode_history_map(self.anime_history))
+
+    def _handle_show_detail_episodes(self, request_id: str, result: object, error: object) -> None:
+        return
+
+    def _handle_show_detail_stream(self, request_id: str, result: object, error: object) -> None:
+        return
+
+    def play_selected_show_detail_episode(self) -> None:
+        return
+
+    def resume_selected_show_detail_episode(self) -> None:
+        return
 
     def _refresh_anime_home(self) -> None:
         if not hasattr(self, "anime_continue_list"):
