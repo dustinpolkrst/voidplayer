@@ -54,7 +54,8 @@ pub async fn run_process_async(
     cmd.args(&args[1..])
         .stdin(Stdio::null())
         .stdout(Stdio::piped())
-        .stderr(Stdio::piped());
+        .stderr(Stdio::piped())
+        .kill_on_drop(true);
     let child = cmd.spawn().map_err(py_err)?;
     let wait = child.wait_with_output();
     let output = if let Some(seconds) = timeout_seconds {
@@ -118,7 +119,8 @@ fn run_ffmpeg_full_py(
                 Stdio::null()
             })
             .stdout(Stdio::piped())
-            .stderr(Stdio::piped());
+            .stderr(Stdio::piped())
+            .kill_on_drop(true);
         if let Some(cwd) = &cwd {
             cmd.current_dir(cwd);
         }
@@ -170,4 +172,53 @@ pub fn register(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(run_ffmpeg_py, m)?)?;
     m.add_function(wrap_pyfunction!(run_ffmpeg_full_py, m)?)?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::run_process_async;
+    use std::path::Path;
+    use std::time::Duration;
+
+    fn delayed_marker_command(marker_path: &Path) -> Vec<String> {
+        let path = marker_path.to_string_lossy();
+        if cfg!(windows) {
+            let escaped = path.replace('\'', "''");
+            vec![
+                "powershell".to_string(),
+                "-NoProfile".to_string(),
+                "-Command".to_string(),
+                format!("Start-Sleep -Milliseconds 500; Set-Content -LiteralPath '{escaped}' -Value done"),
+            ]
+        } else {
+            let escaped = path.replace('\'', "'\\''");
+            vec![
+                "sh".to_string(),
+                "-c".to_string(),
+                format!("sleep 0.5; printf done > '{escaped}'"),
+            ]
+        }
+    }
+
+    #[tokio::test]
+    async fn timed_out_process_is_killed() {
+        let marker_path = std::env::temp_dir().join(format!(
+            "voidplayer-timeout-marker-{}-{}.txt",
+            std::process::id(),
+            chrono_like_timestamp()
+        ));
+        let _ = std::fs::remove_file(&marker_path);
+
+        let result = run_process_async(delayed_marker_command(&marker_path), Some(0.05)).await;
+
+        assert!(result.is_err());
+        tokio::time::sleep(Duration::from_millis(900)).await;
+        assert!(!marker_path.exists());
+    }
+
+    fn chrono_like_timestamp() -> u128 {
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map_or(0, |duration| duration.as_nanos())
+    }
 }
