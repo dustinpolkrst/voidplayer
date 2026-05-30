@@ -692,6 +692,22 @@ def test_show_anime_home_saves_and_clears_current_source(monkeypatch, tmp_path) 
         window.close()
 
 
+def test_show_anime_home_hides_show_detail(monkeypatch, tmp_path) -> None:
+    app_module, window = _window(monkeypatch, tmp_path)
+
+    try:
+        window.show_anime_detail(app_module.AnimeSearchResult(show_id="show-1", title="Example"), mode="sub")
+
+        assert window.show_detail.isHidden() is False
+
+        window.show_anime_home()
+
+        assert window.anime_home.isHidden() is False
+        assert window.show_detail.isHidden() is True
+    finally:
+        window.close()
+
+
 def test_video_click_toggles_playback_when_media_loaded(monkeypatch, tmp_path) -> None:
     app_module, window = _window(monkeypatch, tmp_path)
     qt_core = pytest.importorskip("PySide6.QtCore")

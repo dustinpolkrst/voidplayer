@@ -27,8 +27,6 @@ from ffmpeg_pywrapper.player.config_store import (
 )
 from ffmpeg_pywrapper.player.show_detail import (
     episode_history_map,
-    episode_row_text,
-    episode_source_with_resume,
     selected_episode_history,
 )
 
@@ -1000,6 +998,8 @@ class PlayerWindow(QMainWindow):
         self.anime_history = anime_history_from_config(self.config)
         self._refresh_anime_home()
         self._update_now_playing()
+        if hasattr(self, "show_detail"):
+            self.show_detail.hide()
         self.anime_home.show()
         self.statusBar().showMessage("Home")
 
