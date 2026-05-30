@@ -721,7 +721,11 @@ class PlayerWindow(QMainWindow):
         if self.current_show is not None:
             self.show_anime_detail(self.current_show, mode=self.current_show_mode)
 
+    def _cancel_show_detail_stream_request(self) -> None:
+        self._show_detail_stream_request_id = ""
+
     def show_anime_detail(self, show: AnimeSearchResult, *, mode: AnimeMode = "sub") -> None:
+        self._cancel_show_detail_stream_request()
         self.current_show = show
         self.current_show_mode = mode if mode in {"sub", "dub"} else "sub"
         mode_index = self.show_detail_mode_combo.findData(self.current_show_mode)
@@ -815,7 +819,10 @@ class PlayerWindow(QMainWindow):
             self._update_show_detail_buttons()
             return
         if isinstance(result, MediaSource):
+            self._cancel_show_detail_stream_request()
+            self._update_show_detail_buttons()
             self.play_source(result)
+            self.show_detail.hide()
             return
         self.show_detail_status.setText("No playable stream returned.")
         self._update_show_detail_buttons()
@@ -1062,6 +1069,7 @@ class PlayerWindow(QMainWindow):
         self._seeking = False
 
     def show_anime_home(self) -> None:
+        self._cancel_show_detail_stream_request()
         self._save_current_anime_position()
         self.player.stop()
         self.current_source = None

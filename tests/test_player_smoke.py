@@ -1150,3 +1150,59 @@ def test_show_detail_resume_selected_episode_attaches_resume_position(monkeypatc
         assert loaded[0].subtitle_url == "https://example.test/3.vtt"
     finally:
         window.close()
+
+
+def test_show_detail_stream_handoff_hides_show_detail(monkeypatch, tmp_path) -> None:
+    app_module, window = _window(monkeypatch, tmp_path)
+    source = MediaSource(location="https://example.test/episode-1.mp4", title="Episode 1")
+    loaded = []
+
+    monkeypatch.setattr(window, "play_source", lambda media_source: loaded.append(media_source))
+
+    try:
+        window.show_detail.show()
+        window._show_detail_stream_request_id = "stream:1"
+
+        window._handle_show_detail_stream("stream:1", source, None)
+
+        assert loaded == [source]
+        assert window.show_detail.isHidden() is True
+    finally:
+        window.close()
+
+
+def test_show_anime_home_invalidates_pending_show_detail_stream(monkeypatch, tmp_path) -> None:
+    app_module, window = _window(monkeypatch, tmp_path)
+    source = MediaSource(location="https://example.test/episode-1.mp4", title="Episode 1")
+    loaded = []
+
+    monkeypatch.setattr(window, "play_source", lambda media_source: loaded.append(media_source))
+
+    try:
+        window._show_detail_stream_request_id = "stream:1"
+        window.show_anime_home()
+
+        window._handle_show_detail_stream("stream:1", source, None)
+
+        assert loaded == []
+    finally:
+        window.close()
+
+
+def test_show_anime_detail_invalidates_pending_show_detail_stream(monkeypatch, tmp_path) -> None:
+    app_module, window = _window(monkeypatch, tmp_path)
+    source = MediaSource(location="https://example.test/episode-1.mp4", title="Episode 1")
+    loaded = []
+
+    monkeypatch.setattr(window, "_load_show_detail_episodes", lambda: None)
+    monkeypatch.setattr(window, "play_source", lambda media_source: loaded.append(media_source))
+
+    try:
+        window._show_detail_stream_request_id = "stream:1"
+        window.show_anime_detail(app_module.AnimeSearchResult(show_id="show-2", title="Another Show"), mode="sub")
+
+        window._handle_show_detail_stream("stream:1", source, None)
+
+        assert loaded == []
+    finally:
+        window.close()
