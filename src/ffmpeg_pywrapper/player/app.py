@@ -591,10 +591,7 @@ class PlayerWindow(QMainWindow):
             return
         dialog = AnimeBrowserDialog(self, client=self._anime_client())
         if dialog.exec() == QDialog.DialogCode.Accepted:
-            if dialog.selected_show is not None:
-                self.show_anime_detail(dialog.selected_show, mode=dialog.mode)
-            elif dialog.selected_stream is not None:
-                self.play_source(dialog.selected_stream.to_media_source())
+            self._handle_anime_browser_result(dialog)
 
     def open_anime_home_search(self) -> None:
         query = self.anime_home_search_input.text().strip()
@@ -607,10 +604,13 @@ class PlayerWindow(QMainWindow):
             dialog.mode_combo.setCurrentIndex(mode_index)
         dialog.search()
         if dialog.exec() == QDialog.DialogCode.Accepted:
-            if dialog.selected_show is not None:
-                self.show_anime_detail(dialog.selected_show, mode=dialog.mode)
-            elif dialog.selected_stream is not None:
-                self.play_source(dialog.selected_stream.to_media_source())
+            self._handle_anime_browser_result(dialog)
+
+    def _handle_anime_browser_result(self, dialog: AnimeBrowserDialog) -> None:
+        if dialog.selected_show is not None:
+            self.show_anime_detail(dialog.selected_show, mode=dialog.mode)
+        elif dialog.selected_stream is not None:
+            self.play_source(dialog.selected_stream.to_media_source())
 
     def play_anime_history_item(self, item: QListWidgetItem) -> None:
         history_item = item.data(Qt.ItemDataRole.UserRole)
@@ -1335,6 +1335,14 @@ class AnimeBrowserDialog(QDialog):
             return
         request_id = self._next_request_id("search")
         self._active_search_request = request_id
+        self.results_list.clear()
+        self.episodes_list.clear()
+        self.quality_combo.clear()
+        self._current_streams = []
+        self.selected_show = None
+        self.selected_stream = None
+        self.play_button.setEnabled(False)
+        self._update_open_show_button()
         self.search_button.setEnabled(False)
         self._set_status("Searching...")
         self._run_worker(request_id, lambda: self._client().search(query, mode=self.mode))
@@ -1414,6 +1422,7 @@ class AnimeBrowserDialog(QDialog):
         else:
             self.selected_stream = select_quality(self._current_streams)
         if self.selected_stream is not None:
+            self.selected_show = None
             self.accept()
 
     def _selected_search_result(self) -> AnimeSearchResult | None:

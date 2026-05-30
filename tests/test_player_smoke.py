@@ -1226,6 +1226,43 @@ def test_anime_browser_can_return_selected_show(monkeypatch) -> None:
         dialog.close()
 
 
+def test_anime_browser_new_search_clears_stale_selection_state(monkeypatch) -> None:
+    monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
+    qt_widgets = pytest.importorskip("PySide6.QtWidgets")
+    app_module = importlib.import_module("ffmpeg_pywrapper.player.app")
+    app = qt_widgets.QApplication.instance() or qt_widgets.QApplication(["voidplayer-test"])
+    dialog = app_module.AnimeBrowserDialog()
+    stale_stream = app_module.AnimeStream(url="https://example.test/stale.mp4", quality="720p", title="Example", episode="1")
+    started_requests = []
+
+    try:
+        dialog._apply_search_results([app_module.AnimeSearchResult(show_id="show-1", title="Example", episode_count=3)])
+        dialog.results_list.setCurrentRow(0)
+        dialog.episodes_list.addItem("Episode 1")
+        dialog.quality_combo.addItem("720p", stale_stream)
+        dialog._current_streams = [stale_stream]
+        dialog.selected_show = dialog.results_list.currentItem().data(app_module.Qt.ItemDataRole.UserRole)
+        dialog.selected_stream = stale_stream
+        dialog.play_button.setEnabled(True)
+        assert dialog.open_show_button.isEnabled() is True
+
+        monkeypatch.setattr(dialog, "_run_worker", lambda request_id, func: started_requests.append((request_id, func)))
+        dialog.search_input.setText("Another")
+        dialog.search()
+
+        assert started_requests
+        assert dialog.results_list.count() == 0
+        assert dialog.episodes_list.count() == 0
+        assert dialog.quality_combo.count() == 0
+        assert dialog._current_streams == []
+        assert dialog.selected_show is None
+        assert dialog.selected_stream is None
+        assert dialog.open_show_button.isEnabled() is False
+        assert dialog.play_button.isEnabled() is False
+    finally:
+        dialog.close()
+
+
 def test_home_search_opens_show_detail_when_dialog_returns_show(monkeypatch, tmp_path) -> None:
     app_module, window = _window(monkeypatch, tmp_path)
     selected = app_module.AnimeSearchResult(show_id="show-1", title="Example", episode_count=3)
@@ -1259,5 +1296,68 @@ def test_home_search_opens_show_detail_when_dialog_returns_show(monkeypatch, tmp
         window.open_anime_home_search()
 
         assert opened == [(selected, "sub")]
+    finally:
+        window.close()
+
+
+def test_open_anime_browser_opens_show_detail_when_dialog_returns_show(monkeypatch, tmp_path) -> None:
+    app_module, window = _window(monkeypatch, tmp_path)
+    selected = app_module.AnimeSearchResult(show_id="show-1", title="Example", episode_count=3)
+
+    class FakeDialog:
+        selected_show = selected
+        selected_stream = None
+
+        def __init__(self, parent=None, *, client=None):  # noqa: ANN001
+            pass
+
+        @property
+        def mode(self):  # noqa: ANN201
+            return "dub"
+
+        def exec(self):  # noqa: ANN201
+            return app_module.QDialog.DialogCode.Accepted
+
+    monkeypatch.setattr(app_module, "AnimeBrowserDialog", FakeDialog)
+    monkeypatch.setattr(window, "_confirm_anime_disclaimer", lambda: True)
+    opened = []
+    monkeypatch.setattr(window, "show_anime_detail", lambda show, *, mode="sub": opened.append((show, mode)))
+
+    try:
+        window.open_anime_browser()
+
+        assert opened == [(selected, "dub")]
+    finally:
+        window.close()
+
+
+def test_open_anime_browser_accepts_selected_stream_without_selected_show(monkeypatch, tmp_path) -> None:
+    app_module, window = _window(monkeypatch, tmp_path)
+    stream = app_module.AnimeStream(url="https://example.test/episode.mp4", quality="720p", title="Example", episode="1")
+
+    class FakeDialog:
+        selected_show = None
+        selected_stream = stream
+
+        def __init__(self, parent=None, *, client=None):  # noqa: ANN001
+            pass
+
+        @property
+        def mode(self):  # noqa: ANN201
+            return "sub"
+
+        def exec(self):  # noqa: ANN201
+            return app_module.QDialog.DialogCode.Accepted
+
+    monkeypatch.setattr(app_module, "AnimeBrowserDialog", FakeDialog)
+    monkeypatch.setattr(window, "_confirm_anime_disclaimer", lambda: True)
+    loaded = []
+    monkeypatch.setattr(window, "play_source", lambda media_source: loaded.append(media_source))
+
+    try:
+        window.open_anime_browser()
+
+        assert len(loaded) == 1
+        assert loaded[0].location == "https://example.test/episode.mp4"
     finally:
         window.close()
